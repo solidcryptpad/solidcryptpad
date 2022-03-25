@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: 22ss-ase-pr-inso-05
+  namespace: 22ss-ase-pr-inso-05
+spec:
+  selector:
+    matchLabels:
+      app: 22ss-ase-pr-inso-05
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: 22ss-ase-pr-inso-05
+    spec:
+      containers:
+        - name: 22ss-ase-pr-inso-05-container
+          image: registry.reset.inso-w.at/2022ss-ase-pr-group/22ss-ase-pr-inso-05:latest
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "10m"
+              ephemeral-storage: "100Mi"
+            limits:
+              memory: "280Mi"
+              cpu: "500m"
+              ephemeral-storage: "100Mi"
+          ports:
+            - containerPort: 80
+          livenessProbe:
+            httpGet:
+              port: 80
+              path: /index.html
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              port: 80
+              path: /index.html
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          startupProbe:
+            httpGet:
+              port: 80
+              path: /index.html
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            failureThreshold: 120
+      imagePullSecrets:
+        - name: secret-dockercfg
+  revisionHistoryLimit: 2
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: s-22ss-ase-pr-inso-05-service
+  namespace: 22ss-ase-pr-inso-05
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: 22ss-ase-pr-inso-05
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: "22ss-ase-pr-inso-05-ingress"
+  namespace: 22ss-ase-pr-inso-05
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: "22ss-ase-pr-inso-05.apps.student.inso-w.at"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: s-22ss-ase-pr-inso-05-service
+                port:
+                  number: 80
