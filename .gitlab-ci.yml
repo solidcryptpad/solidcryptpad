@@ -1,0 +1,35 @@
+image: node:16-stretch
+
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - .npm/
+
+.global_before_script: &global_before_script
+  - npm ci --cache .npm --prefer-offline
+
+before_script:
+  - *global_before_script
+
+stages:
+  - test
+
+lint:
+  stage: test
+  script:
+    - npm run lint
+    - npm run prettier
+
+test:
+  stage: test
+  before_script:
+    # needed because we overwrite the global before_script
+    - *global_before_script
+    - apt-get update
+    - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    - apt install -y ./google-chrome*.deb;
+    - export CHROME_BIN=/usr/bin/google-chrome
+  script:
+    - npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
