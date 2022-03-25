@@ -6,9 +6,11 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "license-checker": "license-checker --summary --onlyAllow 'Apache-2.0;BSD-2-Clause;BSD-3-Clause;0BSD;BSD*;CC0-1.0;CC-BY-3.0;CC-BY-4.0;ISC;MIT;Unlicense'"
   },
-  "private": true,
+  "private": false,
+  "license": "MIT",
   "dependencies": {
     "@angular/animations": "~13.3.0",
     "@angular/common": "~13.3.0",
@@ -34,6 +36,7 @@
     "karma-coverage": "~2.1.0",
     "karma-jasmine": "~4.0.0",
     "karma-jasmine-html-reporter": "~1.7.0",
+    "license-checker": "^25.0.1",
     "typescript": "~4.6.2"
   }
 }
