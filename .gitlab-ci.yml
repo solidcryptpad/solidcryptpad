@@ -53,7 +53,6 @@ build:
       --destination "${CI_REGISTRY_IMAGE}:${CI_PIPELINE_ID}"
   only:
     - main
-    - project-setup
 
 deploy:
   stage: deploy
@@ -64,4 +63,3 @@ deploy:
     - kubectl apply -f kubernetes.yaml
   only:
     - master
-    - project-setup
