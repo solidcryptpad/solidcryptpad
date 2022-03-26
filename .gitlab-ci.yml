@@ -1,4 +1,4 @@
-image: node:16
+image: registry.reset.inso-w.at/pub/docker/node16
 
 cache:
   key:
@@ -56,7 +56,7 @@ build:
 
 deploy:
   stage: deploy
-  image: bitnami/kubectl
+  image: registry.reset.inso-w.at/pub/docker/kubectl
   script:
     - sed -i 's/:latest/:'$CI_PIPELINE_ID'/g' kubernetes.yaml
     - cat kubernetes.yaml
