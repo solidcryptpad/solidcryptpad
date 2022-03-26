@@ -62,4 +62,4 @@ deploy:
     - cat kubernetes.yaml
     - kubectl apply -f kubernetes.yaml
   only:
-    - master
+    - main
