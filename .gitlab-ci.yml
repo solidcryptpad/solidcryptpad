@@ -1,4 +1,4 @@
-image: node:16-stretch
+image: node:16
 
 cache:
   key:
@@ -7,29 +7,59 @@ cache:
   paths:
     - .npm/
 
-.global_before_script: &global_before_script
+.install_cached_node_modules: &install_cached_node_modules
   - npm ci --cache .npm --prefer-offline
-
-before_script:
-  - *global_before_script
 
 stages:
   - test
+  - build
+  - deploy
 
 lint:
   stage: test
+  before_script:
+    - *install_cached_node_modules
   script:
     - npm run lint
     - npm run prettier
 
-test:
-  stage: test
-  before_script:
-    # needed because we overwrite the global before_script
-    - *global_before_script
-    - apt-get update
-    - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-    - apt install -y ./google-chrome*.deb;
-    - export CHROME_BIN=/usr/bin/google-chrome
+# TODO: adapt when testing strategy is finished
+# NOTE: use image instead of installing chrome (https://reset.inso.tuwien.ac.at/repo/pub/docker)
+#
+# test:
+#   stage: test
+#   before_script:
+#     - *install_cached_node_modules
+#     - apt-get update
+#     - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+#     - apt install -y ./google-chrome*.deb;
+#     - export CHROME_BIN=/usr/bin/google-chrome
+#   script:
+#     - npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
+
+build:
+  # based on: https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
   script:
-    - npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${CI_REGISTRY_USER}" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+    - >-
+      /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --destination "${CI_REGISTRY_IMAGE}:${CI_PIPELINE_ID}"
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  image: bitnami/kubectl
+  script:
+    - sed -i 's/:latest/:'$CI_PIPELINE_ID'/g' kubernetes.yaml
+    - cat kubernetes.yaml
+    - kubectl apply -f kubernetes.yaml
+  only:
+    - master
