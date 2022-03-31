@@ -4,11 +4,41 @@ This document contains guidelines and developing tips for contributors.
 
 ## Git strategy
 
+### Integrating with main
+
 This projects has a healthy main branch, that is ready to be deployed. Therefore, before integrating updates into main, pull and merge main into your branch, wait until the test suite succeeds, and then merge back into main.
 
-For any modification, create a new branch based on the current main branch. The goal is to integrate back with the main branch as soon and often as possible. This helps detecting conflicting changes early in the process and results in many small merges. When integrating with main, make sure that make sure that the tests cover the updates and only completed features are accessible via the UI.
+### Integration frequency
+
+The goal is to integrate back with the main branch as soon and often as possible. This helps detecting conflicting changes early in the process and results in many small merges. When integrating with main, make sure that make sure that the tests cover the updates and only completed features are accessible via the UI.
 
 To allow frequent integration with main, features can be merged even when not fully finished. When some functionality is implemented and tested, you can integrate it into main. However, users should only have access to complete features. As an example for a partial feature integration: You develop and write tests for a text editor, but when integrating with main, hide the "enter edit mode" button in the UI. So if you updated an encryption component, or added a new feature to the file explorer, these changes quickly are integrated into the main branch. Other developers then can use the updated components and/or see if there is a conflicting change.
+
+### Branching convention
+
+Branches start with the issue number, if available, and have a descriptive name. For example: `9-development-guidelines`. If the branch is related to a user story, the identifier should be included after the issue number: `10-S1-encrypted-upload`.
+
+### Git messages convention
+
+Commit messages have the form `<type>: <subject>[. Ref #<issue-number>]`. The commit body can contain a more detailed description. If there is a related issue, it must be referenced.
+
+Following types are suggested:
+
+- `build`: changes to the build system (e.g. `build: add firefox to .browserslistrc. Ref #12`)
+- `ci`: changes to CI configuration (e.g. `ci: add angular tests to pipeline`)
+- `docs`: changes to documentation (e.g. `docs: add git strategy to CONTRIBUTING.md`)
+- `feat`: implements new functionality (e.g. `feat: upload of files to pod. Ref #123`)
+- `fix`: bug fix (e.g. `fix: correct sorting of items in file explorer. Ref #123`)
+- `refactor`: code modification that does not change functionality (`refactor: extract datasource from file explorer`)
+- `test`: changes to tests and test suite (e.g. `test: edge case of empty file explorer`)
+
+## Formatting
+
+Code is automatically formatted with Prettier on every commit.
+
+## Linting
+
+Code is automatically linted with ESlint on every commit. If the linter cannot fix errors automatically, then fix the errors manually, stage the changes and commit again.
 
 ## Working with Angular
 
