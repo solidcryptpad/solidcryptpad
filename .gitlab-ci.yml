@@ -52,7 +52,7 @@ build:
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
       --destination "${CI_REGISTRY_IMAGE}:${CI_PIPELINE_ID}"
   only:
-    - main
+    - development
 
 deploy:
   stage: deploy
@@ -62,4 +62,4 @@ deploy:
     - cat kubernetes.yaml
     - kubectl apply -f kubernetes.yaml
   only:
-    - main
+    - development
