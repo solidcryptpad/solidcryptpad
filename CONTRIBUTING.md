@@ -4,15 +4,15 @@ This document contains guidelines and developing tips for contributors.
 
 ## Git strategy
 
-### Integrating with main
+### Integrating with development
 
-This projects has a healthy main branch, that is ready to be deployed. Therefore, before integrating updates into main, pull and merge main into your branch, wait until the test suite succeeds, and then merge back into main.
+This projects has a healthy development branch, that is ready to be deployed. Therefore, before integrating updates into development, pull and merge development into your branch, wait until the test suite succeeds, and then merge back into development.
 
 ### Integration frequency
 
-The goal is to integrate back with the main branch as soon and often as possible. This helps detecting conflicting changes early in the process and results in many small merges. When integrating with main, make sure that make sure that the tests cover the updates and only completed features are accessible via the UI.
+The goal is to integrate back with the development branch as soon and often as possible. This helps detecting conflicting changes early in the process and results in many small merges. When integrating with development, make sure that make sure that the tests cover the updates and only completed features are accessible via the UI.
 
-To allow frequent integration with main, features can be merged even when not fully finished. When some functionality is implemented and tested, you can integrate it into main. However, users should only have access to complete features. As an example for a partial feature integration: You develop and write tests for a text editor, but when integrating with main, hide the "enter edit mode" button in the UI. So if you updated an encryption component, or added a new feature to the file explorer, these changes quickly are integrated into the main branch. Other developers then can use the updated components and/or see if there is a conflicting change.
+To allow frequent integration with development, features can be merged even when not fully finished. When some functionality is implemented and tested, you can integrate it into development. However, users should only have access to complete features. As an example for a partial feature integration: You develop and write tests for a text editor, but when integrating with development, hide the "enter edit mode" button in the UI. So if you updated an encryption component, or added a new feature to the file explorer, these changes quickly are integrated into the development branch. Other developers then can use the updated components and/or see if there is a conflicting change.
 
 ### Branching convention
 
