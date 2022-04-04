@@ -1,4 +1,3 @@
-image: registry.reset.inso-w.at/pub/docker/node16
 
 cache:
   key:
@@ -16,6 +15,7 @@ stages:
   - deploy
 
 lint:
+  image: registry.reset.inso-w.at/pub/docker/node16
   stage: test
   before_script:
     - *install_cached_node_modules
@@ -23,19 +23,15 @@ lint:
     - npm run lint
     - npm run prettier
 
-# TODO: adapt when testing strategy is finished
-# NOTE: use image instead of installing chrome (https://reset.inso.tuwien.ac.at/repo/pub/docker)
-#
-# test:
-#   stage: test
-#   before_script:
-#     - *install_cached_node_modules
-#     - apt-get update
-#     - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-#     - apt install -y ./google-chrome*.deb;
-#     - export CHROME_BIN=/usr/bin/google-chrome
-#   script:
-#     - npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
+test:
+  image: registry.reset.inso-w.at/pub/docker/selenium-chromium:latest
+  stage: test
+  before_script:
+    - *install_cached_node_modules
+  variables:
+    CHROME_BIN: /usr/bin/chromium
+  script:
+    - npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
 
 build:
   # based on: https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
