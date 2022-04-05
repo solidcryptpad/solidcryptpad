@@ -41,11 +41,11 @@ export class SolidAuthenticationService {
   }
 
   authenticatedFetch(
-    requestInfo: string,
-    requestInit: RequestInit
+    url: string,
+    init?: RequestInit
   ): ReturnType<typeof fetch> {
     if (this.isLoggedIn()) {
-      return fetch(requestInfo, requestInit);
+      return fetch(url, init);
     } else {
       throw new Error('Not authenticated yet!');
     }
