@@ -31,7 +31,8 @@ test:
   variables:
     CHROME_BIN: /usr/bin/chromium
   script:
-    - npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
+    - npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI --code-coverage
+  coverage: /Lines.*?(\d+(?:\.\d+)?)%/
 
 build:
   # based on: https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
