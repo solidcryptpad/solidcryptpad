@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  CanActivate,
-} from '@angular/router';
+import { CanActivate } from '@angular/router';
 import { SolidAuthenticationService } from '../services/solid-authentication.service';
 
 @Injectable({
@@ -9,7 +7,13 @@ import { SolidAuthenticationService } from '../services/solid-authentication.ser
 })
 export class AuthenticatedGuard implements CanActivate {
   constructor(private solidAuthenticationService: SolidAuthenticationService) {}
-  canActivate() {
-    return this.solidAuthenticationService.isLoggedIn();
+  async canActivate() {
+    await this.solidAuthenticationService.waitForSessionRestore();
+    if (this.solidAuthenticationService.isLoggedIn()) {
+      return true;
+    }
+    // TODO: consider passing redirect url
+    this.solidAuthenticationService.goToLoginPage();
+    return false;
   }
 }

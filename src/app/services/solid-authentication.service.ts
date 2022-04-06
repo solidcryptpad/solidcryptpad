@@ -13,6 +13,8 @@ import { Router } from '@angular/router';
 export class SolidAuthenticationService {
   constructor(private router: Router) {}
 
+  private sessionRestoreCallbacks: (() => void)[] = [];
+
   // TODO explanation
   restoreSession() {
     const locations = JSON.parse(
@@ -24,20 +26,32 @@ export class SolidAuthenticationService {
 
     window.sessionStorage.setItem('locations', JSON.stringify(locations));
 
-    handleIncomingRedirect({ restorePreviousSession: true }).then(() =>
-      this.router.navigate([locations.old])
+    handleIncomingRedirect({ restorePreviousSession: true }).then(
+      (sessionInfo) => {
+        console.log('restored session', sessionInfo);
+        if (sessionInfo?.isLoggedIn) {
+          this.router.navigate([locations.old]);
+        }
+        this.sessionRestoreCallbacks.forEach((cb) => cb());
+        this.sessionRestoreCallbacks = [];
+      }
     );
   }
 
+  waitForSessionRestore() {
+    if (this.isLoggedIn()) return Promise.resolve();
+    return new Promise((resolve) => {
+      this.sessionRestoreCallbacks.push(() => resolve(undefined));
+    });
+  }
+
   async goToLoginPage() {
-    if (!this.isLoggedIn()) {
-      await login({
-        oidcIssuer: 'https://solidweb.org/',
-        // manually overwritten by restoreSession()
-        redirectUrl: window.location.href,
-        clientName: 'SolidCryptPad',
-      });
-    }
+    await login({
+      oidcIssuer: 'https://solidweb.org/',
+      // manually overwritten by restoreSession()
+      redirectUrl: window.location.href,
+      clientName: 'SolidCryptPad',
+    });
   }
 
   authenticatedFetch(

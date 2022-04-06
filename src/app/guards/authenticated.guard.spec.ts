@@ -10,7 +10,7 @@ describe('AuthenticatedGuard', () => {
   beforeEach(() => {
     const authenticationSpy = jasmine.createSpyObj(
       'SolidAuthenticationService',
-      ['isLoggedIn']
+      ['isLoggedIn', 'waitForSessionRestore', 'goToLoginPage']
     );
     TestBed.configureTestingModule({
       providers: [
@@ -28,13 +28,18 @@ describe('AuthenticatedGuard', () => {
     expect(guard).toBeTruthy();
   });
 
-  it('should return true if logged in', () => {
+  it('should return true if logged in', async () => {
+    authenticationServiceSpy.waitForSessionRestore.and.resolveTo();
     authenticationServiceSpy.isLoggedIn.and.returnValue(true);
-    expect(guard.canActivate()).toBeTrue();
+    expect(await guard.canActivate()).toBeTrue();
   });
 
-  it('should return false if logged out', () => {
+  it('should go to login page if logged out', async () => {
+    authenticationServiceSpy.waitForSessionRestore.and.resolveTo();
     authenticationServiceSpy.isLoggedIn.and.returnValue(false);
-    expect(guard.canActivate()).toBeFalse();
+
+    await guard.canActivate();
+
+    expect(authenticationServiceSpy.goToLoginPage).toHaveBeenCalled();
   });
 });
