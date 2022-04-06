@@ -32,7 +32,7 @@ import { SolidAuthenticationService } from './services/solid-authentication.serv
     {
       provide: APP_INITIALIZER,
       useFactory: (service: SolidAuthenticationService) => () =>
-        service.restoreSession(),
+        service.initializeLoginStatus(),
       deps: [SolidAuthenticationService],
       multi: true,
     },

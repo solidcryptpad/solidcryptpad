@@ -4,6 +4,7 @@ import {
   getDefaultSession,
   handleIncomingRedirect,
   login,
+  onSessionRestore,
 } from '@inrupt/solid-client-authn-browser';
 import { Router } from '@angular/router';
 
@@ -11,61 +12,67 @@ import { Router } from '@angular/router';
   providedIn: 'root',
 })
 export class SolidAuthenticationService {
-  constructor(private router: Router) {}
+  private initializedCallbacks: (() => void)[] = [];
+  private isInitialized = false;
 
-  private sessionRestoreCallbacks: (() => void)[] = [];
+  constructor(private router: Router) {
+    onSessionRestore((url) => this.onSessionRestore(url));
+  }
 
-  // TODO explanation
-  restoreSession() {
-    const locations = JSON.parse(
-      window.sessionStorage.getItem('locations') || '{}'
-    );
+  /**
+   * initialize login status including possible redirects:
+   *  - handles redirect after login
+   *  - handles redirect after restorePreviousSession
+   *  - if previously logged in: initiates redirect to restore previous session
+   */
+  initializeLoginStatus() {
+    handleIncomingRedirect({
+      restorePreviousSession: true,
+    }).then(() => this.onLoginStatusKnown());
+  }
 
-    locations.old = locations.new;
-    locations.new = window.location.pathname;
+  private onSessionRestore(previousUrl: string) {
+    const url = new URL(previousUrl);
+    this.router.navigateByUrl(url.pathname + url.search + url.hash);
+  }
 
-    window.sessionStorage.setItem('locations', JSON.stringify(locations));
-
-    handleIncomingRedirect({ restorePreviousSession: true }).then(
-      (sessionInfo) => {
-        console.log('restored session', sessionInfo);
-        if (sessionInfo?.isLoggedIn) {
-          this.router.navigate([locations.old]);
-        }
-        this.sessionRestoreCallbacks.forEach((cb) => cb());
-        this.sessionRestoreCallbacks = [];
-      }
+  private waitUntilInitialized(): Promise<undefined> {
+    if (this.isInitialized) return Promise.resolve(undefined);
+    return new Promise((resolve) =>
+      this.initializedCallbacks.push(() => resolve(undefined))
     );
   }
 
-  waitForSessionRestore() {
-    if (this.isLoggedIn()) return Promise.resolve();
-    return new Promise((resolve) => {
-      this.sessionRestoreCallbacks.push(() => resolve(undefined));
-    });
+  private onLoginStatusKnown() {
+    this.isInitialized = true;
+    this.initializedCallbacks.forEach((cb) => cb());
+    this.initializedCallbacks = [];
+  }
+
+  async isLoggedIn(): Promise<boolean> {
+    await this.waitUntilInitialized();
+    return this.isStoredLoggedIn();
+  }
+
+  private isStoredLoggedIn(): boolean {
+    return getDefaultSession().info.isLoggedIn;
   }
 
   async goToLoginPage() {
     await login({
       oidcIssuer: 'https://solidweb.org/',
-      // manually overwritten by restoreSession()
       redirectUrl: window.location.href,
       clientName: 'SolidCryptPad',
     });
   }
 
-  authenticatedFetch(
+  async authenticatedFetch(
     url: string,
     init?: RequestInit
   ): ReturnType<typeof fetch> {
-    if (this.isLoggedIn()) {
+    if (await this.isLoggedIn()) {
       return fetch(url, init);
-    } else {
-      throw new Error('Not authenticated yet!');
     }
-  }
-
-  isLoggedIn() {
-    return getDefaultSession().info.isLoggedIn;
+    throw new Error('Not authenticated yet!');
   }
 }
