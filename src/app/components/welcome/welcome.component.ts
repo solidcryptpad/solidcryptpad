@@ -7,9 +7,16 @@ import { SolidAuthenticationService } from '../../services/solid-authentication.
   styleUrls: ['./welcome.component.scss'],
 })
 export class WelcomeComponent {
-  constructor(private solidAuthenticationService: SolidAuthenticationService) {}
+  constructor(private solidAuthenticationService: SolidAuthenticationService) {
+    this.oidc = solidAuthenticationService.defaultOidc;
+    this.selected = '';
+  }
+
+  public oidc: string[][];
+  public selected: string;
 
   login() {
-    this.solidAuthenticationService.goToLoginPage();
+    if (this.selected === '') this.solidAuthenticationService.goToLoginPage();
+    else this.solidAuthenticationService.goToLoginPage(this.selected);
   }
 }

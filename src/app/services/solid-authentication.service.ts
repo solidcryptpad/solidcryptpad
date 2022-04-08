@@ -12,11 +12,21 @@ import { Router } from '@angular/router';
   providedIn: 'root',
 })
 export class SolidAuthenticationService {
+  private oidc: string[][] = [
+    ['https://solidweb.org/', 'solidweb'],
+    ['https://solidcommunity.net/', 'solidcommunity'],
+    ['https://inrupt.net/', 'inrupt'],
+  ];
+
   private initializedCallbacks: (() => void)[] = [];
   private isInitialized = false;
 
   constructor(private router: Router) {
     onSessionRestore((url) => this.onSessionRestore(url));
+  }
+
+  public get defaultOidc() {
+    return this.oidc;
   }
 
   /**
@@ -58,9 +68,9 @@ export class SolidAuthenticationService {
     return getDefaultSession().info.isLoggedIn;
   }
 
-  async goToLoginPage() {
+  async goToLoginPage(oidc = 'https://solidweb.org/') {
     await login({
-      oidcIssuer: 'https://solidweb.org/',
+      oidcIssuer: oidc,
       redirectUrl: window.location.href,
       clientName: 'SolidCryptPad',
     });
