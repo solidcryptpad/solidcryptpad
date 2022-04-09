@@ -16,7 +16,14 @@ export class WelcomeComponent {
   public selected: string;
 
   login() {
-    if (this.selected === '') this.solidAuthenticationService.goToLoginPage();
-    else this.solidAuthenticationService.goToLoginPage(this.selected);
+    if (this.selected === '') {
+      this.solidAuthenticationService
+        .goToLoginPage()
+        .catch((reason) => window.alert(reason.message));
+    } else {
+      this.solidAuthenticationService
+        .goToLoginPage(this.selected)
+        .catch((reason) => window.alert(reason.message));
+    }
   }
 }
