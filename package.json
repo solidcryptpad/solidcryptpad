@@ -32,6 +32,8 @@
     "@angular/router": "~13.3.0",
     "@inrupt/solid-client": "1.21.0",
     "@inrupt/solid-client-authn-browser": "1.11.7",
+    "@types/crypto-js": "^4.1.1",
+    "crypto-js": "^4.1.1",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"
