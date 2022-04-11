@@ -23,12 +23,6 @@ describe('SolidAuthenticationService', () => {
     expect(service['isInitialized']).toBeTrue();
   });
 
-  it('initializeLoginStatus does not chance initializedCallbacks', async () => {
-    expect(service['initializedCallbacks']).toEqual([]);
-    await service.initializeLoginStatus();
-    expect(service['initializedCallbacks']).toEqual([]);
-  });
-
   it('initializeLoginStatus call onLoginStatusKnown', async () => {
     const onLoginStatusKnownSpy = spyOn<any>(service, 'onLoginStatusKnown');
     await service.initializeLoginStatus();
@@ -39,12 +33,6 @@ describe('SolidAuthenticationService', () => {
     expect(service['isInitialized']).toBeFalse();
     service['onLoginStatusKnown']();
     expect(service['isInitialized']).toBeTrue();
-  });
-
-  it('onLoginStatusKnown does not chance initializedCallbacks', async () => {
-    expect(service['initializedCallbacks']).toEqual([]);
-    service['onLoginStatusKnown']();
-    expect(service['initializedCallbacks']).toEqual([]);
   });
 
   it('isLoggedIn call waitUntilInitialized', async () => {
@@ -60,11 +48,10 @@ describe('SolidAuthenticationService', () => {
     expect(isStoredLoggedInSpy).toHaveBeenCalled();
   });
 
-  it('waitUntilInitialized should return undefined if isInitialized is true', async () => {
-    expect(service['isInitialized']).toBeFalse();
+  it('waitUntilInitialized resolves when onLoginStatusKnown is called', async () => {
+    const promise = service['waitUntilInitialized']();
+    await expectAsync(promise).toBePending();
     service['onLoginStatusKnown']();
-    expect(service['isInitialized']).toBeTrue();
-
-    expect(await service['waitUntilInitialized']()).toBeUndefined();
+    await expectAsync(promise).toBeResolved();
   });
 });
