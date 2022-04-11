@@ -8,7 +8,7 @@ import { SolidAuthenticationService } from '../../services/solid-authentication.
 })
 export class WelcomeComponent {
   constructor(private solidAuthenticationService: SolidAuthenticationService) {
-    this.oidc = solidAuthenticationService.defaultOidc;
+    this.oidc = solidAuthenticationService.oidc;
     this.selected = '';
   }
 

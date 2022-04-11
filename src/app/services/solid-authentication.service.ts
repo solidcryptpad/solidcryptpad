@@ -12,7 +12,7 @@ import { Router } from '@angular/router';
   providedIn: 'root',
 })
 export class SolidAuthenticationService {
-  private oidc: string[][] = [
+  private oidc_list: string[][] = [
     ['https://solidweb.org/', 'solidweb'],
     ['https://solidcommunity.net/', 'solidcommunity'],
     ['https://inrupt.net/', 'inrupt'],
@@ -25,8 +25,8 @@ export class SolidAuthenticationService {
     onSessionRestore((url) => this.onSessionRestore(url));
   }
 
-  public get defaultOidc() {
-    return this.oidc;
+  public get oidc() {
+    return this.oidc_list;
   }
 
   /**
