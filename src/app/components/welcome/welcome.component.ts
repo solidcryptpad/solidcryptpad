@@ -7,9 +7,23 @@ import { SolidAuthenticationService } from '../../services/solid-authentication.
   styleUrls: ['./welcome.component.scss'],
 })
 export class WelcomeComponent {
-  constructor(private solidAuthenticationService: SolidAuthenticationService) {}
+  constructor(private solidAuthenticationService: SolidAuthenticationService) {
+    this.oidc = solidAuthenticationService.oidc;
+    this.selected = '';
+  }
+
+  public oidc: string[][];
+  public selected: string;
 
   login() {
-    this.solidAuthenticationService.goToLoginPage();
+    if (this.selected === '') {
+      this.solidAuthenticationService
+        .goToLoginPage()
+        .catch((reason) => window.alert(reason.message));
+    } else {
+      this.solidAuthenticationService
+        .goToLoginPage(this.selected)
+        .catch((reason) => window.alert(reason.message));
+    }
   }
 }

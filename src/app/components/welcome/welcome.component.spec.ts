@@ -9,9 +9,14 @@ describe('WelcomeComponent', () => {
   let authenticationServiceSpy: jasmine.SpyObj<SolidAuthenticationService>;
 
   beforeEach(async () => {
-    const authenticationSpy = jasmine.createSpyObj('SolidAuthenticationSpy', [
-      'goToLoginPage',
-    ]);
+    const authenticationSpy = jasmine.createSpyObj(
+      'SolidAuthenticationSpy',
+      ['goToLoginPage'],
+      {
+        oidc: [['https://solidweb.org/', 'solidweb']],
+      }
+    );
+
     await TestBed.configureTestingModule({
       providers: [
         WelcomeComponent,
