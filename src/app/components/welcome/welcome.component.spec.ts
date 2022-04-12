@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatToolbar } from '@angular/material/toolbar';
-import { SolidAuthenticationService } from 'src/app/services/solid-authentication.service';
+import { SolidAuthenticationService } from 'src/app/services/authentication/solid-authentication.service';
 
 import { WelcomeComponent } from './welcome.component';
 
