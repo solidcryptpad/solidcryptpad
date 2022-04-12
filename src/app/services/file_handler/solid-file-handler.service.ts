@@ -12,7 +12,7 @@ export class SolidFileHandlerService {
     });
   }
 
-  async writeFile(file: Blob, fileURL: string): Promise<Blob> {
+  async writeFile(file: File, fileURL: string): Promise<Blob> {
     return await overwriteFile(fileURL, file, {
       contentType: file.type,
       fetch: fetch,
