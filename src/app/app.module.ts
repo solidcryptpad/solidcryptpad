@@ -12,7 +12,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { HomeComponent } from './components/home/home.component';
 import { SolidAuthenticationService } from './services/solid-authentication.service';
 import { FormsModule } from '@angular/forms';
-import { UploadComponent } from './components/upload/upload.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +19,6 @@ import { UploadComponent } from './components/upload/upload.component';
     WelcomeComponent,
     PageNotFoundComponent,
     HomeComponent,
-    UploadComponent,
   ],
   imports: [
     BrowserModule,
