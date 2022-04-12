@@ -12,6 +12,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { HomeComponent } from './components/home/home.component';
 import { SolidAuthenticationService } from './services/solid-authentication.service';
 import { FormsModule } from '@angular/forms';
+import { FileEditorComponent } from './components/file-editor/file-editor.component';
 
 @NgModule({
   declarations: [
@@ -19,6 +20,7 @@ import { FormsModule } from '@angular/forms';
     WelcomeComponent,
     PageNotFoundComponent,
     HomeComponent,
+    FileEditorComponent,
   ],
   imports: [
     BrowserModule,
