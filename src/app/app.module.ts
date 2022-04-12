@@ -10,7 +10,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { HomeComponent } from './components/home/home.component';
-import { SolidAuthenticationService } from './services/solid-authentication.service';
+import { SolidAuthenticationService } from './services/authentication/solid-authentication.service';
 import { FormsModule } from '@angular/forms';
 
 @NgModule({
