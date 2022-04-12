@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
-import { overwriteFile, getSourceUrl } from "@inrupt/solid-client";
+import { getFile } from '@inrupt/solid-client';
+import { fetch } from '@inrupt/solid-client-authn-browser';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SolidFileHandlerService {
-
-  constructor() { }
-
-  
-} 
+  async readFile(fileURL: string): Promise<Blob> {
+    return await getFile(fileURL, {
+      fetch: fetch,
+    });
+  }
+}
