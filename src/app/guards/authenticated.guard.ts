@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { CanActivate } from '@angular/router';
-import { SolidAuthenticationService } from '../services/solid-authentication.service';
+import { SolidAuthenticationService } from '../services/authentication/solid-authentication.service';
 
 @Injectable({
   providedIn: 'root',
