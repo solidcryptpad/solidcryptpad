@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
+import { MatToolbar } from '@angular/material/toolbar';
 import { SolidAuthenticationService } from 'src/app/services/solid-authentication.service';
 
 import { WelcomeComponent } from './welcome.component';
@@ -18,8 +20,9 @@ describe('WelcomeComponent', () => {
     );
 
     await TestBed.configureTestingModule({
+      imports: [FormsModule],
+      declarations: [WelcomeComponent, MatToolbar],
       providers: [
-        WelcomeComponent,
         {
           provide: SolidAuthenticationService,
           useValue: authenticationSpy,
@@ -48,6 +51,7 @@ describe('WelcomeComponent', () => {
   });
 
   it('should initiate login when clicking login button', () => {
+    authenticationServiceSpy.goToLoginPage.and.resolveTo();
     const welcomeElement: HTMLElement = fixture.nativeElement;
     const button = welcomeElement.querySelector('button');
     button?.click();
