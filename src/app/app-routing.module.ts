@@ -4,6 +4,7 @@ import { PageNotFoundComponent } from './components/page-not-found/page-not-foun
 import { WelcomeComponent } from './components/welcome/welcome.component';
 import { HomeComponent } from './components/home/home.component';
 import { AuthenticatedGuard } from './guards/authenticated.guard';
+import { UploadComponent } from './components/upload/upload.component';
 
 const routes: Routes = [
   { path: 'welcome', component: WelcomeComponent },
@@ -12,7 +13,11 @@ const routes: Routes = [
     component: HomeComponent,
     canActivate: [AuthenticatedGuard],
   },
-
+  {
+    path: 'upload',
+    component: UploadComponent,
+    canActivate: [AuthenticatedGuard],
+  },
   { path: '**', component: PageNotFoundComponent },
 ];
 
