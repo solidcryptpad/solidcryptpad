@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatToolbar } from '@angular/material/toolbar';
+import { NotificationService } from 'src/app/services/notification.service';
 import { SolidAuthenticationService } from 'src/app/services/solid-authentication.service';
 
 import { WelcomeComponent } from './welcome.component';
@@ -9,6 +10,7 @@ describe('WelcomeComponent', () => {
   let component: WelcomeComponent;
   let fixture: ComponentFixture<WelcomeComponent>;
   let authenticationServiceSpy: jasmine.SpyObj<SolidAuthenticationService>;
+  let notificationServiceSpy: jasmine.SpyObj<NotificationService>;
 
   beforeEach(async () => {
     const authenticationSpy = jasmine.createSpyObj(
@@ -18,6 +20,7 @@ describe('WelcomeComponent', () => {
         oidc: [['https://solidweb.org/', 'solidweb']],
       }
     );
+    const notificationSpy = jasmine.createSpyObj('NotificationSpy', ['error']);
 
     await TestBed.configureTestingModule({
       imports: [FormsModule],
@@ -27,11 +30,18 @@ describe('WelcomeComponent', () => {
           provide: SolidAuthenticationService,
           useValue: authenticationSpy,
         },
+        {
+          provide: NotificationService,
+          useValue: notificationSpy,
+        },
       ],
     }).compileComponents();
     authenticationServiceSpy = TestBed.inject(
       SolidAuthenticationService
     ) as jasmine.SpyObj<SolidAuthenticationService>;
+    notificationServiceSpy = TestBed.inject(
+      NotificationService
+    ) as jasmine.SpyObj<NotificationService>;
   });
 
   beforeEach(() => {
@@ -56,5 +66,11 @@ describe('WelcomeComponent', () => {
     const button = welcomeElement.querySelector('button');
     button?.click();
     expect(authenticationServiceSpy.goToLoginPage).toHaveBeenCalled();
+  });
+
+  it('should display error on URL without protocol', () => {
+    component.selected = 'invalid.com';
+    component.login();
+    expect(notificationServiceSpy.error).toHaveBeenCalled();
   });
 });
