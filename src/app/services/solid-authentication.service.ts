@@ -1,11 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  fetch,
-  getDefaultSession,
-  handleIncomingRedirect,
-  login,
-  onSessionRestore,
-} from '@inrupt/solid-client-authn-browser';
+import * as authnBrowser from '@inrupt/solid-client-authn-browser';
 import { Router } from '@angular/router';
 
 @Injectable({
@@ -23,9 +17,12 @@ export class SolidAuthenticationService {
     ['https://solidcommunity.net/', 'solidcommunity'],
     ['https://inrupt.net/', 'inrupt'],
   ];
+  // store as member to allow mocking in tests
+  private authnBrowser: typeof authnBrowser;
 
   constructor(private router: Router) {
-    onSessionRestore((url) => this.onSessionRestore(url));
+    this.authnBrowser = authnBrowser;
+    this.authnBrowser.onSessionRestore((url) => this.onSessionRestore(url));
   }
 
   public get oidc() {
@@ -39,7 +36,7 @@ export class SolidAuthenticationService {
    *  - if previously logged in: initiates redirect to restore previous session
    */
   async initializeLoginStatus() {
-    await handleIncomingRedirect({
+    await this.authnBrowser.handleIncomingRedirect({
       restorePreviousSession: true,
     });
   }
@@ -50,11 +47,11 @@ export class SolidAuthenticationService {
   }
 
   async isLoggedIn(): Promise<boolean> {
-    return getDefaultSession().info.isLoggedIn;
+    return this.authnBrowser.getDefaultSession().info.isLoggedIn;
   }
 
   async goToLoginPage(oidc = 'https://solidweb.org/') {
-    await login({
+    await this.authnBrowser.login({
       oidcIssuer: oidc,
       redirectUrl: window.location.href,
       clientName: 'SolidCryptPad',
@@ -64,9 +61,9 @@ export class SolidAuthenticationService {
   async authenticatedFetch(
     url: string,
     init?: RequestInit
-  ): ReturnType<typeof fetch> {
+  ): ReturnType<typeof authnBrowser.fetch> {
     if (await this.isLoggedIn()) {
-      return fetch(url, init);
+      return this.authnBrowser.fetch(url, init);
     }
     throw new Error('Not authenticated yet!');
   }

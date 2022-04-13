@@ -1,57 +1,80 @@
 import { TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
+import * as authnBrowser from '@inrupt/solid-client-authn-browser';
 
 import { SolidAuthenticationService } from './solid-authentication.service';
 
 describe('SolidAuthenticationService', () => {
   let service: SolidAuthenticationService;
+  let authnBrowserSpy: jasmine.SpyObj<typeof authnBrowser>;
+
+  const mockLoginStatus = (isLoggedIn: boolean) =>
+    authnBrowserSpy.getDefaultSession.and.returnValue({
+      info: {
+        isLoggedIn,
+      },
+    } as authnBrowser.Session);
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [RouterTestingModule.withRoutes([])],
     });
     service = TestBed.inject(SolidAuthenticationService);
+    authnBrowserSpy = jasmine.createSpyObj('authnBrowserSpy', [
+      'handleIncomingRedirect',
+      'login',
+      'getDefaultSession',
+      'fetch',
+    ]);
+    service['authnBrowser'] = authnBrowserSpy;
   });
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
 
-  it('initializeLoginStatus change isInitialized to true ', async () => {
-    expect(service['isInitialized']).toBeFalse();
-    await service.initializeLoginStatus();
-    expect(service['isInitialized']).toBeTrue();
+  it('initializeLoginStatus calls handleIncomingRedirect and restores previous session', () => {
+    authnBrowserSpy.handleIncomingRedirect.and.resolveTo();
+    service.initializeLoginStatus();
+
+    expect(authnBrowserSpy.handleIncomingRedirect).toHaveBeenCalledWith({
+      restorePreviousSession: true,
+    });
   });
 
-  it('initializeLoginStatus call onLoginStatusKnown', async () => {
-    const onLoginStatusKnownSpy = spyOn<any>(service, 'onLoginStatusKnown');
-    await service.initializeLoginStatus();
-    expect(onLoginStatusKnownSpy).toHaveBeenCalled();
+  it('isLoggedIn returns true if authnBrowser returns true', () => {
+    mockLoginStatus(true);
+    return expectAsync(service.isLoggedIn()).toBeResolvedTo(true);
   });
 
-  it('onLoginStatusKnown change isInitialized to true ', async () => {
-    expect(service['isInitialized']).toBeFalse();
-    service['onLoginStatusKnown']();
-    expect(service['isInitialized']).toBeTrue();
+  it('isLoggedIn returns false if authnBrowser returns false', () => {
+    mockLoginStatus(false);
+    return expectAsync(service.isLoggedIn()).toBeResolvedTo(false);
   });
 
-  it('isLoggedIn call waitUntilInitialized', async () => {
-    const waitUntilInitializedSpy = spyOn<any>(service, 'waitUntilInitialized');
-    await service.isLoggedIn();
-    expect(waitUntilInitializedSpy).toHaveBeenCalled();
+  it('goToLoginPage passes provided oidc issuer to authnBrowser', () => {
+    service.goToLoginPage('https://example.test');
+    expect(authnBrowserSpy.login).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        oidcIssuer: 'https://example.test',
+      })
+    );
   });
 
-  it('isLoggedIn call isStoredLoggedIn', async () => {
-    spyOn<any>(service, 'waitUntilInitialized');
-    const isStoredLoggedInSpy = spyOn<any>(service, 'isStoredLoggedIn');
-    await service.isLoggedIn();
-    expect(isStoredLoggedInSpy).toHaveBeenCalled();
+  it('authenticatedFetch throws if not logged in', () => {
+    mockLoginStatus(false);
+    return expectAsync(
+      service.authenticatedFetch('https://example.org')
+    ).toBeRejectedWithError();
   });
 
-  it('waitUntilInitialized resolves when onLoginStatusKnown is called', async () => {
-    const promise = service['waitUntilInitialized']();
-    await expectAsync(promise).toBePending();
-    service['onLoginStatusKnown']();
-    await expectAsync(promise).toBeResolved();
+  it('authenticatedFetch forwards to authnBrowser fetch if logged in', async () => {
+    mockLoginStatus(true);
+    await service.authenticatedFetch('https://example.test', {
+      method: 'POST',
+    });
+    expect(authnBrowserSpy.fetch).toHaveBeenCalledWith('https://example.test', {
+      method: 'POST',
+    });
   });
 });
