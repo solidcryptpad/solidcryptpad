@@ -1,22 +1,32 @@
 import { Injectable } from '@angular/core';
-import {
-  fetch,
-  getDefaultSession,
-  handleIncomingRedirect,
-  login,
-  onSessionRestore,
-} from '@inrupt/solid-client-authn-browser';
+import * as authnBrowser from '@inrupt/solid-client-authn-browser';
 import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
 })
+/**
+ * Service to handle authentication with Solid pods
+ *
+ * requires to call and wait for initializeLoginStatus
+ * before other methods can be used
+ */
 export class SolidAuthenticationService {
-  private initializedCallbacks: (() => void)[] = [];
-  private isInitialized = false;
+  private oidc_list: string[][] = [
+    ['https://solidweb.org/', 'solidweb'],
+    ['https://solidcommunity.net/', 'solidcommunity'],
+    ['https://inrupt.net/', 'inrupt'],
+  ];
+  // store as member to allow mocking in tests
+  private authnBrowser: typeof authnBrowser;
 
   constructor(private router: Router) {
-    onSessionRestore((url) => this.onSessionRestore(url));
+    this.authnBrowser = authnBrowser;
+    this.authnBrowser.onSessionRestore((url) => this.onSessionRestore(url));
+  }
+
+  public get oidc() {
+    return this.oidc_list;
   }
 
   /**
@@ -25,10 +35,10 @@ export class SolidAuthenticationService {
    *  - handles redirect after restorePreviousSession
    *  - if previously logged in: initiates redirect to restore previous session
    */
-  initializeLoginStatus() {
-    handleIncomingRedirect({
+  async initializeLoginStatus() {
+    await this.authnBrowser.handleIncomingRedirect({
       restorePreviousSession: true,
-    }).then(() => this.onLoginStatusKnown());
+    });
   }
 
   private onSessionRestore(previousUrl: string) {
@@ -36,31 +46,13 @@ export class SolidAuthenticationService {
     this.router.navigateByUrl(url.pathname + url.search + url.hash);
   }
 
-  private waitUntilInitialized(): Promise<undefined> {
-    if (this.isInitialized) return Promise.resolve(undefined);
-    return new Promise((resolve) =>
-      this.initializedCallbacks.push(() => resolve(undefined))
-    );
-  }
-
-  private onLoginStatusKnown() {
-    this.isInitialized = true;
-    this.initializedCallbacks.forEach((cb) => cb());
-    this.initializedCallbacks = [];
-  }
-
   async isLoggedIn(): Promise<boolean> {
-    await this.waitUntilInitialized();
-    return this.isStoredLoggedIn();
+    return this.authnBrowser.getDefaultSession().info.isLoggedIn;
   }
 
-  private isStoredLoggedIn(): boolean {
-    return getDefaultSession().info.isLoggedIn;
-  }
-
-  async goToLoginPage() {
-    await login({
-      oidcIssuer: 'https://solidweb.org/',
+  async goToLoginPage(oidc = 'https://solidweb.org/') {
+    await this.authnBrowser.login({
+      oidcIssuer: oidc,
       redirectUrl: window.location.href,
       clientName: 'SolidCryptPad',
     });
@@ -69,9 +61,9 @@ export class SolidAuthenticationService {
   async authenticatedFetch(
     url: string,
     init?: RequestInit
-  ): ReturnType<typeof fetch> {
+  ): ReturnType<typeof authnBrowser.fetch> {
     if (await this.isLoggedIn()) {
-      return fetch(url, init);
+      return this.authnBrowser.fetch(url, init);
     }
     throw new Error('Not authenticated yet!');
   }
