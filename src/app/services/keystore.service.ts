@@ -4,7 +4,17 @@ import * as cryptoJS from 'crypto-js';
   providedIn: 'root',
 })
 export class KeystoreService {
-  storeKey(fileID: string, key: string) {
+  getKey(fileID: string): string {
+    const keystore = this.loadKeystore();
+    const keyEntry = keystore.find((entry) => entry['ID'] == fileID);
+    if (keyEntry) {
+      return keyEntry['KEY'];
+    } else {
+      return 'Key not found';
+    }
+  }
+
+  loadKeystore(): KeyEntry[] {
     let keystore = [];
     if (localStorage.getItem('keystore')) {
       const keystoreString = localStorage.getItem('keystore');
@@ -12,6 +22,13 @@ export class KeystoreService {
         keystore = JSON.parse(keystoreString);
       }
     }
+
+    return keystore;
+  }
+
+  storeKey(fileID: string, key: string) {
+    const keystore = this.loadKeystore();
+
     keystore.push({ ID: fileID, KEY: key });
     localStorage.setItem('keystore', JSON.stringify(keystore));
     console.log(localStorage.getItem('keystore'));
@@ -24,4 +41,8 @@ export class KeystoreService {
 
     return key256Bits.toString();
   }
+}
+interface KeyEntry {
+  ID: string;
+  KEY: string;
 }
