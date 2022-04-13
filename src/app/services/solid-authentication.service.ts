@@ -11,15 +11,18 @@ import { Router } from '@angular/router';
 @Injectable({
   providedIn: 'root',
 })
+/**
+ * Service to handle authentication with Solid pods
+ *
+ * requires to call and wait for initializeLoginStatus
+ * before other methods can be used
+ */
 export class SolidAuthenticationService {
   private oidc_list: string[][] = [
     ['https://solidweb.org/', 'solidweb'],
     ['https://solidcommunity.net/', 'solidcommunity'],
     ['https://inrupt.net/', 'inrupt'],
   ];
-
-  private initializedCallbacks: (() => void)[] = [];
-  private isInitialized = false;
 
   constructor(private router: Router) {
     onSessionRestore((url) => this.onSessionRestore(url));
@@ -35,10 +38,10 @@ export class SolidAuthenticationService {
    *  - handles redirect after restorePreviousSession
    *  - if previously logged in: initiates redirect to restore previous session
    */
-  initializeLoginStatus() {
-    handleIncomingRedirect({
+  async initializeLoginStatus() {
+    await handleIncomingRedirect({
       restorePreviousSession: true,
-    }).then(() => this.onLoginStatusKnown());
+    });
   }
 
   private onSessionRestore(previousUrl: string) {
@@ -46,25 +49,7 @@ export class SolidAuthenticationService {
     this.router.navigateByUrl(url.pathname + url.search + url.hash);
   }
 
-  private waitUntilInitialized(): Promise<undefined> {
-    if (this.isInitialized) return Promise.resolve(undefined);
-    return new Promise((resolve) =>
-      this.initializedCallbacks.push(() => resolve(undefined))
-    );
-  }
-
-  private onLoginStatusKnown() {
-    this.isInitialized = true;
-    this.initializedCallbacks.forEach((cb) => cb());
-    this.initializedCallbacks = [];
-  }
-
   async isLoggedIn(): Promise<boolean> {
-    await this.waitUntilInitialized();
-    return this.isStoredLoggedIn();
-  }
-
-  private isStoredLoggedIn(): boolean {
     return getDefaultSession().info.isLoggedIn;
   }
 
