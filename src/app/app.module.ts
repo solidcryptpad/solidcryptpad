@@ -13,6 +13,8 @@ import { HomeComponent } from './components/home/home.component';
 import { SolidAuthenticationService } from './services/solid-authentication.service';
 import { FormsModule } from '@angular/forms';
 import { ToastrModule } from 'ngx-toastr';
+import { TextEditorComponent } from './components/text-editor/text-editor.component';
+import { NgxEditorModule } from 'ngx-editor';
 
 @NgModule({
   declarations: [
@@ -20,6 +22,7 @@ import { ToastrModule } from 'ngx-toastr';
     WelcomeComponent,
     PageNotFoundComponent,
     HomeComponent,
+    TextEditorComponent,
   ],
   imports: [
     BrowserModule,
@@ -29,6 +32,7 @@ import { ToastrModule } from 'ngx-toastr';
     MatExpansionModule,
     MatButtonModule,
     FormsModule,
+    NgxEditorModule,
     ToastrModule.forRoot({ closeButton: true }),
   ],
   providers: [
