@@ -32,6 +32,7 @@
     "@angular/router": "~13.3.0",
     "@inrupt/solid-client": "1.21.0",
     "@inrupt/solid-client-authn-browser": "1.11.7",
+    "ngx-toastr": "^14.2.3",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"

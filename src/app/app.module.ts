@@ -11,6 +11,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { HomeComponent } from './components/home/home.component';
 import { SolidAuthenticationService } from './services/solid-authentication.service';
+import { FormsModule } from '@angular/forms';
+import { ToastrModule } from 'ngx-toastr';
 
 @NgModule({
   declarations: [
@@ -26,6 +28,8 @@ import { SolidAuthenticationService } from './services/solid-authentication.serv
     MatToolbarModule,
     MatExpansionModule,
     MatButtonModule,
+    FormsModule,
+    ToastrModule.forRoot({ closeButton: true }),
   ],
   providers: [
     SolidAuthenticationService,
