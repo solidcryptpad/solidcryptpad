@@ -10,9 +10,9 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { HomeComponent } from './components/home/home.component';
-import { SolidAuthenticationService } from './services/solid-authentication.service';
-import { KeystoreComponent } from './components/keystore/keystore.component';
+import { SolidAuthenticationService } from './services/authentication/solid-authentication.service';
 import { FormsModule } from '@angular/forms';
+import { FileEditorComponent } from './components/file-editor/file-editor.component';
 import { ToastrModule } from 'ngx-toastr';
 
 @NgModule({
@@ -21,6 +21,7 @@ import { ToastrModule } from 'ngx-toastr';
     WelcomeComponent,
     PageNotFoundComponent,
     HomeComponent,
+    FileEditorComponent,
     KeystoreComponent,
   ],
   imports: [

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { SolidAuthenticationService } from '../services/solid-authentication.service';
+import { SolidAuthenticationService } from '../services/authentication/solid-authentication.service';
 
 import { AuthenticatedGuard } from './authenticated.guard';
 

@@ -1,0 +1,15 @@
+<p>File URL:</p>
+<input type="text" id="fileLink" name="fileLink" #link />
+<button type="button" (click)="sendRequest(link.value)">show content</button>
+<p>File Content: {{ fileContent }}</p>
+
+<p>New File Content</p>
+<input
+  type="text"
+  id="fileContent"
+  name="fileContent"
+  [(ngModel)]="newFileContent"
+/>
+<p>New File URL:</p>
+<input type="text" id="sendfileLink" name="sendfileLink" #newLink />
+<button type="button" (click)="sendFile(newLink.value)">send content</button>
