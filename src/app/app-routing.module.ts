@@ -4,9 +4,11 @@ import { PageNotFoundComponent } from './components/page-not-found/page-not-foun
 import { WelcomeComponent } from './components/welcome/welcome.component';
 import { HomeComponent } from './components/home/home.component';
 import { AuthenticatedGuard } from './guards/authenticated.guard';
+import { KeystoreComponent } from './components/keystore/keystore.component';
 
 const routes: Routes = [
   { path: 'welcome', component: WelcomeComponent },
+  { path: 'keystore', component: KeystoreComponent },
   {
     path: '',
     component: HomeComponent,

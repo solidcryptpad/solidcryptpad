@@ -11,6 +11,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { HomeComponent } from './components/home/home.component';
 import { SolidAuthenticationService } from './services/solid-authentication.service';
+import { KeystoreComponent } from './components/keystore/keystore.component';
 import { FormsModule } from '@angular/forms';
 import { ToastrModule } from 'ngx-toastr';
 
@@ -20,6 +21,7 @@ import { ToastrModule } from 'ngx-toastr';
     WelcomeComponent,
     PageNotFoundComponent,
     HomeComponent,
+    KeystoreComponent,
   ],
   imports: [
     BrowserModule,
