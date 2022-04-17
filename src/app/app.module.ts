@@ -13,6 +13,8 @@ import { HomeComponent } from './components/home/home.component';
 import { SolidAuthenticationService } from './services/authentication/solid-authentication.service';
 import { FormsModule } from '@angular/forms';
 import { FileEditorComponent } from './components/file-editor/file-editor.component';
+import { KeystoreComponent } from './components/keystore/keystore.component';
+import { ToastrModule } from 'ngx-toastr';
 
 @NgModule({
   declarations: [
@@ -21,6 +23,7 @@ import { FileEditorComponent } from './components/file-editor/file-editor.compon
     PageNotFoundComponent,
     HomeComponent,
     FileEditorComponent,
+    KeystoreComponent,
   ],
   imports: [
     BrowserModule,
@@ -30,6 +33,7 @@ import { FileEditorComponent } from './components/file-editor/file-editor.compon
     MatExpansionModule,
     MatButtonModule,
     FormsModule,
+    ToastrModule.forRoot({ closeButton: true }),
   ],
   providers: [
     SolidAuthenticationService,
