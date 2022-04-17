@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
-import { getFile, overwriteFile } from '@inrupt/solid-client';
+import { FetchError, getFile, overwriteFile } from '@inrupt/solid-client';
 import { fetch } from '@inrupt/solid-client-authn-browser';
+import { InvalidUrlException } from 'src/app/exceptions/invalid-url-exception';
+import { PermissionException } from 'src/app/exceptions/permission-exception';
+import { UnknownException } from 'src/app/exceptions/unknown-exception';
 
 @Injectable({
   providedIn: 'root',
@@ -11,11 +14,26 @@ export class SolidFileHandlerService {
    *
    * @param fileURL the url to read from
    * @returns a promise for the file as a blob
+   * @throws InvalidUrlException if the given url is not considered valid
+   * @throws PermissionException if the given url cannot be written to
+   * @throws UnknownException on all errors that are not explicitly caught
    */
   async readFile(fileURL: string): Promise<Blob> {
-    return await getFile(fileURL, {
-      fetch: fetch,
-    });
+    try {
+      return await getFile(fileURL, {
+        fetch: fetch,
+      });
+    } catch (error: any) {
+      if (error instanceof TypeError) {
+        throw new InvalidUrlException('the given url is not valid');
+      }
+      if (error instanceof FetchError) {
+        throw new PermissionException(
+          'you do not have the permission to read this file'
+        );
+      }
+      throw new UnknownException(`an unknown error appeared ${error.name}`);
+    }
   }
 
   /**
@@ -25,11 +43,26 @@ export class SolidFileHandlerService {
    *
    * @param fileURL the url to write to
    * @returns a promise for the saved file
+   * @throws InvalidUrlException if the given url is not considered valid
+   * @throws PermissionException if the given url cannot be written to
+   * @throws UnknownException on all errors that are not explicitly caught
    */
   async writeFile(file: Blob, fileURL: string): Promise<Blob> {
-    return await overwriteFile(fileURL, file, {
-      contentType: file.type,
-      fetch: fetch,
-    });
+    try {
+      return await overwriteFile(fileURL, file, {
+        contentType: file.type,
+        fetch: fetch,
+      });
+    } catch (error: any) {
+      if (error instanceof TypeError) {
+        throw new InvalidUrlException('the given url is not valid');
+      }
+      if (error instanceof FetchError) {
+        throw new PermissionException(
+          'you do not have the permission to write to this file'
+        );
+      }
+      throw new UnknownException(`an unknown error appeared ${error.name}`);
+    }
   }
 }
