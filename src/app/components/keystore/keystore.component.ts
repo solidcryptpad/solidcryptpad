@@ -10,6 +10,7 @@ export class KeystoreComponent implements OnInit {
   constructor(private keystoreService: KeystoreService) {}
 
   ngOnInit(): void {
+    this.keystoreService.setMasterPassword('testPassword182617042022');
     const fileID = 'test' + Math.floor(Math.random() * 100);
     this.keystoreService.storeKey(
       fileID,

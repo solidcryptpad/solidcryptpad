@@ -1,9 +1,19 @@
 import { Injectable } from '@angular/core';
 import * as cryptoJS from 'crypto-js';
+import { SolidFileHandlerService } from './file_handler/solid-file-handler.service';
+
 @Injectable({
   providedIn: 'root',
 })
 export class KeystoreService {
+  constructor(private solidFileHandlerService: SolidFileHandlerService) {}
+
+  masterPassword = '';
+
+  setMasterPassword(pwd: string) {
+    this.masterPassword = pwd;
+  }
+
   getKey(fileID: string): string {
     const keystore = this.loadKeystore();
     const keyEntry = keystore.find((entry) => entry['ID'] == fileID);
@@ -22,7 +32,6 @@ export class KeystoreService {
         keystore = JSON.parse(keystoreString);
       }
     }
-
     return keystore;
   }
 
@@ -32,6 +41,24 @@ export class KeystoreService {
     keystore.push({ ID: fileID, KEY: key });
     localStorage.setItem('keystore', JSON.stringify(keystore));
     console.log(localStorage.getItem('keystore'));
+    this.writeKeystoreToPod();
+  }
+
+  writeKeystoreToPod() {
+    const encryptedKeystore = this.encryptKeystore();
+    console.log(encryptedKeystore);
+    const keyStoreBlob = new Blob([encryptedKeystore], { type: 'text/plain' });
+    this.solidFileHandlerService
+      .writeFile(keyStoreBlob, 'https://rade.solidweb.org/private/Keystore')
+      .then(); //TODO
+  }
+
+  encryptKeystore(): string {
+    const keystore = this.loadKeystore();
+    return cryptoJS.AES.encrypt(
+      JSON.stringify(keystore),
+      this.masterPassword
+    ).toString();
   }
 
   generateNewKey(): string {

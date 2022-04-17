@@ -14,6 +14,7 @@ import { SolidAuthenticationService } from './services/authentication/solid-auth
 import { FormsModule } from '@angular/forms';
 import { FileEditorComponent } from './components/file-editor/file-editor.component';
 import { ToastrModule } from 'ngx-toastr';
+import { KeystoreComponent } from './components/keystore/keystore.component';
 
 @NgModule({
   declarations: [
