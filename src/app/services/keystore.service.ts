@@ -15,7 +15,7 @@ export class KeystoreService {
   }
 
   getKey(fileID: string): string {
-    const keystore = this.loadKeystore();
+    const keystore = this.getLocalKeystore();
     const keyEntry = keystore.find((entry) => entry['ID'] == fileID);
     if (keyEntry) {
       return keyEntry['KEY'];
@@ -24,7 +24,7 @@ export class KeystoreService {
     }
   }
 
-  loadKeystore(): KeyEntry[] {
+  getLocalKeystore(): KeyEntry[] {
     let keystore = [];
     if (localStorage.getItem('keystore')) {
       const keystoreString = localStorage.getItem('keystore');
@@ -35,17 +35,30 @@ export class KeystoreService {
     return keystore;
   }
 
-  storeKey(fileID: string, key: string) {
-    const keystore = this.loadKeystore();
+  async loadKeystore(): Promise<KeyEntry[]> {
+    let keystore: KeyEntry[];
+    keystore = [];
 
-    keystore.push({ ID: fileID, KEY: key });
-    localStorage.setItem('keystore', JSON.stringify(keystore));
-    console.log(localStorage.getItem('keystore'));
-    this.writeKeystoreToPod();
+    const encryptedKeystore = await (
+      await this.solidFileHandlerService.readFile(
+        'https://rade.solidweb.org/private/Keystore'
+      )
+    ).text();
+    keystore = JSON.parse(this.decryptKeystore(encryptedKeystore));
+    return keystore;
+  }
+
+  storeKey(fileID: string, key: string) {
+    this.loadKeystore().then((keystore) => {
+      keystore.push({ ID: fileID, KEY: key });
+      localStorage.setItem('keystore', JSON.stringify(keystore));
+      console.log(localStorage.getItem('keystore'));
+      this.writeKeystoreToPod();
+    });
   }
 
   writeKeystoreToPod() {
-    const encryptedKeystore = this.encryptKeystore();
+    const encryptedKeystore = this.encryptKeystore(this.getLocalKeystore());
     console.log(encryptedKeystore);
     const keyStoreBlob = new Blob([encryptedKeystore], { type: 'text/plain' });
     this.solidFileHandlerService
@@ -53,12 +66,18 @@ export class KeystoreService {
       .then(); //TODO
   }
 
-  encryptKeystore(): string {
-    const keystore = this.loadKeystore();
+  encryptKeystore(keystore: KeyEntry[]): string {
     return cryptoJS.AES.encrypt(
       JSON.stringify(keystore),
       this.masterPassword
     ).toString();
+  }
+
+  decryptKeystore(encryptedKeystore: string): string {
+    return cryptoJS.AES.decrypt(
+      encryptedKeystore,
+      this.masterPassword
+    ).toString(cryptoJS.enc.Utf8);
   }
 
   generateNewKey(): string {
