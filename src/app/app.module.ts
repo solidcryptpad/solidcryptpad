@@ -15,6 +15,7 @@ import { FormsModule } from '@angular/forms';
 import { FileEditorComponent } from './components/file-editor/file-editor.component';
 import { KeystoreComponent } from './components/keystore/keystore.component';
 import { ToastrModule } from 'ngx-toastr';
+import { NavbarComponent } from './navbar/navbar.component';
 
 @NgModule({
   declarations: [
@@ -24,6 +25,7 @@ import { ToastrModule } from 'ngx-toastr';
     HomeComponent,
     FileEditorComponent,
     KeystoreComponent,
+    NavbarComponent,
   ],
   imports: [
     BrowserModule,
