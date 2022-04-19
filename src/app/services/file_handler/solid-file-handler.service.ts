@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import { FetchError, getFile, overwriteFile } from '@inrupt/solid-client';
 import { fetch } from '@inrupt/solid-client-authn-browser';
+import { AlreadyExistsException } from 'src/app/exceptions/already-exists-exception';
 import { InvalidUrlException } from 'src/app/exceptions/invalid-url-exception';
+import { NotFoundException } from 'src/app/exceptions/not-found-exception';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
 
@@ -34,10 +36,13 @@ export class SolidFileHandlerService {
             throw new PermissionException(
               'you do not have the permission to read to this file'
             );
+          case 404:
+            throw new NotFoundException('file was not found');
           default:
             break;
         }
       }
+      console.log(error);
       throw new UnknownException(`an unknown error appeared ${error.name}`);
     }
   }
@@ -70,6 +75,11 @@ export class SolidFileHandlerService {
             throw new PermissionException(
               'you do not have the permission to write to this file'
             );
+          case 405:
+            throw new AlreadyExistsException(
+              'A file or folder of that name already exists'
+            );
+
           default:
             break;
         }
