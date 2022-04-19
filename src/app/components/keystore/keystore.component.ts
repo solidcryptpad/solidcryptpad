@@ -12,13 +12,12 @@ export class KeystoreComponent implements OnInit {
   ngOnInit(): void {
     this.keystoreService.setMasterPassword('testPassword182617042022');
     const fileID = 'test' + Math.floor(Math.random() * 100);
-    this.keystoreService.storeKey(
-      fileID,
-      this.keystoreService.generateNewKey()
-    );
-
-    console.log(
-      `The Key of ${fileID} is: ${this.keystoreService.getKey(fileID)}`
-    );
+    this.keystoreService
+      .storeKey(fileID, this.keystoreService.generateNewKey())
+      .then(() => {
+        this.keystoreService
+          .getKey(fileID)
+          .then((key) => console.log(`The Key of ${fileID} is: ${key}`));
+      });
   }
 }

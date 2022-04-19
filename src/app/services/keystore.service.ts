@@ -14,14 +14,31 @@ export class KeystoreService {
     this.masterPassword = pwd;
   }
 
-  getKey(fileID: string): string {
-    const keystore = this.getLocalKeystore();
+  async getKey(fileID: string): Promise<string> {
+    const localKey = this.getKeyFromLocalKeystore(fileID);
+    if (localKey) {
+      return localKey;
+    } else {
+      console.log('b');
+
+      const keystore = await this.loadKeystore();
+      console.log(keystore);
+      return this.findKeyInKeystore(fileID, keystore);
+    }
+  }
+
+  private findKeyInKeystore(fileID: string, keystore: KeyEntry[]): string {
     const keyEntry = keystore.find((entry) => entry['ID'] == fileID);
     if (keyEntry) {
       return keyEntry['KEY'];
     } else {
-      return 'Key not found';
+      return '';
     }
+  }
+
+  getKeyFromLocalKeystore(fileID: string): string {
+    const keystore = this.getLocalKeystore();
+    return this.findKeyInKeystore(fileID, keystore);
   }
 
   getLocalKeystore(): KeyEntry[] {
@@ -44,40 +61,42 @@ export class KeystoreService {
         'https://rade.solidweb.org/private/Keystore'
       )
     ).text();
-    keystore = JSON.parse(this.decryptKeystore(encryptedKeystore));
+    keystore = this.decryptKeystore(encryptedKeystore);
+    localStorage.setItem('keystore', JSON.stringify(keystore));
     return keystore;
   }
 
-  storeKey(fileID: string, key: string) {
-    this.loadKeystore().then((keystore) => {
-      keystore.push({ ID: fileID, KEY: key });
-      localStorage.setItem('keystore', JSON.stringify(keystore));
-      console.log(localStorage.getItem('keystore'));
-      this.writeKeystoreToPod();
-    });
+  async storeKey(fileID: string, key: string) {
+    const keystore = await this.loadKeystore();
+    keystore.push({ ID: fileID, KEY: key });
+    localStorage.setItem('keystore', JSON.stringify(keystore));
+    console.log(localStorage.getItem('keystore'));
+    await this.writeKeystoreToPod();
   }
 
-  writeKeystoreToPod() {
+  private async writeKeystoreToPod() {
     const encryptedKeystore = this.encryptKeystore(this.getLocalKeystore());
-    console.log(encryptedKeystore);
+    //console.log(encryptedKeystore);
     const keyStoreBlob = new Blob([encryptedKeystore], { type: 'text/plain' });
-    this.solidFileHandlerService
-      .writeFile(keyStoreBlob, 'https://rade.solidweb.org/private/Keystore')
-      .then(); //TODO
+    await this.solidFileHandlerService.writeFile(
+      keyStoreBlob,
+      'https://rade.solidweb.org/private/Keystore'
+    ); //TODO
   }
 
-  encryptKeystore(keystore: KeyEntry[]): string {
+  private encryptKeystore(keystore: KeyEntry[]): string {
     return cryptoJS.AES.encrypt(
       JSON.stringify(keystore),
       this.masterPassword
     ).toString();
   }
 
-  decryptKeystore(encryptedKeystore: string): string {
-    return cryptoJS.AES.decrypt(
-      encryptedKeystore,
-      this.masterPassword
-    ).toString(cryptoJS.enc.Utf8);
+  private decryptKeystore(encryptedKeystore: string): KeyEntry[] {
+    return JSON.parse(
+      cryptoJS.AES.decrypt(encryptedKeystore, this.masterPassword).toString(
+        cryptoJS.enc.Utf8
+      )
+    );
   }
 
   generateNewKey(): string {
