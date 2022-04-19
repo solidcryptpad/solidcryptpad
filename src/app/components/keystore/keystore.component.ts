@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { KeystoreService } from 'src/app/services/keystore.service';
+import { KeystoreService } from 'src/app/services/keystore/keystore.service';
 
 @Component({
   selector: 'app-keystore',
