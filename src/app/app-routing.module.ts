@@ -8,11 +8,11 @@ import { FileEditorComponent } from './components/file-editor/file-editor.compon
 import { KeystoreComponent } from './components/keystore/keystore.component';
 
 const routes: Routes = [
-  { path: '', component: WelcomeComponent },
+  { path: 'welcome', component: WelcomeComponent },
   { path: 'keystore', component: KeystoreComponent },
   { path: 'fileEditor', component: FileEditorComponent },
   {
-    path: 'home',
+    path: '',
     component: HomeComponent,
     canActivate: [AuthenticatedGuard],
   },

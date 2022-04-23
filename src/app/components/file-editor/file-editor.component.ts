@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { SolidFileHandlerService } from '../../services/file_handler/solid-file-handler.service';
-import { NotificationService } from 'src/app/services/notification/notification.service';
 
 @Component({
   selector: 'app-file-editor',
@@ -13,32 +12,16 @@ export class FileEditorComponent {
   link = '';
   newlink = '';
 
-  constructor(
-    private solidFileHandler: SolidFileHandlerService,
-    private notificationService: NotificationService
-  ) {}
+  constructor(private solidFileHandler: SolidFileHandlerService) {}
 
   async sendRequest(link: string): Promise<void> {
-    try {
-      const x = await this.solidFileHandler.readFile(link);
-      this.fileContent = await x.text();
-    } catch (error: any) {
-      this.notificationService.error({
-        title: error.title,
-        message: error.message,
-      });
-    }
+    const x = await this.solidFileHandler.readFile(link);
+    this.fileContent = await x.text();
+    //x.then((y) => y.text().then((z) => this.showContent=(z)));
   }
 
   async sendFile(link: string): Promise<void> {
-    try {
-      const blob = new Blob([this.newFileContent], { type: 'text/plain' });
-      await this.solidFileHandler.writeFile(blob, link);
-    } catch (error: any) {
-      this.notificationService.error({
-        title: error.title,
-        message: error.message,
-      });
-    }
+    const blob = new Blob([this.newFileContent], { type: 'text/plain' });
+    await this.solidFileHandler.writeFile(blob, link);
   }
 }
