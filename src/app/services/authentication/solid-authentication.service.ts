@@ -67,4 +67,17 @@ export class SolidAuthenticationService {
     }
     throw new Error('Not authenticated yet!');
   }
+
+  /**
+   * Extracts webId from session information.
+   *
+   * Throws error if called before completing login.
+   */
+  async getWebId(): Promise<string> {
+    if (await this.isLoggedIn()) {
+      const webId = this.authnBrowser.getDefaultSession().info.webId;
+      return webId === undefined ? '' : webId;
+    }
+    throw new Error('Not authenticated yet!');
+  }
 }
