@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as cryptoJS from 'crypto-js';
-import { SolidFileHandlerService } from './file_handler/solid-file-handler.service';
+import { SolidFileHandlerService } from '../file_handler/solid-file-handler.service';
 
 @Injectable({
   providedIn: 'root',

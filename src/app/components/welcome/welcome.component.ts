@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NotificationService } from 'src/app/services/notification.service';
+import { NotificationService } from 'src/app/services/notification/notification.service';
 import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
 
 @Component({

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatToolbar } from '@angular/material/toolbar';
 import { SolidAuthenticationService } from 'src/app/services/authentication/solid-authentication.service';
-import { NotificationService } from 'src/app/services/notification.service';
+import { NotificationService } from 'src/app/services/notification/notification.service';
 
 import { WelcomeComponent } from './welcome.component';
 
