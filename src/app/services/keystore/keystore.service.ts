@@ -1,12 +1,16 @@
 import { Injectable } from '@angular/core';
 import * as cryptoJS from 'crypto-js';
 import { SolidFileHandlerService } from '../file_handler/solid-file-handler.service';
+import { ProfileService } from '../profile/profile.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class KeystoreService {
-  constructor(private solidFileHandlerService: SolidFileHandlerService) {}
+  constructor(
+    private solidFileHandlerService: SolidFileHandlerService,
+    private profileService: ProfileService
+  ) {}
 
   masterPassword = '';
 
@@ -55,10 +59,10 @@ export class KeystoreService {
   async loadKeystore(): Promise<KeyEntry[]> {
     let keystore: KeyEntry[];
     keystore = [];
-
+    const userName = await this.profileService.getUserName();
     const encryptedKeystore = await (
       await this.solidFileHandlerService.readFile(
-        'https://rade.solidweb.org/private/Keystore'
+        `https://${userName}.solidweb.org/private/Keystore`
       )
     ).text();
     keystore = this.decryptKeystore(encryptedKeystore);
@@ -75,13 +79,14 @@ export class KeystoreService {
   }
 
   private async writeKeystoreToPod() {
+    const userName = await this.profileService.getUserName();
     const encryptedKeystore = this.encryptKeystore(this.getLocalKeystore());
     //console.log(encryptedKeystore);
     const keyStoreBlob = new Blob([encryptedKeystore], { type: 'text/plain' });
     await this.solidFileHandlerService.writeFile(
       keyStoreBlob,
-      'https://rade.solidweb.org/private/Keystore'
-    ); //TODO
+      `https://${userName}.solidweb.org/private/Keystore`
+    );
   }
 
   private encryptKeystore(keystore: KeyEntry[]): string {
