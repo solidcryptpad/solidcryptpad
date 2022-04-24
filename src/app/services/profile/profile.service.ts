@@ -23,16 +23,9 @@ export class ProfileService {
   }
 
   /**
-   * Wraps the authService call and performs an extra undefined
-   * check to make the compiler happy.
+   * Retrieves the webId of the logged in user
    */
   async getWebId() {
-    const webId = await this.authService.getWebId();
-
-    if (webId === undefined) {
-      throw new Error('Error getting webID.');
-    }
-
-    return webId;
+    return this.authService.getWebId();
   }
 }
