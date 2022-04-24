@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as authnBrowser from '@inrupt/solid-client-authn-browser';
 import { Router } from '@angular/router';
+import { RequiresLoginException } from '../../exceptions/requires-login-exception';
 
 @Injectable({
   providedIn: 'root',
@@ -65,19 +66,19 @@ export class SolidAuthenticationService {
     if (await this.isLoggedIn()) {
       return this.authnBrowser.fetch(url, init);
     }
-    throw new Error('Not authenticated yet!');
+    throw new RequiresLoginException('Not authenticated yet!');
   }
 
   /**
    * Extracts webId from session information.
    *
-   * Throws error if called before completing login.
+   * @throws RequiresLoginException if called before completing login.
    */
   async getWebId(): Promise<string> {
     if (await this.isLoggedIn()) {
       const webId = this.authnBrowser.getDefaultSession().info.webId;
       return webId === undefined ? '' : webId;
     }
-    throw new Error('Not authenticated yet!');
+    throw new RequiresLoginException('Not authenticated yet!');
   }
 }
