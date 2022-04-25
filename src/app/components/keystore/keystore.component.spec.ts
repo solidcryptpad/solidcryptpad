@@ -1,10 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KeystoreComponent } from './keystore.component';
+import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
 
 describe('KeystoreComponent', () => {
   let component: KeystoreComponent;
   let fixture: ComponentFixture<KeystoreComponent>;
+  let authenticationServiceSpy: jasmine.SpyObj<SolidAuthenticationService>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -13,9 +15,23 @@ describe('KeystoreComponent', () => {
   });
 
   beforeEach(() => {
+    const authenticationSpy = jasmine.createSpyObj('SolidAuthenticationSpy', [
+      'ngOnInit',
+    ]);
+    TestBed.configureTestingModule({
+      providers: [
+        KeystoreComponent,
+        { provide: SolidAuthenticationService, useValue: authenticationSpy },
+      ],
+    });
     fixture = TestBed.createComponent(KeystoreComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+
+    authenticationServiceSpy = TestBed.inject(
+      SolidAuthenticationService
+    ) as jasmine.SpyObj<SolidAuthenticationService>;
+    console.log(authenticationServiceSpy);
   });
 
   it('should create', () => {

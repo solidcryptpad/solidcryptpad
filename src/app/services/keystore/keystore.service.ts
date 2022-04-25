@@ -23,10 +23,8 @@ export class KeystoreService {
     if (localKey) {
       return localKey;
     } else {
-      console.log('b');
-
       const keystore = await this.loadKeystore();
-      console.log(keystore);
+      //console.log(keystore);
       return this.findKeyInKeystore(fileID, keystore);
     }
   }
