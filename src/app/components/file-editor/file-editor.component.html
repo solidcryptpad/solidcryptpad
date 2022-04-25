@@ -13,3 +13,9 @@
 <p>New File URL:</p>
 <input type="text" id="sendfileLink" name="sendfileLink" #newLink />
 <button type="button" (click)="sendFile(newLink.value)">send content</button>
+<p>upload file</p>
+<input type="text" id="uploadfileLink" name="uploadfileLink" #uploadLink />
+<input type="file" (change)="selectFile($event)" />
+<button type="button" (click)="uploadFiles(file, uploadLink.value)">
+  send
+</button>

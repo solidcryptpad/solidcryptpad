@@ -5,7 +5,7 @@ export class InvalidUrlException extends Error {
     super();
 
     this.name = 'InvalidUrlException';
-    this.title = 'url not valid';
+    this.title = 'Url not valid';
     this.message = message;
   }
 }
