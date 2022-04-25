@@ -20,13 +20,17 @@ import { SolidFileHandlerService } from '../../services/file_handler/solid-file-
 })
 export class TextEditorComponent implements OnInit, OnDestroy {
   editor!: Editor;
-  html: '' = '';
+  html = '';
   readyForSave = false;
 
   constructor(
     private profileService: ProfileService,
     private fileService: SolidFileHandlerService
   ) {}
+
+  onChange(html: object) {
+    console.log(html);
+  }
 
   ngOnInit(): void {
     const ydoc = new Y.Doc();
@@ -52,16 +56,6 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       ],
     });
 
-    /*    ydoc.on('update', update => {
-      const data = ydoc.getXmlFragment('prosemirror').toJSON();
-      this.profileService.getPodUrls().then(podUrls => {
-        const url = podUrls[0] + "private/test/" + "doc0.txt";
-        console.log("saving file to " + url);
-        const blob = new Blob([data], { type: 'text/plain' });
-        this.fileService.writeFile(blob, url);
-      })
-    })*/
-
     this.profileService.getPodUrls().then((podUrls) => {
       const url = podUrls[0] + 'private/solidcryptpad/' + 'doc0.txt';
       console.log('using URL:  ' + url);
@@ -71,8 +65,9 @@ export class TextEditorComponent implements OnInit, OnDestroy {
           return;
         }
         console.log('saving file');
-        console.log(type.length);
-        const data = type.toJSON();
+        console.log(this.html);
+        //const data = type.toJSON(); TODO save/load via Yjs data structes
+        const data = this.html;
         const blob = new Blob([data], { type: 'text/plain' });
         this.fileService.writeFile(blob, url);
       });
@@ -87,6 +82,8 @@ export class TextEditorComponent implements OnInit, OnDestroy {
 
             //const yxmlEle = new Y.XmlElement(text);
             // type.insert(0, [yxmlText]);
+            //this.editor.commands.insertHTML(text).exec();
+            this.html = text;
             this.readyForSave = true;
           });
         },
