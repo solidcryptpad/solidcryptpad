@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import { FetchError, getFile, overwriteFile } from '@inrupt/solid-client';
 import { fetch } from '@inrupt/solid-client-authn-browser';
+import { AlreadyExistsException } from 'src/app/exceptions/already-exists-exception';
 import { InvalidUrlException } from 'src/app/exceptions/invalid-url-exception';
+import { NotFoundException } from 'src/app/exceptions/not-found-exception';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
 
@@ -28,10 +30,19 @@ export class SolidFileHandlerService {
         throw new InvalidUrlException('the given url is not valid');
       }
       if (error instanceof FetchError) {
-        throw new PermissionException(
-          'you do not have the permission to read this file'
-        );
+        switch (error.statusCode) {
+          case 401:
+          case 403:
+            throw new PermissionException(
+              'you do not have the permission to read to this file'
+            );
+          case 404:
+            throw new NotFoundException('file was not found');
+          default:
+            break;
+        }
       }
+      console.log(error);
       throw new UnknownException(`an unknown error appeared ${error.name}`);
     }
   }
@@ -44,7 +55,7 @@ export class SolidFileHandlerService {
    * @param fileURL the url to write to
    * @returns a promise for the saved file
    * @throws InvalidUrlException if the given url is not considered valid
-   * @throws PermissionException if the given url cannot be written to
+   * @throws PermissionException if the given url cannot be written to cause of missing permissions
    * @throws UnknownException on all errors that are not explicitly caught
    */
   async writeFile(file: Blob, fileURL: string): Promise<Blob> {
@@ -58,9 +69,20 @@ export class SolidFileHandlerService {
         throw new InvalidUrlException('the given url is not valid');
       }
       if (error instanceof FetchError) {
-        throw new PermissionException(
-          'you do not have the permission to write to this file'
-        );
+        switch (error.statusCode) {
+          case 401:
+          case 403:
+            throw new PermissionException(
+              'you do not have the permission to write to this file'
+            );
+          case 405:
+            throw new AlreadyExistsException(
+              'A file or folder of that name already exists'
+            );
+
+          default:
+            break;
+        }
       }
       throw new UnknownException(`an unknown error appeared ${error.name}`);
     }
