@@ -11,7 +11,8 @@
     "prettier": "prettier -c **.{js,ts,json,html,css,scss,md}",
     "prettier:fix": "prettier --write **.{js,ts,json,html,css,scss,md}",
     "license-checker": "license-checker --summary --onlyAllow 'Apache-2.0;BSD-2-Clause;BSD-3-Clause;0BSD;BSD*;CC0-1.0;CC-BY-3.0;CC-BY-4.0;ISC;MIT;Unlicense'",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "cypress:open": "cypress open"
   },
   "lint-staged": {
     "*.{js,ts}": "eslint --cache --fix",
@@ -49,6 +50,7 @@
     "@types/node": "^12.11.1",
     "@typescript-eslint/eslint-plugin": "^5.11.0",
     "@typescript-eslint/parser": "^5.11.0",
+    "cypress": "^9.5.4",
     "eslint": "^8.2.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-unused-imports": "^2.0.0",
