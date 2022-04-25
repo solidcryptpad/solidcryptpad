@@ -5,11 +5,15 @@ import { WelcomeComponent } from './components/welcome/welcome.component';
 import { HomeComponent } from './components/home/home.component';
 import { AuthenticatedGuard } from './guards/authenticated.guard';
 import { TextEditorComponent } from './components/text-editor/text-editor.component';
+import { FileEditorComponent } from './components/file-editor/file-editor.component';
+import { KeystoreComponent } from './components/keystore/keystore.component';
 
 const routes: Routes = [
-  { path: 'welcome', component: WelcomeComponent },
+  { path: '', component: WelcomeComponent },
+  { path: 'keystore', component: KeystoreComponent },
+  { path: 'fileEditor', component: FileEditorComponent },
   {
-    path: '',
+    path: 'home',
     component: HomeComponent,
     canActivate: [AuthenticatedGuard],
   },

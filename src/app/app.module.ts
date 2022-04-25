@@ -10,11 +10,14 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { HomeComponent } from './components/home/home.component';
-import { SolidAuthenticationService } from './services/solid-authentication.service';
+import { SolidAuthenticationService } from './services/authentication/solid-authentication.service';
 import { FormsModule } from '@angular/forms';
+import { FileEditorComponent } from './components/file-editor/file-editor.component';
+import { KeystoreComponent } from './components/keystore/keystore.component';
 import { ToastrModule } from 'ngx-toastr';
 import { TextEditorComponent } from './components/text-editor/text-editor.component';
 import { NgxEditorModule } from 'ngx-editor';
+import { NavbarComponent } from './components/navbar/navbar.component';
 
 @NgModule({
   declarations: [
@@ -23,6 +26,9 @@ import { NgxEditorModule } from 'ngx-editor';
     PageNotFoundComponent,
     HomeComponent,
     TextEditorComponent,
+    FileEditorComponent,
+    KeystoreComponent,
+    NavbarComponent,
   ],
   imports: [
     BrowserModule,
