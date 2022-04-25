@@ -10,6 +10,8 @@ import {
   redo,
 } from 'y-prosemirror';
 import { keymap } from 'prosemirror-keymap';
+import { ProfileService } from '../../services/profile/profile.service';
+import { SolidFileHandlerService } from '../../services/file_handler/solid-file-handler.service';
 
 @Component({
   selector: 'app-text-editor',
@@ -19,6 +21,12 @@ import { keymap } from 'prosemirror-keymap';
 export class TextEditorComponent implements OnInit, OnDestroy {
   editor!: Editor;
   html: '' = '';
+  readyForSave = false;
+
+  constructor(
+    private profileService: ProfileService,
+    private fileService: SolidFileHandlerService
+  ) {}
 
   ngOnInit(): void {
     const ydoc = new Y.Doc();
@@ -42,6 +50,51 @@ export class TextEditorComponent implements OnInit, OnDestroy {
           'Mod-Shift-z': redo,
         }),
       ],
+    });
+
+    /*    ydoc.on('update', update => {
+      const data = ydoc.getXmlFragment('prosemirror').toJSON();
+      this.profileService.getPodUrls().then(podUrls => {
+        const url = podUrls[0] + "private/test/" + "doc0.txt";
+        console.log("saving file to " + url);
+        const blob = new Blob([data], { type: 'text/plain' });
+        this.fileService.writeFile(blob, url);
+      })
+    })*/
+
+    this.profileService.getPodUrls().then((podUrls) => {
+      const url = podUrls[0] + 'private/solidcryptpad/' + 'doc0.txt';
+      console.log('using URL:  ' + url);
+
+      ydoc.on('update', () => {
+        if (!this.readyForSave) {
+          return;
+        }
+        console.log('saving file');
+        console.log(type.length);
+        const data = type.toJSON();
+        const blob = new Blob([data], { type: 'text/plain' });
+        this.fileService.writeFile(blob, url);
+      });
+
+      this.fileService.readFile(url).then(
+        (blob) => {
+          blob.text().then((text) => {
+            console.log('loading file: ' + text);
+            console.log(type.length);
+            //const yText = new Y.Text(text);
+            //const yxmlText = new Y.XmlText(text)
+
+            //const yxmlEle = new Y.XmlElement(text);
+            // type.insert(0, [yxmlText]);
+            this.readyForSave = true;
+          });
+        },
+        (reason) => {
+          console.log('couldnt load file: ' + reason);
+          this.readyForSave = true;
+        }
+      );
     });
   }
 
