@@ -116,7 +116,7 @@ export class SolidFileHandlerService {
    * @throws UnknownException on all errors that are not explicitly caught
    * @throws AlreadyExistsException if the file cannot be overwritten
    */
-  async writeZContainer(containerURL: string): Promise<Blob> {
+  async writeContainer(containerURL: string): Promise<Blob> {
     if (!isContainer(containerURL)) {
       containerURL = containerURL + '/';
     }
