@@ -51,7 +51,6 @@ import { GlobalErrorHandlerService } from './services/global_error_handler/globa
       deps: [SolidAuthenticationService],
       multi: true,
     },
-    GlobalErrorHandlerService,
     { provide: ErrorHandler, useClass: GlobalErrorHandlerService },
   ],
   bootstrap: [AppComponent],

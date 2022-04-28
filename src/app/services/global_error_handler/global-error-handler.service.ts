@@ -5,6 +5,11 @@ import { NotificationService } from '../notification/notification.service';
 @Injectable({
   providedIn: 'root',
 })
+/**
+ * Catches all uncaught errors
+ * if the error extends baseexception then it will be displayed based on the given rule
+ * if it does not a generic error message is printed
+ */
 export class GlobalErrorHandlerService implements ErrorHandler {
   notificationService: NotificationService | undefined = undefined;
 
@@ -16,11 +21,8 @@ export class GlobalErrorHandlerService implements ErrorHandler {
         this.injector.get<NotificationService>(NotificationService);
     }
 
-    /**
-     * currently this part seems to not work
-     * it does not recognise it as a baseexception
-     * maybe because it is thrown from a promise
-     */
+    error = error.rejection;
+
     if (error instanceof BaseException) {
       switch (error.type) {
         case DisplayType.ERROR:
@@ -28,38 +30,36 @@ export class GlobalErrorHandlerService implements ErrorHandler {
             title: error.title,
             message: error.message,
           });
-          return;
+          break;
         case DisplayType.INFO:
           this.notificationService.info({
             title: error.title,
             message: error.message,
           });
-          return;
+          break;
         case DisplayType.WARNING:
           this.notificationService.warning({
             title: error.title,
             message: error.message,
           });
-          return;
+          break;
         default:
           console.error(error.name);
           console.error(error.title);
           console.error(error.message);
           console.error(error.stack);
-          return;
+          break;
       }
     } else {
-      /**
-       * this also currently does not display the error correctly
-       */
+      // print generic message and log in console
       this.notificationService.error({
         title: 'Unknown Error',
         message: 'an unknown error occured',
       });
+
       console.error(error.name);
       console.error(error.message);
       console.error(error.stack);
-      return;
     }
   }
 }

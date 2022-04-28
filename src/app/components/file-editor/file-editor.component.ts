@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { SolidFileHandlerService } from '../../services/file_handler/solid-file-handler.service';
 import { NotificationService } from 'src/app/services/notification/notification.service';
-import { InvalidUrlException } from 'src/app/exceptions/invalid-url-exception';
 
 @Component({
   selector: 'app-file-editor',
@@ -26,7 +25,6 @@ export class FileEditorComponent {
   ) {}
 
   async sendRequest(link: string): Promise<void> {
-    throw new InvalidUrlException('test');
     const x = await this.solidFileHandler.readFile(link);
     this.fileContent = await x.text();
   }
