@@ -11,7 +11,8 @@
     "prettier": "prettier -c **.{js,ts,json,html,css,scss,md}",
     "prettier:fix": "prettier --write **.{js,ts,json,html,css,scss,md}",
     "license-checker": "license-checker --summary --onlyAllow 'Apache-2.0;BSD-2-Clause;BSD-3-Clause;0BSD;BSD*;CC0-1.0;CC-BY-3.0;CC-BY-4.0;ISC;MIT;Unlicense'",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "cypress:open": "cypress open"
   },
   "lint-staged": {
     "*.{js,ts}": "eslint --cache --fix",
@@ -32,12 +33,16 @@
     "@angular/router": "~13.3.0",
     "@inrupt/solid-client": "1.21.0",
     "@inrupt/solid-client-authn-browser": "1.11.7",
+    "ngx-editor": "^12.2.2",
     "@inrupt/vocab-common-rdf": "1.0.3",
     "@types/crypto-js": "^4.1.1",
     "crypto-js": "^4.1.1",
     "ngx-toastr": "^14.2.4",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",
+    "y-prosemirror": "^1.0.18",
+    "y-webrtc": "^10.2.2",
+    "yjs": "^13.5.34",
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
@@ -51,8 +56,13 @@
     "@angular/compiler-cli": "~13.3.0",
     "@types/jasmine": "~3.10.0",
     "@types/node": "^12.11.1",
+    "@types/prosemirror-schema-basic": "^1.0.2",
+    "@types/prosemirror-schema-list": "^1.0.3",
+    "@types/prosemirror-state": "^1.2.8",
+    "@types/prosemirror-view": "^1.23.1",
     "@typescript-eslint/eslint-plugin": "^5.11.0",
     "@typescript-eslint/parser": "^5.11.0",
+    "cypress": "^9.5.4",
     "eslint": "^8.2.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-unused-imports": "^2.0.0",

@@ -15,6 +15,8 @@ import { FormsModule } from '@angular/forms';
 import { FileEditorComponent } from './components/file-editor/file-editor.component';
 import { KeystoreComponent } from './components/keystore/keystore.component';
 import { ToastrModule } from 'ngx-toastr';
+import { TextEditorComponent } from './components/text-editor/text-editor.component';
+import { NgxEditorModule } from 'ngx-editor';
 import { NavbarComponent } from './components/navbar/navbar.component';
 
 @NgModule({
@@ -23,6 +25,7 @@ import { NavbarComponent } from './components/navbar/navbar.component';
     WelcomeComponent,
     PageNotFoundComponent,
     HomeComponent,
+    TextEditorComponent,
     FileEditorComponent,
     KeystoreComponent,
     NavbarComponent,
@@ -35,6 +38,7 @@ import { NavbarComponent } from './components/navbar/navbar.component';
     MatExpansionModule,
     MatButtonModule,
     FormsModule,
+    NgxEditorModule,
     ToastrModule.forRoot({ closeButton: true }),
   ],
   providers: [
