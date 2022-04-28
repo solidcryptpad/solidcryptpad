@@ -1,7 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import {
-  BaseException,
-} from 'src/app/exceptions/base-exception';
+import { BaseException } from 'src/app/exceptions/base-exception';
 import { NotFoundException } from 'src/app/exceptions/not-found-exception';
 import { NotificationService } from '../notification/notification.service';
 
@@ -53,6 +51,20 @@ describe('GlobalErrorHandlerService', () => {
     expect(notificationSpy.error).toHaveBeenCalledOnceWith({
       title: 'Unknown Error',
       message: jasmine.any(String),
+    });
+  });
+
+  it('should call notificationService on rejected exception', () => {
+    // at least currently, angular wraps rejected errors as { rejection: error }
+    // see https://github.com/angular/angular/issues/27840
+    const error = new NotFoundException('message');
+    service.handleError({
+      rejection: error,
+    });
+
+    expect(notificationSpy.error).toHaveBeenCalledWith({
+      title: error.title,
+      message: error.message,
     });
   });
 });
