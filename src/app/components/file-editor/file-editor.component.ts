@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { SolidFileHandlerService } from '../../services/file_handler/solid-file-handler.service';
+import { NotificationService } from 'src/app/services/notification/notification.service';
 
 @Component({
   selector: 'app-file-editor',
@@ -18,7 +19,10 @@ export class FileEditorComponent {
   folderLink = '';
   file: FileList = { length: 0, item: () => null }; // list of uploaded files
 
-  constructor(private solidFileHandler: SolidFileHandlerService) {}
+  constructor(
+    private solidFileHandler: SolidFileHandlerService,
+    private notificationService: NotificationService
+  ) {}
 
   async sendRequest(link: string): Promise<void> {
     const x = await this.solidFileHandler.readFile(link);
