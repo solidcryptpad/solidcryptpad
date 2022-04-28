@@ -2,9 +2,9 @@ import { Injectable } from '@angular/core';
 
 import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
 import { FOAF } from '@inrupt/vocab-common-rdf';
-import { AttributeNotFoundException } from '../../exceptions/attribute-not-found-exception';
+
 import { SolidClientService } from '../module-wrappers/solid-client/solid-client.service';
-import { Thing } from '@inrupt/solid-client';
+import { AttributeNotFoundException } from '../../exceptions/attribute-not-found-exception';
 
 @Injectable({
   providedIn: 'root',
@@ -24,8 +24,12 @@ export class ProfileService {
       await this.getWebId()
     );
 
+    if (profile === null) {
+      throw new Error('Could not retrieve profile');
+    }
+
     const userName = this.solidClientService.getStringNoLocale(
-      <Thing>profile,
+      profile,
       FOAF.name
     );
 
