@@ -1,4 +1,4 @@
-import { ErrorHandler, Injectable, Injector } from '@angular/core';
+import { ErrorHandler, Inject, Injectable, Injector } from '@angular/core';
 import { DisplayType, BaseException } from 'src/app/exceptions/base-exception';
 import { NotificationService } from '../notification/notification.service';
 
@@ -10,15 +10,16 @@ import { NotificationService } from '../notification/notification.service';
  * if the error extends baseexception then it will be displayed based on the given rule
  * if it does not a generic error message is printed
  */
-export class GlobalErrorHandlerService implements ErrorHandler {
+export class GlobalErrorHandlerService extends ErrorHandler {
   notificationService: NotificationService | undefined = undefined;
 
-  constructor(private injector: Injector) {}
+  constructor(@Inject(Injector) private injector: Injector) {
+    super();
+  }
 
-  handleError(error: any): void {
+  override handleError(error: any): void {
     if (this.notificationService === undefined) {
-      this.notificationService =
-        this.injector.get<NotificationService>(NotificationService);
+      this.notificationService = this.injector.get(NotificationService);
     }
 
     error = error.rejection;
