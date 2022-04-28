@@ -18,6 +18,8 @@ export class GlobalErrorHandlerService extends ErrorHandler {
   }
 
   override handleError(error: any): void {
+    console.error(error);
+
     if (this.notificationService === undefined) {
       this.notificationService = this.injector.get(NotificationService);
     }
@@ -38,9 +40,5 @@ export class GlobalErrorHandlerService extends ErrorHandler {
         message: 'an unknown error occured',
       });
     }
-
-    console.error(error.name);
-    console.error(error.message);
-    console.error(error.stack);
   }
 }
