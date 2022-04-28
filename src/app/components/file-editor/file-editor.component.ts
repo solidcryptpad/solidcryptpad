@@ -16,6 +16,7 @@ export class FileEditorComponent {
   link = '';
   newlink = '';
   uploadLink = ''; // link the new file will be uploaded to
+  folderLink = '';
   file: FileList = { length: 0, item: () => null }; // list of uploaded files
 
   constructor(
@@ -67,9 +68,7 @@ export class FileEditorComponent {
    * @param link the link to the solid pod
    */
   async uploadFile(file: File, link: string): Promise<void> {
-    console.log(
-      await (await this.solidFileHandler.writeFile(file, link)).text()
-    );
+    await (await this.solidFileHandler.writeFile(file, link, file.name)).text();
     this.notificationService.success({
       title: 'upload',
       message: 'success',
@@ -107,5 +106,24 @@ export class FileEditorComponent {
         message: error.message,
       });
     }
+  }
+
+  /**
+   * creates a folder at the given location
+   * @param link the link to create the folder on
+   */
+  async createFolder(link: string): Promise<void> {
+    try {
+      await this.solidFileHandler.writeContainer(link);
+    } catch (error: any) {
+      this.notificationService.error({
+        title: error.title,
+        message: error.message,
+      });
+    }
+    this.notificationService.success({
+      title: 'created',
+      message: 'success',
+    });
   }
 }
