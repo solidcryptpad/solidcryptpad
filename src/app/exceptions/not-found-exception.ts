@@ -1,11 +1,7 @@
-export class NotFoundException extends Error {
-  public title: string;
+import { BaseException, DisplayType } from './base-exception';
 
+export class NotFoundException extends BaseException {
   constructor(message: string) {
-    super();
-
-    this.name = 'NotFoundException';
-    this.title = 'File not found';
-    this.message = message;
+    super('NotFoundException', message, 'File not found', DisplayType.ERROR);
   }
 }

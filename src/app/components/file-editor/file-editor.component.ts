@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { SolidFileHandlerService } from '../../services/file_handler/solid-file-handler.service';
 import { NotificationService } from 'src/app/services/notification/notification.service';
+import { InvalidUrlException } from 'src/app/exceptions/invalid-url-exception';
 
 @Component({
   selector: 'app-file-editor',
@@ -25,27 +26,14 @@ export class FileEditorComponent {
   ) {}
 
   async sendRequest(link: string): Promise<void> {
-    try {
-      const x = await this.solidFileHandler.readFile(link);
-      this.fileContent = await x.text();
-    } catch (error: any) {
-      this.notificationService.error({
-        title: error.title,
-        message: error.message,
-      });
-    }
+    throw new InvalidUrlException('test');
+    const x = await this.solidFileHandler.readFile(link);
+    this.fileContent = await x.text();
   }
 
   async sendFile(link: string): Promise<void> {
-    try {
-      const blob = new Blob([this.newFileContent], { type: 'text/plain' });
-      await this.solidFileHandler.writeFile(blob, link);
-    } catch (error: any) {
-      this.notificationService.error({
-        title: error.title,
-        message: error.message,
-      });
-    }
+    const blob = new Blob([this.newFileContent], { type: 'text/plain' });
+    await this.solidFileHandler.writeFile(blob, link);
   }
 
   selectFile(event: any) {
@@ -81,30 +69,23 @@ export class FileEditorComponent {
    * @param link the link to upload them
    */
   async uploadFiles(files: FileList, link: string): Promise<void> {
-    try {
-      if (files.length == 0) {
-        this.notificationService.info({
-          title: 'no file selected',
-          message: 'please select one or more files',
-        });
-      } else if (files.length == 1) {
-        await this.uploadFile(files[0], link);
-      } else {
-        // this is currently untested because my browser-setup seems to not allow to upload more then one file
-        // will change anyway as soon as the overwriteFile bug workaround is in
-        for (let i = 0; i < files.length; i++) {
-          let flink;
-          if (link.endsWith('/')) flink = link + `${files[0].name}`;
-          else flink = link + `/${files[0].name}`;
-
-          await this.uploadFile(files[i], flink);
-        }
-      }
-    } catch (error: any) {
-      this.notificationService.error({
-        title: error.title,
-        message: error.message,
+    if (files.length == 0) {
+      this.notificationService.info({
+        title: 'no file selected',
+        message: 'please select one or more files',
       });
+    } else if (files.length == 1) {
+      await this.uploadFile(files[0], link);
+    } else {
+      // this is currently untested because my browser-setup seems to not allow to upload more then one file
+      // will change anyway as soon as the overwriteFile bug workaround is in
+      for (let i = 0; i < files.length; i++) {
+        let flink;
+        if (link.endsWith('/')) flink = link + `${files[0].name}`;
+        else flink = link + `/${files[0].name}`;
+
+        await this.uploadFile(files[i], flink);
+      }
     }
   }
 
@@ -113,14 +94,8 @@ export class FileEditorComponent {
    * @param link the link to create the folder on
    */
   async createFolder(link: string): Promise<void> {
-    try {
-      await this.solidFileHandler.writeContainer(link);
-    } catch (error: any) {
-      this.notificationService.error({
-        title: error.title,
-        message: error.message,
-      });
-    }
+    await this.solidFileHandler.writeContainer(link);
+
     this.notificationService.success({
       title: 'created',
       message: 'success',

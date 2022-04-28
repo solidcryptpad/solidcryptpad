@@ -1,11 +1,7 @@
-export class InvalidUrlException extends Error {
-  public title: string;
+import { BaseException, DisplayType } from './base-exception';
 
+export class InvalidUrlException extends BaseException {
   constructor(message: string) {
-    super();
-
-    this.name = 'InvalidUrlException';
-    this.title = 'Url not valid';
-    this.message = message;
+    super('InvalidUrlException', message, 'Invalid Url', DisplayType.ERROR);
   }
 }
