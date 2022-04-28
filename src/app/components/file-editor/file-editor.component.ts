@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { SolidFileHandlerService } from '../../services/file_handler/solid-file-handler.service';
 import { NotificationService } from 'src/app/services/notification/notification.service';
+import { setErrorContext } from 'src/app/exceptions/base-exception';
 
 @Component({
   selector: 'app-file-editor',
@@ -54,11 +55,15 @@ export class FileEditorComponent {
    * @param link the link to the solid pod
    */
   async uploadFile(file: File, link: string): Promise<void> {
-    await (await this.solidFileHandler.writeFile(file, link, file.name)).text();
-    this.notificationService.success({
-      title: 'upload',
-      message: 'success',
-    });
+    this.solidFileHandler
+      .writeFile(file, link, file.name)
+      .then(() =>
+        this.notificationService.success({
+          title: 'upload',
+          message: 'success',
+        })
+      )
+      .catch(setErrorContext('upload File'));
   }
 
   /**
