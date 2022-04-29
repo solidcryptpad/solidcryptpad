@@ -1,5 +1,5 @@
 import { BaseException } from './base-exception';
-import { ErrorOptions } from './error_options';
+import { ErrorOptions } from './error-options';
 
 export class RequiresLoginException extends BaseException {
   constructor(message: string, options?: ErrorOptions) {

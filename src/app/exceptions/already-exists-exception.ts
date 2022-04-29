@@ -1,7 +1,8 @@
 import { BaseException } from './base-exception';
+import { ErrorOptions } from './error-options';
 
 export class AlreadyExistsException extends BaseException {
-  constructor(message: string, ...param: any[]) {
-    super('AlreadyExistsException', message, 'File already exists', ...param);
+  constructor(message: string, options?: ErrorOptions) {
+    super('AlreadyExistsException', message, 'File already exists', options);
   }
 }

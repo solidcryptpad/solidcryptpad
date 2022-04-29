@@ -1,4 +1,4 @@
-import { ErrorOptions } from './error_options';
+import { ErrorOptions } from './error-options';
 
 export class BaseException extends Error {
   override name: string;

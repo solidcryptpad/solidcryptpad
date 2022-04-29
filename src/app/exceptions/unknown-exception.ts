@@ -1,7 +1,8 @@
 import { BaseException } from './base-exception';
+import { ErrorOptions } from './error-options';
 
 export class UnknownException extends BaseException {
-  constructor(message: string, ...param: any[]) {
-    super('UnknownException', message, 'Unknown Exception', ...param);
+  constructor(message: string, options?: ErrorOptions) {
+    super('UnknownException', message, 'Unknown Exception', options);
   }
 }

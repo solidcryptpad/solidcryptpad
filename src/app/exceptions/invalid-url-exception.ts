@@ -1,7 +1,8 @@
 import { BaseException } from './base-exception';
+import { ErrorOptions } from './error-options';
 
 export class InvalidUrlException extends BaseException {
-  constructor(message: string, ...param: any[]) {
-    super('InvalidUrlException', message, 'Invalid Url', ...param);
+  constructor(message: string, options?: ErrorOptions) {
+    super('InvalidUrlException', message, 'Invalid Url', options);
   }
 }

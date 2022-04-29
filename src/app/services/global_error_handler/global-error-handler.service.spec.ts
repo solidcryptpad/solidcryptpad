@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { BaseException } from 'src/app/exceptions/base-exception';
-import { setErrorContext } from 'src/app/exceptions/error_options';
+import { setErrorContext } from 'src/app/exceptions/error-options';
 import { NotFoundException } from 'src/app/exceptions/not-found-exception';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
 import { NotificationService } from '../notification/notification.service';
