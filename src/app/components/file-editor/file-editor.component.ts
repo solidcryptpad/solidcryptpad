@@ -25,14 +25,27 @@ export class FileEditorComponent {
   ) {}
 
   async sendRequest(link: string): Promise<void> {
-    const x = await this.solidFileHandler.readFile(link);
-    this.fileContent = await x.text();
-    //x.then((y) => y.text().then((z) => this.showContent=(z)));
+    try {
+      const x = await this.solidFileHandler.readFile(link);
+      this.fileContent = await x.text();
+    } catch (error: any) {
+      this.notificationService.error({
+        title: error.title,
+        message: error.message,
+      });
+    }
   }
 
   async sendFile(link: string): Promise<void> {
-    const blob = new Blob([this.newFileContent], { type: 'text/plain' });
-    await this.solidFileHandler.writeFile(blob, link);
+    try {
+      const blob = new Blob([this.newFileContent], { type: 'text/plain' });
+      await this.solidFileHandler.writeFile(blob, link);
+    } catch (error: any) {
+      this.notificationService.error({
+        title: error.title,
+        message: error.message,
+      });
+    }
   }
 
   selectFile(event: any) {

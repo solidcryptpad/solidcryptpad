@@ -7,8 +7,8 @@ import {
 } from '@inrupt/solid-client';
 import { fetch } from '@inrupt/solid-client-authn-browser';
 import { AlreadyExistsException } from 'src/app/exceptions/already-exists-exception';
-import { InvalidUrlException } from 'src/app/exceptions/invalid-url-exception';
 import { NotFoundException } from 'src/app/exceptions/not-found-exception';
+import { InvalidUrlException } from 'src/app/exceptions/invalid-url-exception';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
 
