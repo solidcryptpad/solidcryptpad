@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { SolidFileHandlerService } from '../../services/file_handler/solid-file-handler.service';
 import { NotificationService } from 'src/app/services/notification/notification.service';
-import { setErrorContext } from 'src/app/exceptions/base-exception';
+import { setErrorContext } from 'src/app/exceptions/error_context';
 
 @Component({
   selector: 'app-file-editor',

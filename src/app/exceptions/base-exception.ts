@@ -1,3 +1,4 @@
+
 export class BaseException extends Error {
   override name: string;
   override message: string;
@@ -11,8 +12,3 @@ export class BaseException extends Error {
     this.title = title;
   }
 }
-
-export const setErrorContext = (context: string) => (error: BaseException) => {
-  error.title = context;
-  throw error;
-};
