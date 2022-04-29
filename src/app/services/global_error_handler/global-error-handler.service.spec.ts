@@ -23,6 +23,8 @@ describe('GlobalErrorHandlerService', () => {
     notificationSpy = TestBed.inject(
       NotificationService
     ) as jasmine.SpyObj<NotificationService>;
+
+    spyOn(console, 'error');
   });
 
   it('should be created', () => {
@@ -66,5 +68,17 @@ describe('GlobalErrorHandlerService', () => {
       title: error.title,
       message: error.message,
     });
+  });
+
+  it('should call console.error on unknown exception', () => {
+    service.handleError(new Error('message'));
+
+    expect(console.error).toHaveBeenCalled();
+  });
+
+  it('should call console.error on base exception', () => {
+    service.handleError(new NotFoundException('message'));
+
+    expect(console.error).toHaveBeenCalled();
   });
 });
