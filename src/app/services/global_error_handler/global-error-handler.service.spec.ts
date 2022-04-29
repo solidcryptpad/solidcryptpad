@@ -98,7 +98,7 @@ describe('GlobalErrorHandlerService', () => {
     const context = 'new context';
 
     expect(() => setErrorContext(context)(new Error('some message'))).toThrow(
-      new UnknownException('an unknown error occured', context)
+      new UnknownException(context, jasmine.any)
     );
   });
 });

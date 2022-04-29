@@ -125,25 +125,32 @@ export class SolidFileHandlerService {
       return await overwriteFile(containerURL, new Blob());
     } catch (error: any) {
       if (error instanceof TypeError) {
-        throw new InvalidUrlException('the given url is not valid');
+        throw (
+          (new InvalidUrlException('the given url is not valid'),
+          { cause: error })
+        );
       }
       if (error instanceof FetchError) {
         switch (error.statusCode) {
           case 401:
           case 403:
             throw new PermissionException(
-              'you do not have the permission to write to this file'
+              'you do not have the permission to write to this file',
+              { cause: error }
             );
           case 405:
             throw new AlreadyExistsException(
-              'A file or folder of that name already exists and cannot be overwritten'
+              'A file or folder of that name already exists and cannot be overwritten',
+              { cause: error }
             );
 
           default:
             break;
         }
       }
-      throw new UnknownException(`an unknown error appeared ${error.name}`);
+      throw new UnknownException(`an unknown error appeared ${error.name}`, {
+        cause: error,
+      });
     }
   }
 }

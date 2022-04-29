@@ -5,7 +5,7 @@ export const setErrorContext = (context: string) => (error: Error) => {
   if (error instanceof BaseException) {
     error.title = context;
   } else {
-    error = new UnknownException('an unknown error occured', context);
+    error = new UnknownException(context, { cause: error });
   }
   throw error;
 };
