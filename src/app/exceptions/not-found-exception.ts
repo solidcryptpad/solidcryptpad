@@ -1,7 +1,8 @@
 import { BaseException } from './base-exception';
+import { ErrorOptions } from './error_options';
 
 export class NotFoundException extends BaseException {
-  constructor(message: string, ...param: any[]) {
-    super('NotFoundException', message, 'File not found', ...param);
+  constructor(message: string, options?: ErrorOptions) {
+    super('NotFoundException', message, 'File not found', options);
   }
 }

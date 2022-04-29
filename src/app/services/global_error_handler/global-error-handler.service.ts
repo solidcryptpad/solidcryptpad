@@ -18,8 +18,6 @@ export class GlobalErrorHandlerService extends ErrorHandler {
   }
 
   override handleError(error: any): void {
-    console.error(error);
-
     if (this.notificationService === undefined) {
       this.notificationService = this.injector.get(NotificationService);
     }
@@ -27,6 +25,7 @@ export class GlobalErrorHandlerService extends ErrorHandler {
     if ('rejection' in error) {
       error = error.rejection;
     }
+    console.error(error);
 
     if (error instanceof BaseException) {
       this.notificationService.error({

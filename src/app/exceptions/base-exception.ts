@@ -1,10 +1,22 @@
+import { ErrorOptions } from './error_options';
+
 export class BaseException extends Error {
   override name: string;
   override message: string;
+  cause?: Error;
   title: string;
 
-  constructor(name: string, message: string, title = '', ...param: any[]) {
-    super(...param);
+  constructor(
+    name: string,
+    message: string,
+    title = '',
+    options?: ErrorOptions
+  ) {
+    super();
+
+    if (options) {
+      this.cause = options.cause;
+    }
 
     this.name = name;
     this.message = message;

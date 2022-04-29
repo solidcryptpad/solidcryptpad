@@ -1,7 +1,8 @@
 import { BaseException } from './base-exception';
+import { ErrorOptions } from './error_options';
 
 export class AttributeNotFoundException extends BaseException {
-  constructor(message: string, ...param: any[]) {
-    super('AttributeNotFoundException', message, 'No such attribute', param);
+  constructor(message: string, options?: ErrorOptions) {
+    super('AttributeNotFoundException', message, 'No such attribute', options);
   }
 }

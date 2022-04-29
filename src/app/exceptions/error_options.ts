@@ -9,3 +9,7 @@ export const setErrorContext = (context: string) => (error: Error) => {
   }
   throw error;
 };
+
+export interface ErrorOptions {
+  cause?: Error;
+}
