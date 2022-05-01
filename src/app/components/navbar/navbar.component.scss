@@ -1,0 +1,25 @@
+.spacer {
+  flex: 1 1 auto;
+}
+
+a:link {
+  text-decoration: inherit;
+  color: inherit;
+}
+
+a:visited {
+  text-decoration: inherit;
+  color: inherit;
+}
+
+ul {
+  li {
+    display: inline-block;
+    padding-right: 1em;
+  }
+
+  li.active {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+}
