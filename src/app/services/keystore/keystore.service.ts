@@ -1,16 +1,14 @@
 import { Injectable } from '@angular/core';
 import * as cryptoJS from 'crypto-js';
-import { SolidFileHandlerService } from '../file_handler/solid-file-handler.service';
 import { ProfileService } from '../profile/profile.service';
+import { overwriteFile, getFile } from '@inrupt/solid-client';
+import { fetch } from '@inrupt/solid-client-authn-browser';
 
 @Injectable({
   providedIn: 'root',
 })
 export class KeystoreService {
-  constructor(
-    private solidFileHandlerService: SolidFileHandlerService,
-    private profileService: ProfileService
-  ) {}
+  constructor(private profileService: ProfileService) {}
 
   masterPassword = '';
 
@@ -58,12 +56,18 @@ export class KeystoreService {
     let keystore: KeyEntry[];
     keystore = [];
     const userName = await this.profileService.getUserName();
-    const encryptedKeystore = await (
-      await this.solidFileHandlerService.readFile(
-        `https://${userName}.solidweb.org/private/Keystore`
-      )
-    ).text();
-    keystore = this.decryptKeystore(encryptedKeystore);
+    try {
+      const encryptedKeystore = await getFile(
+        `https://${userName}.solidweb.org/private/Keystore`,
+        {
+          fetch: fetch,
+        }
+      );
+      keystore = this.decryptKeystore(await encryptedKeystore.text());
+    } catch (error: any) {
+      console.log('No Keystore found'); // TEMP
+    }
+
     localStorage.setItem('keystore', JSON.stringify(keystore));
     return keystore;
   }
@@ -81,9 +85,14 @@ export class KeystoreService {
     const encryptedKeystore = this.encryptKeystore(this.getLocalKeystore());
     //console.log(encryptedKeystore);
     const keyStoreBlob = new Blob([encryptedKeystore], { type: 'text/plain' });
-    await this.solidFileHandlerService.writeFile(
+
+    await overwriteFile(
+      `https://${userName}.solidweb.org/private/Keystore`,
       keyStoreBlob,
-      `https://${userName}.solidweb.org/private/Keystore`
+      {
+        contentType: keyStoreBlob.type,
+        fetch: fetch,
+      }
     );
   }
 
@@ -100,6 +109,36 @@ export class KeystoreService {
         cryptoJS.enc.Utf8
       )
     );
+  }
+
+  async encryptFile(file: Blob, fileURL: string): Promise<Blob> {
+    let key = await this.getKey(fileURL);
+    if (!key) {
+      key = this.generateNewKey();
+      await this.storeKey(fileURL, key);
+    }
+    const encryptedFileContent = cryptoJS.AES.encrypt(
+      await file.text(),
+      key
+    ).toString();
+    const encryptedFile = new Blob([encryptedFileContent]);
+
+    return encryptedFile;
+  }
+
+  async decryptFile(file: Blob, fileURL: string): Promise<Blob> {
+    const key = await this.getKey(fileURL);
+    if (!key) {
+      console.log('Key not found'); // TEMP
+      return new Blob(['ERROR']); // TEMP
+    }
+    const decryptedFileContent = cryptoJS.AES.decrypt(
+      await file.text(),
+      key
+    ).toString(cryptoJS.enc.Utf8);
+    const decryptedFile = new Blob([decryptedFileContent]);
+
+    return decryptedFile;
   }
 
   generateNewKey(): string {

@@ -11,11 +11,16 @@ import { NotFoundException } from 'src/app/exceptions/not-found-exception';
 import { InvalidUrlException } from 'src/app/exceptions/invalid-url-exception';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
+import { KeystoreService } from '../keystore/keystore.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SolidFileHandlerService {
+  constructor(private keystoreService: KeystoreService) {
+    keystoreService.setMasterPassword('testPassword182617042022'); //TEMP
+  }
+
   /**
    * reads a file saved at the url
    *
@@ -31,6 +36,39 @@ export class SolidFileHandlerService {
       return await getFile(fileURL, {
         fetch: fetch,
       });
+    } catch (error: any) {
+      if (error instanceof TypeError) {
+        throw new InvalidUrlException('the given url is not valid', {
+          cause: error,
+        });
+      }
+      if (error instanceof FetchError) {
+        switch (error.statusCode) {
+          case 401:
+          case 403:
+            throw new PermissionException(
+              'you do not have the permission to read to this file',
+              { cause: error }
+            );
+          case 404:
+            throw new NotFoundException('file was not found', { cause: error });
+          default:
+            break;
+        }
+      }
+      console.log(error);
+      throw new UnknownException(`an unknown error appeared ${error.name}`, {
+        cause: error,
+      });
+    }
+  }
+
+  async readAndDecryptFile(fileURL: string): Promise<Blob> {
+    try {
+      const file = await getFile(fileURL, {
+        fetch: fetch,
+      });
+      return await this.keystoreService.decryptFile(file, fileURL);
     } catch (error: any) {
       if (error instanceof TypeError) {
         throw new InvalidUrlException('the given url is not valid', {
@@ -82,6 +120,48 @@ export class SolidFileHandlerService {
 
     try {
       return await overwriteFile(fileURL, file, {
+        contentType: file.type,
+        fetch: fetch,
+      });
+    } catch (error: any) {
+      if (error instanceof TypeError) {
+        throw new InvalidUrlException('the given url is not valid', {
+          cause: error,
+        });
+      }
+      if (error instanceof FetchError) {
+        switch (error.statusCode) {
+          case 401:
+          case 403:
+            throw new PermissionException(
+              'you do not have the permission to write to this file',
+              { cause: error }
+            );
+          case 405:
+            throw new AlreadyExistsException(
+              'A file or folder of that name already exists and cannot be overwritten',
+              { cause: error }
+            );
+
+          default:
+            break;
+        }
+      }
+      throw new UnknownException(`an unknown error appeared ${error.name}`);
+    }
+  }
+
+  async writeAndEncryptFile(
+    file: Blob,
+    fileURL: string,
+    file_name = 'unnamed'
+  ): Promise<Blob> {
+    if (isContainer(fileURL)) {
+      fileURL = fileURL + '' + file_name;
+    }
+    const encryptedFile = await this.keystoreService.encryptFile(file, fileURL);
+    try {
+      return await overwriteFile(fileURL, encryptedFile, {
         contentType: file.type,
         fetch: fetch,
       });

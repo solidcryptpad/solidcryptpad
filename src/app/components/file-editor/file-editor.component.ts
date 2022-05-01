@@ -26,13 +26,13 @@ export class FileEditorComponent {
   ) {}
 
   async sendRequest(link: string): Promise<void> {
-    const x = await this.solidFileHandler.readFile(link);
+    const x = await this.solidFileHandler.readAndDecryptFile(link);
     this.fileContent = await x.text();
   }
 
   async sendFile(link: string): Promise<void> {
     const blob = new Blob([this.newFileContent], { type: 'text/plain' });
-    await this.solidFileHandler.writeFile(blob, link);
+    await this.solidFileHandler.writeAndEncryptFile(blob, link);
   }
 
   selectFile(event: any) {
