@@ -12,6 +12,8 @@ import {
 import { keymap } from 'prosemirror-keymap';
 import { ProfileService } from '../../services/profile/profile.service';
 import { SolidFileHandlerService } from '../../services/file_handler/solid-file-handler.service';
+import { YXmlFragment } from 'yjs/dist/src/types/YXmlFragment';
+import { fromEvent, debounceTime } from 'rxjs';
 
 @Component({
   selector: 'app-text-editor',
@@ -22,30 +24,27 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   editor!: Editor;
   html = '';
   readyForSave = false;
+  xmlFragement: YXmlFragment | undefined;
+  baseUrl = '';
 
   constructor(
     private profileService: ProfileService,
     private fileService: SolidFileHandlerService
   ) {}
 
-  onChange(html: object) {
-    console.log(html);
-  }
-
   ngOnInit(): void {
     const ydoc = new Y.Doc();
     // clients connected to the same room-name share document updates
     const provider = new WebrtcProvider('your-room-name', ydoc);
-    //const yarray = ydoc.get('array', Y.Array);
 
-    const type = ydoc.getXmlFragment('prosemirror');
+    this.xmlFragement = ydoc.getXmlFragment('prosemirror');
 
     //https://github.com/yjs/y-prosemirror#utilities zum speichern
 
     this.editor = new Editor({
       history: false, // include the history plugin manually
       plugins: [
-        ySyncPlugin(type),
+        ySyncPlugin(this.xmlFragement),
         yCursorPlugin(provider.awareness),
         yUndoPlugin(),
         keymap({
@@ -57,42 +56,55 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     });
 
     this.profileService.getPodUrls().then((podUrls) => {
-      const url = podUrls[0] + 'private/solidcryptpad/' + 'doc0.txt';
-      console.log('using URL:  ' + url);
+      this.baseUrl = podUrls[0];
+      console.debug('using URL:  ' + this.getUrl());
 
-      ydoc.on('update', () => {
+      const updateYdoc = fromEvent(ydoc, 'update');
+      const result = updateYdoc.pipe(debounceTime(1000));
+      result.subscribe(() => {
         if (!this.readyForSave) {
           return;
         }
-        console.log('saving file');
-        console.log(this.html);
-        //const data = type.toJSON(); TODO save/load via Yjs data structes
-        const data = this.html;
-        const blob = new Blob([data], { type: 'text/plain' });
-        this.fileService.writeFile(blob, url);
+        this.saveFile();
       });
 
-      this.fileService.readFile(url).then(
-        (blob) => {
-          blob.text().then((text) => {
-            console.log('loading file: ' + text);
-            console.log(type.length);
-            //const yText = new Y.Text(text);
-            //const yxmlText = new Y.XmlText(text)
-
-            //const yxmlEle = new Y.XmlElement(text);
-            // type.insert(0, [yxmlText]);
-            //this.editor.commands.insertHTML(text).exec();
-            this.html = text;
-            this.readyForSave = true;
-          });
-        },
-        (reason) => {
-          console.log('couldnt load file: ' + reason);
-          this.readyForSave = true;
-        }
-      );
+      this.loadFile();
     });
+  }
+
+  /**
+   * saves the current file that is open in editor
+   */
+  saveFile(): void {
+    console.debug('saving file');
+    //const data = type.toJSON(); TODO save/load via Yjs data structes
+    const data = this.html;
+    const blob = new Blob([data], { type: 'text/plain' });
+    this.fileService.writeAndEncryptFile(blob, this.getUrl());
+  }
+
+  /**
+   * loads the current file that is open in editor
+   */
+  loadFile(): void {
+    this.fileService.readAndDecryptFile(this.getUrl()).then(
+      (blob) => {
+        blob.text().then((text) => {
+          this.html = text;
+          this.readyForSave = true;
+        });
+      },
+      (reason) => {
+        console.error('couldnt load file: ' + reason);
+      }
+    );
+  }
+
+  /**
+   * @return the url for the current opened file
+   */
+  getUrl(): string {
+    return this.baseUrl + 'private/solidcryptpad/' + 'doc0.txt';
   }
 
   ngOnDestroy(): void {
