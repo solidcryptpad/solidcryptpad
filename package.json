@@ -38,7 +38,7 @@
     "@inrupt/vocab-common-rdf": "1.0.3",
     "@types/crypto-js": "^4.1.1",
     "crypto-js": "^4.1.1",
-    "ngx-toastr": "^14.2.3",
+    "ngx-toastr": "^14.2.4",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",
     "y-prosemirror": "^1.0.18",

@@ -36,7 +36,8 @@ describe('NotificationService', () => {
     service.info(sampleNotification);
     expect(toastrSpy.info).toHaveBeenCalledWith(
       sampleNotification.message,
-      sampleNotification.title
+      sampleNotification.title,
+      jasmine.anything()
     );
   });
 
@@ -44,7 +45,8 @@ describe('NotificationService', () => {
     service.success(sampleNotification);
     expect(toastrSpy.success).toHaveBeenCalledWith(
       sampleNotification.message,
-      sampleNotification.title
+      sampleNotification.title,
+      jasmine.anything()
     );
   });
 

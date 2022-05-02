@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { SolidFileHandlerService } from '../../services/file_handler/solid-file-handler.service';
 import { NotificationService } from 'src/app/services/notification/notification.service';
+import { setErrorContext } from 'src/app/exceptions/error-options';
 
 @Component({
   selector: 'app-file-editor',
@@ -16,6 +17,7 @@ export class FileEditorComponent {
   link = '';
   newlink = '';
   uploadLink = ''; // link the new file will be uploaded to
+  folderLink = '';
   file: FileList = { length: 0, item: () => null }; // list of uploaded files
 
   constructor(
@@ -24,27 +26,13 @@ export class FileEditorComponent {
   ) {}
 
   async sendRequest(link: string): Promise<void> {
-    try {
-      const x = await this.solidFileHandler.readFile(link);
-      this.fileContent = await x.text();
-    } catch (error: any) {
-      this.notificationService.error({
-        title: error.title,
-        message: error.message,
-      });
-    }
+    const x = await this.solidFileHandler.readAndDecryptFile(link);
+    this.fileContent = await x.text();
   }
 
   async sendFile(link: string): Promise<void> {
-    try {
-      const blob = new Blob([this.newFileContent], { type: 'text/plain' });
-      await this.solidFileHandler.writeFile(blob, link);
-    } catch (error: any) {
-      this.notificationService.error({
-        title: error.title,
-        message: error.message,
-      });
-    }
+    const blob = new Blob([this.newFileContent], { type: 'text/plain' });
+    await this.solidFileHandler.writeAndEncryptFile(blob, link);
   }
 
   selectFile(event: any) {
@@ -67,13 +55,15 @@ export class FileEditorComponent {
    * @param link the link to the solid pod
    */
   async uploadFile(file: File, link: string): Promise<void> {
-    console.log(
-      await (await this.solidFileHandler.writeFile(file, link)).text()
-    );
-    this.notificationService.success({
-      title: 'upload',
-      message: 'success',
-    });
+    this.solidFileHandler
+      .writeFile(file, link, file.name)
+      .then(() =>
+        this.notificationService.success({
+          title: 'upload',
+          message: 'success',
+        })
+      )
+      .catch(setErrorContext('upload File'));
   }
 
   /**
@@ -82,30 +72,36 @@ export class FileEditorComponent {
    * @param link the link to upload them
    */
   async uploadFiles(files: FileList, link: string): Promise<void> {
-    try {
-      if (files.length == 0) {
-        this.notificationService.info({
-          title: 'no file selected',
-          message: 'please select one or more files',
-        });
-      } else if (files.length == 1) {
-        await this.uploadFile(files[0], link);
-      } else {
-        // this is currently untested because my browser-setup seems to not allow to upload more then one file
-        // will change anyway as soon as the overwriteFile bug workaround is in
-        for (let i = 0; i < files.length; i++) {
-          let flink;
-          if (link.endsWith('/')) flink = link + `${files[0].name}`;
-          else flink = link + `/${files[0].name}`;
-
-          await this.uploadFile(files[i], flink);
-        }
-      }
-    } catch (error: any) {
-      this.notificationService.error({
-        title: error.title,
-        message: error.message,
+    if (files.length == 0) {
+      this.notificationService.info({
+        title: 'no file selected',
+        message: 'please select one or more files',
       });
+    } else if (files.length == 1) {
+      await this.uploadFile(files[0], link);
+    } else {
+      // this is currently untested because my browser-setup seems to not allow to upload more then one file
+      // will change anyway as soon as the overwriteFile bug workaround is in
+      for (let i = 0; i < files.length; i++) {
+        let flink;
+        if (link.endsWith('/')) flink = link + `${files[0].name}`;
+        else flink = link + `/${files[0].name}`;
+
+        await this.uploadFile(files[i], flink);
+      }
     }
+  }
+
+  /**
+   * creates a folder at the given location
+   * @param link the link to create the folder on
+   */
+  async createFolder(link: string): Promise<void> {
+    await this.solidFileHandler.writeContainer(link);
+
+    this.notificationService.success({
+      title: 'created',
+      message: 'success',
+    });
   }
 }

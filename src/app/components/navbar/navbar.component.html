@@ -1,4 +1,10 @@
 <mat-toolbar>
+  <h1><a routerLink="">SolidCryptPad</a></h1>
+  <ul>
+    <li routerLinkActive="active"><a routerLink="home">Home</a></li>
+    <li routerLinkActive="active"><a routerLink="fileEditor">Files</a></li>
+  </ul>
+  <span class="spacer"></span>
   <button mat-flat-button (click)="login()">LOGIN</button>
 
   <input

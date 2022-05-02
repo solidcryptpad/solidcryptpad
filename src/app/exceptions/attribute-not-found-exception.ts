@@ -1,11 +1,8 @@
-export class AttributeNotFoundException extends Error {
-  public title: string;
+import { BaseException } from './base-exception';
+import { ErrorOptions } from './error-options';
 
-  constructor(message: string) {
-    super();
-
-    this.name = 'AttributeNotFoundException';
-    this.title = 'No such attribute';
-    this.message = message;
+export class AttributeNotFoundException extends BaseException {
+  constructor(message: string, options?: ErrorOptions) {
+    super('AttributeNotFoundException', message, 'No such attribute', options);
   }
 }

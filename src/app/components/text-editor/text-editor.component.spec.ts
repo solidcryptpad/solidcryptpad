@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TextEditorComponent } from './text-editor.component';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('TextEditorComponent', () => {
   let component: TextEditorComponent;
@@ -8,6 +9,7 @@ describe('TextEditorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [RouterTestingModule],
       declarations: [TextEditorComponent],
     }).compileComponents();
   });

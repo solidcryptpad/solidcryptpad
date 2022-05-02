@@ -1,11 +1,8 @@
-export class UnknownException extends Error {
-  public title: string;
+import { BaseException } from './base-exception';
+import { ErrorOptions } from './error-options';
 
-  constructor(message: string) {
-    super();
-
-    this.name = 'UnknownException';
-    this.title = 'Unknown Exception';
-    this.message = message;
+export class UnknownException extends BaseException {
+  constructor(message: string, options?: ErrorOptions) {
+    super('UnknownException', message, 'Unknown Exception', options);
   }
 }

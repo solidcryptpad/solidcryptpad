@@ -1,11 +1,8 @@
-export class RequiresLoginException extends Error {
-  public title: string;
+import { BaseException } from './base-exception';
+import { ErrorOptions } from './error-options';
 
-  constructor(message: string) {
-    super();
-
-    this.name = 'RequiresLoginException';
-    this.title = 'Login required';
-    this.message = message;
+export class RequiresLoginException extends BaseException {
+  constructor(message: string, options?: ErrorOptions) {
+    super('RequiresLoginException', message, 'Login required', options);
   }
 }

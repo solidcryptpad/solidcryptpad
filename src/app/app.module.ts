@@ -1,4 +1,4 @@
-import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { APP_INITIALIZER, ErrorHandler, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -18,6 +18,7 @@ import { ToastrModule } from 'ngx-toastr';
 import { TextEditorComponent } from './components/text-editor/text-editor.component';
 import { NgxEditorModule } from 'ngx-editor';
 import { NavbarComponent } from './components/navbar/navbar.component';
+import { GlobalErrorHandlerService } from './services/global_error_handler/global-error-handler.service';
 
 @NgModule({
   declarations: [
@@ -50,6 +51,7 @@ import { NavbarComponent } from './components/navbar/navbar.component';
       deps: [SolidAuthenticationService],
       multi: true,
     },
+    { provide: ErrorHandler, useClass: GlobalErrorHandlerService },
   ],
   bootstrap: [AppComponent],
 })

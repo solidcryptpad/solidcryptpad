@@ -2,9 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
 
 import { ProfileService } from './profile.service';
-import { SolidClientService } from '../module-wrappers/solid-client/solid-client.service';
+
 import { FOAF } from '@inrupt/vocab-common-rdf';
 import { createThing } from '@inrupt/solid-client';
+import { SolidClientService } from '../module-wrappers/solid-client/solid-client.service';
 
 describe('ProfileService', () => {
   let service: ProfileService;

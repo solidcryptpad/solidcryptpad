@@ -1,11 +1,8 @@
-export class AlreadyExistsException extends Error {
-  public title: string;
+import { BaseException } from './base-exception';
+import { ErrorOptions } from './error-options';
 
-  constructor(message: string) {
-    super();
-
-    this.name = 'AlreadyExistsException';
-    this.title = 'File already exists';
-    this.message = message;
+export class AlreadyExistsException extends BaseException {
+  constructor(message: string, options?: ErrorOptions) {
+    super('AlreadyExistsException', message, 'File already exists', options);
   }
 }

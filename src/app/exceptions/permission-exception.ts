@@ -1,11 +1,8 @@
-export class PermissionException extends Error {
-  public title: string;
+import { BaseException } from './base-exception';
+import { ErrorOptions } from './error-options';
 
-  constructor(message: string) {
-    super();
-
-    this.name = 'PermissionException';
-    this.title = 'Permission denied';
-    this.message = message;
+export class PermissionException extends BaseException {
+  constructor(message: string, options?: ErrorOptions) {
+    super('PermissionException', message, 'Permission denied', options);
   }
 }
