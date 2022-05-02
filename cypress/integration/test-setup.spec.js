@@ -9,7 +9,7 @@ describe("Test setup", function () {
     cy.get("@user").then(function (user) {
       cy.login(user);
     });
-    cy.visit("localhost:4200/home");
+    cy.contains("Home").click();
     cy.contains("hello authenticated user!");
   });
 });
