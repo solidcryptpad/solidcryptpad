@@ -13,7 +13,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { Router, Routes } from '@angular/router';
 import { MatToolbar } from '@angular/material/toolbar';
 
-fdescribe('NavbarComponent', () => {
+describe('NavbarComponent', () => {
   let component: NavbarComponent;
   let fixture: ComponentFixture<NavbarComponent>;
   let authenticationServiceSpy: jasmine.SpyObj<SolidAuthenticationService>;
