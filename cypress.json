@@ -1,1 +1,5 @@
-{}
+{
+  "chromeWebSecurity": false,
+  "baseUrl": "http://localhost:4200",
+  "cssUrl": "http://localhost:3000"
+}
