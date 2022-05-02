@@ -12,21 +12,31 @@ export class KeystoreService {
 
   masterPassword = '';
 
+  /**
+   * Sets the masterpassword .
+   */
   setMasterPassword(pwd: string) {
     this.masterPassword = pwd;
   }
 
+  /**
+   * Searches for the key that belongs to the FileID.
+   * First the local keystore is searched, and if this is not successful,
+   * then the keystore is reloaded from the Solid Pod and searched.
+   */
   async getKey(fileID: string): Promise<string> {
     const localKey = this.getKeyFromLocalKeystore(fileID);
     if (localKey) {
       return localKey;
     } else {
       const keystore = await this.loadKeystore();
-      //console.log(keystore);
       return this.findKeyInKeystore(fileID, keystore);
     }
   }
 
+  /**
+   * Searches for the key belonging to the FileID in a KeyEntry array.
+   */
   private findKeyInKeystore(fileID: string, keystore: KeyEntry[]): string {
     const keyEntry = keystore.find((entry) => entry['ID'] == fileID);
     if (keyEntry) {
@@ -36,11 +46,17 @@ export class KeystoreService {
     }
   }
 
+  /**
+   * Searches for the key that belongs to the FileID in the local keystore.
+   */
   getKeyFromLocalKeystore(fileID: string): string {
     const keystore = this.getLocalKeystore();
     return this.findKeyInKeystore(fileID, keystore);
   }
 
+  /**
+   * Returns the keystore from the local storage.
+   */
   getLocalKeystore(): KeyEntry[] {
     let keystore = [];
     if (localStorage.getItem('keystore')) {
@@ -52,6 +68,9 @@ export class KeystoreService {
     return keystore;
   }
 
+  /**
+   * Reloads the keystore from the solid pod and stores it in the local storage.
+   */
   async loadKeystore(): Promise<KeyEntry[]> {
     let keystore: KeyEntry[];
     keystore = [];
@@ -65,25 +84,29 @@ export class KeystoreService {
       );
       keystore = this.decryptKeystore(await encryptedKeystore.text());
     } catch (error: any) {
-      console.log('No Keystore found'); // TEMP
+      console.log('No Keystore found'); // TODO: Exception-Handling
     }
 
     localStorage.setItem('keystore', JSON.stringify(keystore));
     return keystore;
   }
 
+  /**
+   * Stores a new KeyEntry in the local keystore and writes it to the solid pod.
+   */
   async storeKey(fileID: string, key: string) {
     const keystore = await this.loadKeystore();
     keystore.push({ ID: fileID, KEY: key });
     localStorage.setItem('keystore', JSON.stringify(keystore));
-    console.log(localStorage.getItem('keystore'));
     await this.writeKeystoreToPod();
   }
 
+  /**
+   * Writes the current keystore from the local storage to the solid pod.
+   */
   private async writeKeystoreToPod() {
     const userName = await this.profileService.getUserName();
     const encryptedKeystore = this.encryptKeystore(this.getLocalKeystore());
-    //console.log(encryptedKeystore);
     const keyStoreBlob = new Blob([encryptedKeystore], { type: 'text/plain' });
 
     await overwriteFile(
@@ -96,6 +119,9 @@ export class KeystoreService {
     );
   }
 
+  /**
+   * Encrypts the keystore using the masterpassword.
+   */
   private encryptKeystore(keystore: KeyEntry[]): string {
     return cryptoJS.AES.encrypt(
       JSON.stringify(keystore),
@@ -103,6 +129,9 @@ export class KeystoreService {
     ).toString();
   }
 
+  /**
+   * Decrypts the keystore using the masterpassword.
+   */
   private decryptKeystore(encryptedKeystore: string): KeyEntry[] {
     return JSON.parse(
       cryptoJS.AES.decrypt(encryptedKeystore, this.masterPassword).toString(
@@ -111,6 +140,10 @@ export class KeystoreService {
     );
   }
 
+  /**
+   * Encrypts a file by using its FileURL to find the matching key from the keystore.
+   * If no matching key is found, a new one is generated.
+   */
   async encryptFile(file: Blob, fileURL: string): Promise<Blob> {
     let key = await this.getKey(fileURL);
     if (!key) {
@@ -126,11 +159,14 @@ export class KeystoreService {
     return encryptedFile;
   }
 
+  /**
+   * Decrypts a file by using its FileURL to find the matching key from the keystore.
+   */
   async decryptFile(file: Blob, fileURL: string): Promise<Blob> {
     const key = await this.getKey(fileURL);
     if (!key) {
-      console.log('Key not found'); // TEMP
-      return new Blob(['ERROR']); // TEMP
+      console.log('Key not found'); // TODO: Exception-Handling
+      return new Blob(['ERROR']); // TODO: Exception-Handling
     }
     const decryptedFileContent = cryptoJS.AES.decrypt(
       await file.text(),
@@ -141,6 +177,9 @@ export class KeystoreService {
     return decryptedFile;
   }
 
+  /**
+   * Generates a new Key.
+   */
   generateNewKey(): string {
     const salt = cryptoJS.lib.WordArray.random(128 / 8);
     const secret = cryptoJS.lib.WordArray.random(256 / 8);
