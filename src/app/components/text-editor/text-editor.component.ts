@@ -100,7 +100,6 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    */
   saveFile(): void {
     console.debug('saving file');
-    //const data = type.toJSON(); TODO save/load via Yjs data structes
     const data = this.html;
     const blob = new Blob([data], { type: 'text/plain' });
     this.fileService.writeAndEncryptFile(blob, this.getUrl());
@@ -160,9 +159,12 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    * @return the room name for the current opened file
    */
   getRoomName(): string {
-    return 'room-' + this.getUrl(); //TODO generate room name
+    return 'room-' + this.getUrl();
   }
 
+  /**
+   * @return the room pw for the current opened file
+   */
   getRoomPassword(): string {
     return 'pw-' + this.getUrl(); //TODO generate room pw
   }
