@@ -85,6 +85,8 @@ Cypress.Commands.add("authenticatedRequest", (user, ...args) => {
 });
 
 /**
+ * create a folder by creating a .test.keep file in it
+ *
  * @param {object} user the user who has permissions to create this folder
  * @param {string} url the url of the new folder
  */
