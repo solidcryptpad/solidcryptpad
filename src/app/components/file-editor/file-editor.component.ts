@@ -91,6 +91,8 @@ export class FileEditorComponent implements OnInit {
   }
 
   async getFolderContent(link: string): Promise<string[]> {
+    console.log(await this.solidFileHandler.getContainerContent(link));
+    this.content = await this.solidFileHandler.getContainerContent(link);
     return await this.solidFileHandler.getContainerContent(link);
   }
 

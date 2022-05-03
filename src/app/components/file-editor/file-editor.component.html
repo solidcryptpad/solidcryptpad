@@ -1,5 +1,11 @@
 <p>Folder URL: {{ currentUrl.value }}</p>
 <input type="text" id="currentFolderLink" #currentUrl />
-<button type="button" (click)="goToFolder(currentUrl.value)">switch</button>
+<button type="button" (click)="getFolderContent(currentUrl.value)">
+  switch
+</button>
+
+<li *ngFor="let s of content">
+  <a href="{{ s }}">{{ s.replace(currentUrl.value, "") }}</a>
+</li>
 
 <app-tree-nested-explorer></app-tree-nested-explorer>
