@@ -7,6 +7,8 @@ import { WelcomeComponent } from './components/welcome/welcome.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { NestedTreeControl } from '@angular/cdk/tree';
+import { MatTreeModule } from '@angular/material/tree';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { HomeComponent } from './components/home/home.component';
@@ -36,6 +38,8 @@ import { GlobalErrorHandlerService } from './services/global_error_handler/globa
     AppRoutingModule,
     BrowserAnimationsModule,
     MatToolbarModule,
+    NestedTreeControl,
+    MatTreeModule,
     MatExpansionModule,
     MatButtonModule,
     FormsModule,

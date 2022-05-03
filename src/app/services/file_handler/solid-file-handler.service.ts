@@ -1,9 +1,14 @@
 import { Injectable } from '@angular/core';
 import {
   FetchError,
+  getContainedResourceUrlAll,
   getFile,
+  getSolidDataset,
   isContainer,
   overwriteFile,
+  SolidDataset,
+  UrlString,
+  WithServerResourceInfo,
 } from '@inrupt/solid-client';
 import { fetch } from '@inrupt/solid-client-authn-browser';
 import { AlreadyExistsException } from 'src/app/exceptions/already-exists-exception';
@@ -241,5 +246,16 @@ export class SolidFileHandlerService {
         cause: error,
       });
     }
+  }
+
+  async getContainer(
+    containerURL: string
+  ): Promise<SolidDataset & WithServerResourceInfo> {
+    return await getSolidDataset(containerURL);
+  }
+
+  async getContainerContent(containerURL: string): Promise<UrlString[]> {
+    const container = await this.getContainer(containerURL);
+    return await getContainedResourceUrlAll(container);
   }
 }

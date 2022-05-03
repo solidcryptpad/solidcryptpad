@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SolidFileHandlerService } from '../../services/file_handler/solid-file-handler.service';
 import { NotificationService } from 'src/app/services/notification/notification.service';
 import { setErrorContext } from 'src/app/exceptions/error-options';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-file-editor',
@@ -11,42 +12,26 @@ import { setErrorContext } from 'src/app/exceptions/error-options';
 /**
  * This component is a simple example for uploading and downloading and will be replaced in the future
  */
-export class FileEditorComponent {
-  fileContent = 'no content';
-  newFileContent = '';
-  link = '';
-  newlink = '';
-  uploadLink = ''; // link the new file will be uploaded to
-  folderLink = '';
-  file: FileList = { length: 0, item: () => null }; // list of uploaded files
+export class FileEditorComponent implements OnInit {
+  currentUrl?: string;
+  content?: string[];
 
   constructor(
     private solidFileHandler: SolidFileHandlerService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private route: ActivatedRoute
   ) {}
 
-  async sendRequest(link: string): Promise<void> {
-    const x = await this.solidFileHandler.readAndDecryptFile(link);
-    this.fileContent = await x.text();
-  }
+  async ngOnInit(): Promise<void> {
+    this.route.queryParams.subscribe((params) => {
+      this.currentUrl = params['url'];
+    });
+    console.log(this.currentUrl);
 
-  async sendFile(link: string): Promise<void> {
-    const blob = new Blob([this.newFileContent], { type: 'text/plain' });
-    await this.solidFileHandler.writeAndEncryptFile(blob, link);
-  }
-
-  selectFile(event: any) {
-    if (event.target == null) return;
-    else {
-      this.file = event.target.files;
-
-      if (event.target.files.length != 1) {
-        this.notificationService.info({
-          title: 'multiple files choosen',
-          message: 'they will be uploaded as a folder',
-        });
-      }
+    if (this.currentUrl != undefined) {
+      this.content = await this.getFolderContent(this.currentUrl);
     }
+    console.log(this.content);
   }
 
   /**
@@ -103,5 +88,14 @@ export class FileEditorComponent {
       title: 'created',
       message: 'success',
     });
+  }
+
+  async getFolderContent(link: string): Promise<string[]> {
+    return await this.solidFileHandler.getContainerContent(link);
+  }
+
+  async goToFolder(link: string): Promise<void> {
+    console.log(link);
+    console.log('not implemented');
   }
 }
