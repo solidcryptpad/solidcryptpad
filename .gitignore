@@ -43,3 +43,8 @@ Thumbs.db
 
 # Linting
 .eslintcache
+
+# Testing
+/community-solid-server
+cypress/videos
+cypress/screenshots

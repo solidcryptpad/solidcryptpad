@@ -33,7 +33,8 @@ test:
   variables:
     CHROME_BIN: /usr/bin/chromium
   script:
-    - npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI --code-coverage
+    - npm run test:ci:unit
+    - npm run test:ci:e2e
   coverage: /Lines.*?(\d+(?:\.\d+)?)%/
 
 build:
