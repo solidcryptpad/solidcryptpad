@@ -258,4 +258,15 @@ export class SolidFileHandlerService {
     const container = await this.getContainer(containerURL);
     return await getContainedResourceUrlAll(container);
   }
+
+  /**
+   * checks if the url is a folder
+   * !!IMPORTANT i am not sure how often that gives a false positive since the format can occure naturally
+   * change if a better solution is found
+   * @param containerURL the url to the container
+   * @returns if the file is a container or not
+   */
+  async isContainer(containerURL: string): Promise<boolean> {
+    return (await this.readFile(containerURL)).type === 'text/turtle';
+  }
 }

@@ -7,11 +7,13 @@ import { FlatTreeControl } from '@angular/cdk/tree';
 import { Component } from '@angular/core';
 import { BehaviorSubject, merge, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { setErrorContext } from 'src/app/exceptions/error-options';
 import { SolidFileHandlerService } from 'src/app/services/file_handler/solid-file-handler.service';
 
 export class Node {
   constructor(
     public item: string, //link to the folder in a pod
+    public short_name: string, // name displayed in the frontend
     public level: number = 1, // how deep is it from root
     public expandable: boolean = true, // is it a folder and therefor can it be opened
     public isLoading: boolean = false // is that object currently busy loading data
@@ -33,7 +35,7 @@ export class FolderDataSource implements DataSource<Node> {
     solidFileHandlerService.getContainerContent(root).then((x) => {
       const data: Node[] = [];
       x.forEach((element) => {
-        data.push(new Node(element));
+        data.push(new Node(element, this.prepareName(element)));
       });
       this.dataChange.next(data);
     });
@@ -52,28 +54,43 @@ export class FolderDataSource implements DataSource<Node> {
   }
 
   //todo check if node is actually openable
-  openFolder(event: SelectionChange<Node>): void {
-    event.added.forEach((node) => {
-      const index = this.data.indexOf(node);
-      node.isLoading = true;
-      console.log(node.item);
-      this.solidFileHandlerService
-        .getContainerContent(node.item)
-        .then((children) => {
-          const new_children: Node[] = [];
+  async openFolder(event: SelectionChange<Node>): Promise<void> {
+    event.added.forEach(async (node) => {
+      try {
+        const index = this.data.indexOf(node);
+        node.isLoading = true;
 
-          children.forEach((child) => {
-            new_children.push(new Node(child, node.level + 1, true));
-          });
+        const children = await this.solidFileHandlerService.getContainerContent(
+          node.item
+        );
 
+        const new_children: Node[] = [];
+        children.forEach(async (child) => {
+          const is_container = await this.solidFileHandlerService.isContainer(
+            child
+          );
+          new_children.push(
+            new Node(
+              child,
+              this.prepareName(child),
+              node.level + 1,
+              is_container
+            )
+          );
           this.data.splice(index + 1, 0, ...new_children);
           node.isLoading = false;
           this.dataChange.next(this.data);
         });
+      } catch (error) {
+        setErrorContext('Error while loading Foldercontent')(error as Error);
+      } finally {
+        node.isLoading = false;
+        this.dataChange.next(this.data);
+      }
     });
   }
 
-  closeFolder(event: SelectionChange<Node>): void {
+  async closeFolder(event: SelectionChange<Node>): Promise<void> {
     event.removed
       .slice()
       .reverse()
@@ -100,6 +117,15 @@ export class FolderDataSource implements DataSource<Node> {
   // is required for the interface but eslint does not like empty functions
   // eslint-disable-next-line
   disconnect(collectionViewer: CollectionViewer): void {}
+
+  private prepareName(name: string): string {
+    if (name.endsWith('/')) {
+      name = name.substring(0, name.length - 1);
+    }
+
+    name = name.substring(name.lastIndexOf('/') + 1);
+    return name;
+  }
 }
 
 @Component({

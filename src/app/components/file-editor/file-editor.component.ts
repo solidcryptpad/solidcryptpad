@@ -26,12 +26,10 @@ export class FileEditorComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       this.currentUrl = params['url'];
     });
-    console.log(this.currentUrl);
 
     if (this.currentUrl != undefined) {
       this.content = await this.getFolderContent(this.currentUrl);
     }
-    console.log(this.content);
   }
 
   /**
