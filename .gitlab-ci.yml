@@ -1,3 +1,13 @@
+# retry in case the runner has a failure
+default:
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - scheduler_failure
+      - runner_unsupported
+      - archived_failure
+      - unmet_prerequisites
 
 cache:
   key:
