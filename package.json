@@ -15,13 +15,14 @@
     "license-checker": "license-checker --summary --onlyAllow 'Apache-2.0;BSD-2-Clause;BSD-3-Clause;0BSD;BSD*;CC0-1.0;CC-BY-3.0;CC-BY-4.0;ISC;MIT;Unlicense'",
     "prepare": "husky install",
     "cypress:open": "cypress open",
+    "precss": "node delete_css_storage.js",
     "css": "community-solid-server -p 3000 -c @css:config/file-no-setup.json -f ./community-solid-server",
     "start-wait": "npm run start-wait:frontend && npm run start-wait:css",
     "start-wait:frontend": "npm start & wait-on http://localhost:4200",
     "start-wait:css": "npm run css & wait-on http://localhost:3000"
   },
   "lint-staged": {
-    "*.{ts}": "eslint --cache --fix",
+    "*.ts": "eslint --cache --fix",
     "*.{js,ts,json,html,css,scss,md}": "prettier --write"
   },
   "private": false,
