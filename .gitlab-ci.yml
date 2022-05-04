@@ -44,8 +44,15 @@ test:
     CHROME_BIN: /usr/bin/chromium
   script:
     - npm run test:ci:unit
-    - npm run test:ci:e2e
   coverage: /Lines.*?(\d+(?:\.\d+)?)%/
+
+test-e2e:
+  image: registry.reset.inso-w.at/pub/docker/node16
+  stage: test
+  before_script:
+    - *install_cached_node_modules
+  script:
+    - npm run test:ci:e2e
 
 build:
   # based on: https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
