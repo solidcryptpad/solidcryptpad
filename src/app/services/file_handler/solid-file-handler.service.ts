@@ -17,7 +17,6 @@ import { InvalidUrlException } from 'src/app/exceptions/invalid-url-exception';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
 import { KeystoreService } from '../keystore/keystore.service';
-import { setErrorContext } from 'src/app/exceptions/error-options';
 
 @Injectable({
   providedIn: 'root',
@@ -271,7 +270,7 @@ export class SolidFileHandlerService {
           case 401:
           case 403:
             throw new PermissionException(
-              'you do not have the permission to write to this file',
+              'you do not have the permission to read this file',
               { cause: error }
             );
           case 405:
@@ -292,20 +291,10 @@ export class SolidFileHandlerService {
 
   /**
    * checks if the url is a folder
-   * !!IMPORTANT this is a hack that works sometimes, has many false positives
-   * change if a better solution is found
    * @param containerURL the url to the container
    * @returns if the file is a container or not
    */
-  async isContainerAndReadable(containerURL: string): Promise<boolean> {
-    try {
-      return (await this.readFile(containerURL)).type === 'text/turtle';
-    } catch (error: any) {
-      if (error instanceof PermissionException) {
-        return false;
-      }
-      setErrorContext('Check if folder')(error);
-      throw error;
-    }
+  isContainer(containerURL: string): boolean {
+    return isContainer(containerURL);
   }
 }

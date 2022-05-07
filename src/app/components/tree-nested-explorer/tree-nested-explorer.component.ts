@@ -23,7 +23,7 @@ export class Node {
     public level: number = 1, // how deep is it from root
     public expandable: boolean = true, // is it a folder and therefor can it be opened
     public isLoading: boolean = false // is that object currently busy loading data
-  ) { }
+  ) {}
 }
 
 export class FolderDataSource implements DataSource<Node> {
@@ -42,12 +42,9 @@ export class FolderDataSource implements DataSource<Node> {
       solidFileHandlerService.getContainerContent(root).then((x) => {
         const data: Node[] = [];
         x.forEach((element) => {
-          this.createNode(element).then(
-            new_element => {
-              data.push(new_element);
-              this.dataChange.next(data);
-            }
-          )
+          this.createNode(element);
+          data.push(this.createNode(element));
+          this.dataChange.next(data);
         });
       });
     }
@@ -84,10 +81,7 @@ export class FolderDataSource implements DataSource<Node> {
 
         const new_children: Node[] = [];
         children.forEach(async (child) => {
-
-          new_children.push(
-            await this.createNode(child, node.level + 1)
-          );
+          new_children.push(await this.createNode(child, node.level + 1));
           this.data.splice(index + 1, 0, ...new_children);
           node.isLoading = false;
           this.dataChange.next(this.data);
@@ -106,10 +100,8 @@ export class FolderDataSource implements DataSource<Node> {
     });
   }
 
-  private async createNode(url: string, level = 1): Promise<Node> {
-    const is_container = await this.solidFileHandlerService.isContainerAndReadable(
-      url
-    );
+  private createNode(url: string, level = 1): Node {
+    const is_container = this.solidFileHandlerService.isContainer(url);
     return new Node(url, this.prepareName(url), level, is_container);
   }
 
@@ -133,7 +125,7 @@ export class FolderDataSource implements DataSource<Node> {
             let i = index + 1;
             i < this.data.length && this.data[i].level > node.level;
             i++, count++
-          ) { }
+          ) {}
 
           this.data.splice(index + 1, count);
         } finally {
@@ -146,7 +138,7 @@ export class FolderDataSource implements DataSource<Node> {
 
   // is required for the interface but eslint does not like empty functions
   // eslint-disable-next-line
-  disconnect(collectionViewer: CollectionViewer): void { }
+  disconnect(collectionViewer: CollectionViewer): void {}
 
   /**
    * cuts down the url to the part that should in the end be displayed in the folder structure
@@ -161,8 +153,6 @@ export class FolderDataSource implements DataSource<Node> {
     name = name.substring(name.lastIndexOf('/') + 1);
     return name;
   }
-
-
 }
 
 @Component({
