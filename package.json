@@ -7,15 +7,22 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:ci:unit": "ng test --no-watch --no-progress --browsers=ChromeHeadlessCI --code-coverage",
+    "test:ci:e2e": "npm run start-wait && cypress run",
     "lint": "ng lint",
     "prettier": "prettier -c **.{js,ts,json,html,css,scss,md}",
     "prettier:fix": "prettier --write **.{js,ts,json,html,css,scss,md}",
     "license-checker": "license-checker --summary --onlyAllow 'Apache-2.0;BSD-2-Clause;BSD-3-Clause;0BSD;BSD*;CC0-1.0;CC-BY-3.0;CC-BY-4.0;ISC;MIT;Unlicense'",
     "prepare": "husky install",
-    "cypress:open": "cypress open"
+    "cypress:open": "cypress open",
+    "precss": "node delete_css_storage.js",
+    "css": "community-solid-server -p 3000 -c @css:config/file-no-setup.json -f ./community-solid-server",
+    "start-wait": "npm run start-wait:frontend && npm run start-wait:css",
+    "start-wait:frontend": "npm start & wait-on http://localhost:4200",
+    "start-wait:css": "npm run css & wait-on http://localhost:3000"
   },
   "lint-staged": {
-    "*.{js,ts}": "eslint --cache --fix",
+    "*.ts": "eslint --cache --fix",
     "*.{js,ts,json,html,css,scss,md}": "prettier --write"
   },
   "private": false,
@@ -33,10 +40,10 @@
     "@angular/router": "~13.3.0",
     "@inrupt/solid-client": "1.21.0",
     "@inrupt/solid-client-authn-browser": "1.11.7",
-    "ngx-editor": "^12.2.2",
     "@inrupt/vocab-common-rdf": "1.0.3",
     "@types/crypto-js": "^4.1.1",
     "crypto-js": "^4.1.1",
+    "ngx-editor": "^12.2.2",
     "ngx-toastr": "^14.2.4",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",
@@ -54,6 +61,7 @@
     "@angular-eslint/template-parser": "13.1.0",
     "@angular/cli": "~13.3.0",
     "@angular/compiler-cli": "~13.3.0",
+    "@solid/community-server": "^4.0.0",
     "@types/jasmine": "~3.10.0",
     "@types/node": "^12.11.1",
     "@types/prosemirror-schema-basic": "^1.0.2",
@@ -76,6 +84,7 @@
     "license-checker": "^25.0.1",
     "lint-staged": "^12.3.7",
     "prettier": "^2.6.1",
-    "typescript": "~4.6.2"
+    "typescript": "~4.6.2",
+    "wait-on": "^6.0.1"
   }
 }

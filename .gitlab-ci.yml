@@ -1,3 +1,13 @@
+# retry in case the runner has a failure
+default:
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - scheduler_failure
+      - runner_unsupported
+      - archived_failure
+      - unmet_prerequisites
 
 cache:
   key:
@@ -33,8 +43,16 @@ test:
   variables:
     CHROME_BIN: /usr/bin/chromium
   script:
-    - npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI --code-coverage
+    - npm run test:ci:unit
   coverage: /Lines.*?(\d+(?:\.\d+)?)%/
+
+test-e2e:
+  image: registry.reset.inso-w.at/pub/docker/cypress:latest
+  stage: test
+  before_script:
+    - *install_cached_node_modules
+  script:
+    - npm run test:ci:e2e
 
 build:
   # based on: https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
