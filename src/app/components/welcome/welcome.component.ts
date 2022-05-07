@@ -3,6 +3,8 @@ import { SolidAuthenticationService } from '../../services/authentication/solid-
 import { NotificationService } from '../../services/notification/notification.service';
 import { map, Observable, startWith } from 'rxjs';
 import { FormControl } from '@angular/forms';
+import { Oidc } from '../../models/oidc';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-welcome',
@@ -12,25 +14,27 @@ import { FormControl } from '@angular/forms';
 export class WelcomeComponent implements OnInit {
   constructor(
     private solidAuthenticationService: SolidAuthenticationService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private router: Router
   ) {
     this.oidc = solidAuthenticationService.oidc;
-    this.selected = '';
   }
 
-  myControl = new FormControl();
+  oidc: Oidc[];
+  oidcSelection = new FormControl();
+  filteredOptions$: Observable<Oidc[]> | undefined;
 
-  public oidc: string[];
-  public selected: string;
-  filteredOptions$: Observable<string[]> | undefined;
+  loggedIn: boolean | undefined;
 
   login() {
-    if (this.selected !== '' && !this.isValidUrl(this.selected)) {
+    const selected = this.oidcSelection.value;
+
+    if (selected !== '' && !this.isValidUrl(selected)) {
       this.notificationService.error({
         title: 'Invalid provider',
-        message: `"${this.selected}" is not a valid URL`,
+        message: `"${selected}" is not a valid URL`,
       });
-    } else if (this.selected === '') {
+    } else if (selected === '') {
       this.solidAuthenticationService.goToLoginPage().catch((reason) =>
         this.notificationService.error({
           title: 'Login error',
@@ -38,14 +42,12 @@ export class WelcomeComponent implements OnInit {
         })
       );
     } else {
-      this.solidAuthenticationService
-        .goToLoginPage(this.selected)
-        .catch((reason) =>
-          this.notificationService.error({
-            title: 'Login error',
-            message: reason?.message,
-          })
-        );
+      this.solidAuthenticationService.goToLoginPage(selected).catch((reason) =>
+        this.notificationService.error({
+          title: 'Login error',
+          message: reason?.message,
+        })
+      );
     }
   }
 
@@ -60,17 +62,28 @@ export class WelcomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.filteredOptions$ = this.myControl.valueChanges.pipe(
+    this.solidAuthenticationService.isLoggedIn().then((val) => {
+      this.loggedIn = val;
+      if (this.loggedIn) {
+        this.router.navigate(['home']);
+      }
+    });
+
+    this.filteredOptions$ = this.oidcSelection.valueChanges.pipe(
       startWith(''),
       map((value) => this._filter(value))
     );
   }
 
-  private _filter(value: string): string[] {
+  /**
+   * Filter function for the material autocomplete field
+   * @param value the user's input
+   */
+  private _filter(value: string): Oidc[] {
     const filterValue = value.toLowerCase();
 
     return this.oidc.filter((provider) =>
-      provider.toLowerCase().includes(filterValue)
+      provider.url.toLowerCase().includes(filterValue)
     );
   }
 }

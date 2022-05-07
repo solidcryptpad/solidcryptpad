@@ -1,12 +1,27 @@
 <mat-toolbar color="accent">
   <h1><a routerLink="">SolidCryptPad</a></h1>
   <ul>
-    <li routerLinkActive="active"><a routerLink="home">Home</a></li>
-    <li routerLinkActive="active"><a routerLink="fileEditor">Files</a></li>
-    <li routerLinkActive="active"><a routerLink="editor">Editor</a></li>
+    <li routerLinkActive="active" *ngIf="loggedIn">
+      <a routerLink="home">Home</a>
+    </li>
+
+    <li routerLinkActive="active" *ngIf="loggedIn">
+      <a routerLink="fileEditor">Files</a>
+    </li>
+    <li routerLinkActive="active" *ngIf="loggedIn">
+      <a routerLink="editor">Editor</a>
+    </li>
     <li routerLinkActive="active"><a routerLink="faq">FAQ</a></li>
   </ul>
+
   <span class="spacer"></span>
+
+  <div *ngIf="loggedIn" style="margin-right: 1em">
+    <button mat-stroked-button color="primary">
+      <mat-icon>account_circle</mat-icon>
+      {{ name }}
+    </button>
+  </div>
 
   <mat-icon style="margin-right: 0.5em">brightness_5</mat-icon>
   <mat-slide-toggle

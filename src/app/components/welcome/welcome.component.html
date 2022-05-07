@@ -21,18 +21,17 @@
           <input
             type="text"
             id="provider"
-            placeholder="{{ oidc[0] }}"
-            [(ngModel)]="selected"
+            placeholder="{{ oidc[0].name }}"
             matInput
-            [formControl]="myControl"
+            [formControl]="oidcSelection"
             [matAutocomplete]="auto"
           />
           <mat-autocomplete #auto="matAutocomplete">
             <mat-option
               *ngFor="let provider of filteredOptions$ | async"
-              value="{{ provider }}"
+              value="{{ provider.url }}"
             >
-              {{ provider }}
+              {{ provider.name }}
             </mat-option>
           </mat-autocomplete>
           <mat-icon matSuffix svgIcon="solid"></mat-icon>
@@ -52,7 +51,7 @@
     </div>
 
     <div>
-      <small>No idea what Solid is? Refer to our FAQ</small>
+      <small>No idea what Solid is? Refer to our <a href="/faq">FAQ</a></small>
     </div>
   </div>
 </div>

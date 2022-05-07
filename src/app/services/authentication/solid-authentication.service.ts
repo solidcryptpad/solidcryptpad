@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import * as authnBrowser from '@inrupt/solid-client-authn-browser';
 import { Router } from '@angular/router';
 import { RequiresLoginException } from '../../exceptions/requires-login-exception';
+import { Oidc } from '../../models/oidc';
 
 @Injectable({
   providedIn: 'root',
@@ -13,10 +14,10 @@ import { RequiresLoginException } from '../../exceptions/requires-login-exceptio
  * before other methods can be used
  */
 export class SolidAuthenticationService {
-  private oidc_list: string[] = [
-    'https://solidweb.org/',
-    'https://solidcommunity.net/',
-    'https://inrupt.net/',
+  private oidc_list: Oidc[] = [
+    { name: 'Solid Web', url: 'https://solidweb.org/' },
+    { name: 'Solid Community', url: 'https://solidcommunity.net/' },
+    { name: 'Inrupt', url: 'https://inrupt.net/' },
   ];
   // store as member to allow mocking in tests
   private authnBrowser: typeof authnBrowser;
