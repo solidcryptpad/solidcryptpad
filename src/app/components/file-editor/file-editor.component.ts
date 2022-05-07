@@ -1,8 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { SolidFileHandlerService } from '../../services/file_handler/solid-file-handler.service';
 import { NotificationService } from 'src/app/services/notification/notification.service';
-import { setErrorContext } from 'src/app/exceptions/error-options';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-file-editor',
@@ -12,90 +11,22 @@ import { ActivatedRoute } from '@angular/router';
 /**
  * This component is a simple example for uploading and downloading and will be replaced in the future
  */
-export class FileEditorComponent implements OnInit {
-  currentUrl?: string;
-  content?: string[];
+export class FileEditorComponent {
+  public currentUrl = '';
+  public moveUrl = '';
 
   constructor(
     private solidFileHandler: SolidFileHandlerService,
     private notificationService: NotificationService,
+    private router: Router,
     private route: ActivatedRoute
-  ) {}
-
-  async ngOnInit(): Promise<void> {
+  ) {
     this.route.queryParams.subscribe((params) => {
       this.currentUrl = params['url'];
     });
-
-    if (this.currentUrl != undefined) {
-      this.content = await this.getFolderContent(this.currentUrl);
-    }
-  }
-
-  /**
-   * uploads a file to the given pod
-   * @param file the file to upload
-   * @param link the link to the solid pod
-   */
-  async uploadFile(file: File, link: string): Promise<void> {
-    this.solidFileHandler
-      .writeFile(file, link, file.name)
-      .then(() =>
-        this.notificationService.success({
-          title: 'upload',
-          message: 'success',
-        })
-      )
-      .catch(setErrorContext('upload File'));
-  }
-
-  /**
-   * uploads multiple files to a solid pod
-   * @param files the files to upload
-   * @param link the link to upload them
-   */
-  async uploadFiles(files: FileList, link: string): Promise<void> {
-    if (files.length == 0) {
-      this.notificationService.info({
-        title: 'no file selected',
-        message: 'please select one or more files',
-      });
-    } else if (files.length == 1) {
-      await this.uploadFile(files[0], link);
-    } else {
-      // this is currently untested because my browser-setup seems to not allow to upload more then one file
-      // will change anyway as soon as the overwriteFile bug workaround is in
-      for (let i = 0; i < files.length; i++) {
-        let flink;
-        if (link.endsWith('/')) flink = link + `${files[0].name}`;
-        else flink = link + `/${files[0].name}`;
-
-        await this.uploadFile(files[i], flink);
-      }
-    }
-  }
-
-  /**
-   * creates a folder at the given location
-   * @param link the link to create the folder on
-   */
-  async createFolder(link: string): Promise<void> {
-    await this.solidFileHandler.writeContainer(link);
-
-    this.notificationService.success({
-      title: 'created',
-      message: 'success',
-    });
-  }
-
-  async getFolderContent(link: string): Promise<string[]> {
-    console.log(await this.solidFileHandler.getContainerContent(link));
-    this.content = await this.solidFileHandler.getContainerContent(link);
-    return await this.solidFileHandler.getContainerContent(link);
   }
 
   async goToFolder(link: string): Promise<void> {
-    console.log(link);
-    console.log('not implemented');
+    this.router.navigateByUrl(`fileEditor?url=${link}`);
   }
 }
