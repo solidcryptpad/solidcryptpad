@@ -257,7 +257,7 @@ export class SolidFileHandlerService {
   async getContainerContent(containerURL: string): Promise<UrlString[]> {
     try {
       const container = await this.getContainer(containerURL);
-      return await getContainedResourceUrlAll(container);
+      return getContainedResourceUrlAll(container);
     } catch (error: any) {
       if (error instanceof TypeError) {
         throw (

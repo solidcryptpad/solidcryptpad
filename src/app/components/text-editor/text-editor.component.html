@@ -1,5 +1,5 @@
 <h3>Editor</h3>
-<div *ngIf="filename">
+<div *ngIf="fileUrl">
   <div class="NgxEditor__Wrapper">
     <ngx-editor-menu [editor]="editor"> </ngx-editor-menu>
     <ngx-editor
@@ -11,21 +11,27 @@
   </div>
   <button type="button" (click)="closeFile()">Close file</button>
 </div>
-<div *ngIf="!filename">
+<div *ngIf="!fileUrl">
   <h3>No filename given. Open an example file:</h3>
   <ul>
     <li>
-      <a [routerLink]="['/editor']" [queryParams]="{ file: 'document0.txt' }"
+      <a
+        [routerLink]="['/editor']"
+        [queryParams]="{ file: [getExampleUrl('document0.txt')] }"
         >document0.txt</a
       >
     </li>
     <li>
-      <a [routerLink]="['/editor']" [queryParams]="{ file: 'document1.txt' }"
+      <a
+        [routerLink]="['/editor']"
+        [queryParams]="{ file: [getExampleUrl('document1.txt')] }"
         >document1.txt</a
       >
     </li>
     <li>
-      <a [routerLink]="['/editor']" [queryParams]="{ file: 'document2.txt' }"
+      <a
+        [routerLink]="['/editor']"
+        [queryParams]="{ file: [getExampleUrl('document2.txt')] }"
         >document2.txt</a
       >
     </li>

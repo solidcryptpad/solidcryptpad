@@ -9,7 +9,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, merge, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { setErrorContext } from 'src/app/exceptions/error-options';
-import { NotImplementedException } from 'src/app/exceptions/not-implemented-exception';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { SolidFileHandlerService } from 'src/app/services/file_handler/solid-file-handler.service';
 
@@ -18,7 +17,7 @@ import { SolidFileHandlerService } from 'src/app/services/file_handler/solid-fil
  */
 export class Node {
   constructor(
-    public item: string, //link to the folder in a pod
+    public link: string, //link to the folder in a pod
     public short_name: string, // name displayed in the frontend
     public level: number = 1, // how deep is it from root
     public expandable: boolean = true, // is it a folder and therefor can it be opened
@@ -76,7 +75,7 @@ export class FolderDataSource implements DataSource<Node> {
         const index = this.data.indexOf(node);
         node.isLoading = true;
         const children = await this.solidFileHandlerService.getContainerContent(
-          node.item
+          node.link
         );
 
         const new_children: Node[] = [];
@@ -213,10 +212,9 @@ export class TreeNestedExplorerComponent {
 
   open(node: Node) {
     if (node.expandable) {
-      this.router.navigateByUrl(`/fileEditor?url=${node.item}`);
+      this.router.navigateByUrl(`/fileEditor?url=${node.link}`);
     } else {
-      // TODO: should redirect to editor page Ref. 43
-      throw new NotImplementedException('can not yet open file');
+      this.router.navigateByUrl(`/editor?file=${node.link}`);
     }
   }
 }

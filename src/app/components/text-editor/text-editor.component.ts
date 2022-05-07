@@ -28,7 +28,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   readyForSave = false;
   xmlFragement: YXmlFragment | undefined;
   baseUrl = '';
-  filename = '';
+  fileUrl = '';
   provider!: WebrtcProvider;
   ydoc!: Y.Doc;
 
@@ -41,11 +41,11 @@ export class TextEditorComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
-      this.filename = params['file'];
+      this.fileUrl = params['file'];
       if (
-        this.filename === null ||
-        this.filename === undefined ||
-        this.filename === ''
+        this.fileUrl === null ||
+        this.fileUrl === undefined ||
+        this.fileUrl === ''
       ) {
         console.debug('no filename given');
       } else {
@@ -152,7 +152,16 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    * @return the url for the current opened file
    */
   getUrl(): string {
-    return this.baseUrl + 'private/solidcryptpad/' + this.filename;
+    return this.fileUrl[0];
+  }
+
+  /**
+   * adds the default example directory
+   * @param filename the file it should use
+   * @returns string with the example directory addes to the beginning
+   */
+  getExampleUrl(filename: string): string {
+    return `${this.baseUrl}private/cryptopad/${filename}`;
   }
 
   /**
