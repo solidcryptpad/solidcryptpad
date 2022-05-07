@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FileEditorComponent } from './file-editor.component';
 import { NotificationService } from 'src/app/services/notification/notification.service';
 import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('FileEditorComponent', () => {
   let component: FileEditorComponent;
@@ -17,6 +18,7 @@ describe('FileEditorComponent', () => {
     ]);
     await TestBed.configureTestingModule({
       declarations: [FileEditorComponent],
+      imports: [RouterTestingModule],
       providers: [
         FileEditorComponent,
         { provide: SolidAuthenticationService, useValue: authenticationSpy },
