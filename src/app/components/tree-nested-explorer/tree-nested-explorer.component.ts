@@ -5,10 +5,12 @@ import {
 } from '@angular/cdk/collections';
 import { FlatTreeControl } from '@angular/cdk/tree';
 import { Component } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, merge, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { setErrorContext } from 'src/app/exceptions/error-options';
+import { NotImplementedException } from 'src/app/exceptions/not-implemented-exception';
+import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { SolidFileHandlerService } from 'src/app/services/file_handler/solid-file-handler.service';
 
 /**
@@ -40,6 +42,7 @@ export class FolderDataSource implements DataSource<Node> {
       solidFileHandlerService.getContainerContent(root).then((x) => {
         const data: Node[] = [];
         x.forEach((element) => {
+          // TODO: check if node is expandable Ref #43.1
           data.push(new Node(element, this.prepareName(element)));
         });
         this.dataChange.next(data);
@@ -72,7 +75,6 @@ export class FolderDataSource implements DataSource<Node> {
       try {
         const index = this.data.indexOf(node);
         node.isLoading = true;
-
         const children = await this.solidFileHandlerService.getContainerContent(
           node.item
         );
@@ -82,6 +84,7 @@ export class FolderDataSource implements DataSource<Node> {
           const is_container = await this.solidFileHandlerService.isContainer(
             child
           );
+
           new_children.push(
             new Node(
               child,
@@ -96,6 +99,10 @@ export class FolderDataSource implements DataSource<Node> {
         });
       } catch (error) {
         setErrorContext('Error while loading Foldercontent')(error as Error);
+
+        if (error instanceof PermissionException) {
+          throw error;
+        }
       } finally {
         // make sure the loading animation stops at the end even if some error occured
         node.isLoading = false;
@@ -164,8 +171,10 @@ export class TreeNestedExplorerComponent {
 
   constructor(
     public solidFileHandlerService: SolidFileHandlerService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {
+    // init if no url is given
     this.treeControl = new FlatTreeControl<Node>(
       this.getLevel,
       this.isExpandable
@@ -176,6 +185,7 @@ export class TreeNestedExplorerComponent {
       this.root_path
     );
 
+    // setup if url is given
     this.route.queryParams.subscribe((params) => {
       this.root_path = params['url'];
 
@@ -205,5 +215,14 @@ export class TreeNestedExplorerComponent {
 
   hasChild(_: number, nodeData: Node) {
     return nodeData.expandable;
+  }
+
+  open(node: Node) {
+    if (node.expandable) {
+      this.router.navigateByUrl(`/fileEditor?url=${node.item}`);
+    } else {
+      // TODO: should redirect to editor page Ref. 43
+      throw new NotImplementedException('can not yet open file');
+    }
   }
 }

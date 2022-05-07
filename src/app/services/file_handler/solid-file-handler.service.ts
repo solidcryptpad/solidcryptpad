@@ -255,8 +255,38 @@ export class SolidFileHandlerService {
   }
 
   async getContainerContent(containerURL: string): Promise<UrlString[]> {
-    const container = await this.getContainer(containerURL);
-    return await getContainedResourceUrlAll(container);
+    try {
+      const container = await this.getContainer(containerURL);
+      return await getContainedResourceUrlAll(container);
+    } catch (error: any) {
+      if (error instanceof TypeError) {
+        throw (
+          (new InvalidUrlException('the given url is not valid'),
+          { cause: error })
+        );
+      }
+      if (error instanceof FetchError) {
+        switch (error.statusCode) {
+          case 401:
+          case 403:
+            throw new PermissionException(
+              'you do not have the permission to write to this file',
+              { cause: error }
+            );
+          case 405:
+            throw new AlreadyExistsException(
+              'A file or folder of that name already exists and cannot be overwritten',
+              { cause: error }
+            );
+
+          default:
+            break;
+        }
+      }
+      throw new UnknownException(`an unknown error appeared ${error.name}`, {
+        cause: error,
+      });
+    }
   }
 
   /**
