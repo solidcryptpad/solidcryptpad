@@ -1,3 +1,58 @@
-<h1>Welcome to SolidCryptPad</h1>
+<div>
+  <div class="box">
+    <div></div>
+    <div class="box">
+      <img style="margin-top: 3em; width: 30%" src="assets/logo_notext.png" />
+      <h1 style="font-size: 5vw">SolidCryptPad</h1>
+    </div>
 
-<h3>Login to continue</h3>
+    <div>
+      <p>Your secure decentralized collaboration tool.</p>
+    </div>
+
+    <div>
+      <h3>Connect your Solid Pod to start!</h3>
+    </div>
+
+    <div>
+      <form class="example-form">
+        <mat-form-field class="example-full-width" appearance="outline">
+          <mat-label>Provider</mat-label>
+          <input
+            type="text"
+            id="provider"
+            placeholder="{{ oidc[0] }}"
+            [(ngModel)]="selected"
+            matInput
+            [formControl]="myControl"
+            [matAutocomplete]="auto"
+          />
+          <mat-autocomplete #auto="matAutocomplete">
+            <mat-option
+              *ngFor="let provider of filteredOptions$ | async"
+              value="{{ provider }}"
+            >
+              {{ provider }}
+            </mat-option>
+          </mat-autocomplete>
+          <mat-icon matSuffix svgIcon="solid"></mat-icon>
+        </mat-form-field>
+      </form>
+
+      <div>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="login()"
+          class="example-full-width"
+        >
+          LOGIN
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <small>No idea what Solid is? Refer to our FAQ</small>
+    </div>
+  </div>
+</div>

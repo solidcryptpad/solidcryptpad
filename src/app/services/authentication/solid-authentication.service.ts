@@ -13,10 +13,10 @@ import { RequiresLoginException } from '../../exceptions/requires-login-exceptio
  * before other methods can be used
  */
 export class SolidAuthenticationService {
-  private oidc_list: string[][] = [
-    ['https://solidweb.org/', 'solidweb'],
-    ['https://solidcommunity.net/', 'solidcommunity'],
-    ['https://inrupt.net/', 'inrupt'],
+  private oidc_list: string[] = [
+    'https://solidweb.org/',
+    'https://solidcommunity.net/',
+    'https://inrupt.net/',
   ];
   // store as member to allow mocking in tests
   private authnBrowser: typeof authnBrowser;
@@ -47,6 +47,9 @@ export class SolidAuthenticationService {
     this.router.navigateByUrl(url.pathname + url.search + url.hash);
   }
 
+  /**
+   * Login status is never changing during session
+   */
   async isLoggedIn(): Promise<boolean> {
     return this.authnBrowser.getDefaultSession().info.isLoggedIn;
   }

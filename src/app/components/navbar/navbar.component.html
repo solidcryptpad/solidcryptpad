@@ -1,23 +1,19 @@
-<mat-toolbar>
+<mat-toolbar color="accent">
   <h1><a routerLink="">SolidCryptPad</a></h1>
   <ul>
     <li routerLinkActive="active"><a routerLink="home">Home</a></li>
     <li routerLinkActive="active"><a routerLink="fileEditor">Files</a></li>
     <li routerLinkActive="active"><a routerLink="editor">Editor</a></li>
+    <li routerLinkActive="active"><a routerLink="faq">FAQ</a></li>
   </ul>
   <span class="spacer"></span>
-  <button mat-flat-button (click)="login()">LOGIN</button>
 
-  <input
-    id="provider"
-    type="text"
-    list="provider-list"
-    placeholder="{{ oidc[0][0] }}"
-    [(ngModel)]="selected"
-  />
-  <datalist id="provider-list">
-    <option *ngFor="let provider of oidc" value="{{ provider[0] }}">
-      {{ provider[1] }}
-    </option>
-  </datalist>
+  <mat-icon style="margin-right: 0.5em">brightness_5</mat-icon>
+  <mat-slide-toggle
+    style="margin-right: 0.5em"
+    [formControl]="toggleControl"
+    (change)="toggleDarkMode($event)"
+  >
+  </mat-slide-toggle>
+  <mat-icon>bedtime</mat-icon>
 </mat-toolbar>

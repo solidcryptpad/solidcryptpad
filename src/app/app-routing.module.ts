@@ -7,6 +7,7 @@ import { AuthenticatedGuard } from './guards/authenticated.guard';
 import { TextEditorComponent } from './components/text-editor/text-editor.component';
 import { FileEditorComponent } from './components/file-editor/file-editor.component';
 import { KeystoreComponent } from './components/keystore/keystore.component';
+import { FaqComponent } from './components/faq/faq.component';
 
 const routes: Routes = [
   { path: '', component: WelcomeComponent },
@@ -21,6 +22,10 @@ const routes: Routes = [
     path: 'editor',
     component: TextEditorComponent,
     canActivate: [AuthenticatedGuard],
+  },
+  {
+    path: 'faq',
+    component: FaqComponent,
   },
   { path: '**', component: PageNotFoundComponent },
 ];
