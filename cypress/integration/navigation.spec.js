@@ -16,8 +16,5 @@ describe("can navigate with navbar as logged in user", () => {
 
     cy.contains("Editor").click();
     cy.url().should("include", "editor");
-
-    cy.contains("SolidCryptPad").click();
-    cy.location("pathname").should("equal", "/");
   });
 });
