@@ -31,6 +31,11 @@ Cypress.Commands.add("createRandomAccount", function () {
     confirmPassword: password,
   });
 
+  // replace default card, because it does not contain a name and pod urls
+  // which we assume to exist in the pod
+  const cardUrl = config.webId.substring(0, config.webId.lastIndexOf("#"));
+  cy.intercept(cardUrl, { fixture: "profile-card.ttl" });
+
   return cy.wrap(config);
 });
 

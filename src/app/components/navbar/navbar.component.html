@@ -18,7 +18,7 @@
 
   <div *appLoggedIn style="margin-right: 1em">
     <button mat-stroked-button color="primary" [matMenuTriggerFor]="menu">
-      <mat-icon>account_circle</mat-icon>
+      <mat-icon data-cy="nav-account-icon">account_circle</mat-icon>
     </button>
     <mat-menu #menu="matMenu">
       <button mat-menu-item (click)="logout()">Logout</button>
