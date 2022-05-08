@@ -1,4 +1,7 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+} from '@angular/core/testing';
 
 import { WelcomeComponent } from './welcome.component';
 import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
@@ -71,6 +74,7 @@ describe('WelcomeComponent', () => {
 
   fit('should initiate login when clicking login button', () => {
     component.oidcSelection.setValue('https://solidweb.org/');
+    fixture.detectChanges();
 
     authenticationServiceSpy.goToLoginPage.and.resolveTo();
     const welcomeElement: HTMLElement = fixture.nativeElement;

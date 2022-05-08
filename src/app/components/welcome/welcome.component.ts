@@ -46,6 +46,7 @@ export class WelcomeComponent implements OnInit {
   }
 
   isValidUrl(url: string) {
+    console.log('valid url', url);
     try {
       // throws on invalid URL
       new URL(url);
