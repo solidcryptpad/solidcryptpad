@@ -2,7 +2,6 @@ import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
-import { ProfileService } from '../../services/profile/profile.service';
 
 @Component({
   selector: 'app-navbar',
@@ -10,10 +9,7 @@ import { ProfileService } from '../../services/profile/profile.service';
   styleUrls: ['./navbar.component.scss'],
 })
 export class NavbarComponent implements OnInit {
-  constructor(
-    private solidAuthenticationService: SolidAuthenticationService,
-    private profileService: ProfileService
-  ) {}
+  constructor(private solidAuthenticationService: SolidAuthenticationService) {}
   @Output() darkModeToggleEvent: EventEmitter<boolean> =
     new EventEmitter<boolean>();
 

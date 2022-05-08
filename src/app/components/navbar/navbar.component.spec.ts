@@ -11,12 +11,10 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Router, Routes } from '@angular/router';
 import { MatToolbar } from '@angular/material/toolbar';
-import { Directive } from '@angular/core';
-
-@Directive({
-  selector: '[appLoggedIn]',
-})
-export class SomeMockDirective {}
+import { MatMenuModule } from '@angular/material/menu';
+import { MatIcon } from '@angular/material/icon';
+import { By } from '@angular/platform-browser';
+import { MockLoggedInDirective } from 'src/app/directives/logged-in.directive.mock';
 
 describe('NavbarComponent', () => {
   let component: NavbarComponent;
@@ -40,8 +38,17 @@ describe('NavbarComponent', () => {
     ] as Routes;
 
     await TestBed.configureTestingModule({
-      imports: [ReactiveFormsModule, RouterTestingModule.withRoutes(routes)],
-      declarations: [NavbarComponent, MatToolbar],
+      imports: [
+        ReactiveFormsModule,
+        MatMenuModule,
+        RouterTestingModule.withRoutes(routes),
+      ],
+      declarations: [
+        NavbarComponent,
+        MatToolbar,
+        MatIcon,
+        MockLoggedInDirective,
+      ],
       providers: [
         {
           provide: NotificationService,
@@ -56,6 +63,14 @@ describe('NavbarComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(NavbarComponent);
     component = fixture.componentInstance;
+
+    // simulate all mocked appLogedIn directives to be true
+    for (const node of fixture.debugElement.queryAllNodes(
+      By.directive(MockLoggedInDirective)
+    )) {
+      const mockedLoggedInDirective = node.injector.get(MockLoggedInDirective);
+      mockedLoggedInDirective.mockLogin();
+    }
     fixture.detectChanges();
   });
 
@@ -79,14 +94,14 @@ describe('NavbarComponent', () => {
     expect(router.url).toBe('/');
   }));
 
-  xit('should go to home when clicking on Home', fakeAsync(() => {
+  it('should go to home when clicking on Home', fakeAsync(() => {
     getLinkByText('Home').click();
     tick();
 
     expect(router.url).toBe('/home');
   }));
 
-  xit('should go to files when clicking on Files', fakeAsync(() => {
+  it('should go to files when clicking on Files', fakeAsync(() => {
     getLinkByText('Files').click();
     tick();
 
