@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { SolidAuthenticationService } from '../services/authentication/solid-authentication.service';
 
 import { AuthenticatedGuard } from './authenticated.guard';
+import { of } from 'rxjs';
 
 describe('AuthenticatedGuard', () => {
   let guard: AuthenticatedGuard;
@@ -29,12 +30,13 @@ describe('AuthenticatedGuard', () => {
   });
 
   it('should return true if logged in', async () => {
-    authenticationServiceSpy.isLoggedIn.and.resolveTo(true);
+    authenticationServiceSpy.isLoggedIn.and.returnValue(of(true));
+
     expect(await guard.canActivate()).toBeTrue();
   });
 
   it('should go to login page if logged out', async () => {
-    authenticationServiceSpy.isLoggedIn.and.resolveTo(false);
+    authenticationServiceSpy.isLoggedIn.and.returnValue(of(false));
 
     await guard.canActivate();
 

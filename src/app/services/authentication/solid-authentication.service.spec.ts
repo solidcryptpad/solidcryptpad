@@ -42,14 +42,18 @@ describe('SolidAuthenticationService', () => {
     });
   });
 
-  it('isLoggedIn returns true if authnBrowser returns true', () => {
+  it('isLoggedIn returns true if authnBrowser returns true', async () => {
     mockLoginStatus(true);
-    return expectAsync(service.isLoggedIn()).toBeResolvedTo(true);
+    return service
+      .isLoggedIn()
+      .subscribe((status) => expect(status).toBe(true));
   });
 
-  it('isLoggedIn returns false if authnBrowser returns false', () => {
+  it('isLoggedIn returns false if authnBrowser returns false', async () => {
     mockLoginStatus(false);
-    return expectAsync(service.isLoggedIn()).toBeResolvedTo(false);
+    return service
+      .isLoggedIn()
+      .subscribe((status) => expect(status).toBe(false));
   });
 
   it('goToLoginPage passes provided oidc issuer to authnBrowser', () => {

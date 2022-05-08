@@ -24,24 +24,18 @@ export class WelcomeComponent implements OnInit {
   oidcSelection = new FormControl();
   filteredOptions$: Observable<Oidc[]> | undefined;
 
-  loggedIn: boolean | undefined;
-
   login() {
+    console.log('called login ##');
     const selected = this.oidcSelection.value;
+    console.log('called login with ', selected);
 
     if (selected !== '' && !this.isValidUrl(selected)) {
       this.notificationService.error({
         title: 'Invalid provider',
         message: `"${selected}" is not a valid URL`,
       });
-    } else if (selected === '') {
-      this.solidAuthenticationService.goToLoginPage().catch((reason) =>
-        this.notificationService.error({
-          title: 'Login error',
-          message: reason?.message,
-        })
-      );
     } else {
+      console.log('called else with ??? ', selected);
       this.solidAuthenticationService.goToLoginPage(selected).catch((reason) =>
         this.notificationService.error({
           title: 'Login error',
@@ -51,7 +45,7 @@ export class WelcomeComponent implements OnInit {
     }
   }
 
-  private isValidUrl(url: string) {
+  isValidUrl(url: string) {
     try {
       // throws on invalid URL
       new URL(url);
@@ -62,9 +56,8 @@ export class WelcomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.solidAuthenticationService.isLoggedIn().then((val) => {
-      this.loggedIn = val;
-      if (this.loggedIn) {
+    this.solidAuthenticationService.isLoggedIn().subscribe((val) => {
+      if (val) {
         this.router.navigate(['home']);
       }
     });

@@ -18,28 +18,21 @@ export class NavbarComponent implements OnInit {
     new EventEmitter<boolean>();
 
   toggleControl = new FormControl(false);
-  loggedIn: boolean | undefined;
-  name: string | undefined;
 
   ngOnInit(): void {
     // necessary for proper initialization, could be improved
     this.toggleControl.valueChanges.subscribe(() =>
       this.darkModeToggleEvent.emit(false)
     );
-
-    this.solidAuthenticationService.isLoggedIn().then((val) => {
-      this.loggedIn = val;
-      if (this.loggedIn) {
-        this.profileService
-          .getUserName()
-          .then((username) => (this.name = username));
-      }
-    });
   }
 
   toggleDarkMode(event: MatSlideToggleChange) {
     this.toggleControl.valueChanges.subscribe(() => {
       this.darkModeToggleEvent.emit(event.checked);
     });
+  }
+
+  logout() {
+    this.solidAuthenticationService.logout();
   }
 }

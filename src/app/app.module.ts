@@ -27,6 +27,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { HttpClientModule } from '@angular/common/http';
 import { FaqComponent } from './components/faq/faq.component';
 import { MatListModule } from '@angular/material/list';
+import { LoggedInDirective } from './directives/logged-in.directive';
+import { MatMenuModule } from '@angular/material/menu';
 
 @NgModule({
   declarations: [
@@ -39,6 +41,7 @@ import { MatListModule } from '@angular/material/list';
     KeystoreComponent,
     NavbarComponent,
     FaqComponent,
+    LoggedInDirective,
   ],
   imports: [
     BrowserModule,
@@ -58,6 +61,7 @@ import { MatListModule } from '@angular/material/list';
     MatIconModule,
     ReactiveFormsModule,
     MatListModule,
+    MatMenuModule,
   ],
   providers: [
     SolidAuthenticationService,

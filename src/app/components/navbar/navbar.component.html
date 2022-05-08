@@ -1,14 +1,14 @@
 <mat-toolbar color="accent">
   <h1><a routerLink="">SolidCryptPad</a></h1>
   <ul>
-    <li routerLinkActive="active" *ngIf="loggedIn">
+    <li routerLinkActive="active" *appLoggedIn>
       <a routerLink="home">Home</a>
     </li>
 
-    <li routerLinkActive="active" *ngIf="loggedIn">
+    <li routerLinkActive="active" *appLoggedIn>
       <a routerLink="fileEditor">Files</a>
     </li>
-    <li routerLinkActive="active" *ngIf="loggedIn">
+    <li routerLinkActive="active" *appLoggedIn>
       <a routerLink="editor">Editor</a>
     </li>
     <li routerLinkActive="active"><a routerLink="faq">FAQ</a></li>
@@ -16,11 +16,13 @@
 
   <span class="spacer"></span>
 
-  <div *ngIf="loggedIn" style="margin-right: 1em">
-    <button mat-stroked-button color="primary">
+  <div *appLoggedIn style="margin-right: 1em">
+    <button mat-stroked-button color="primary" [matMenuTriggerFor]="menu">
       <mat-icon>account_circle</mat-icon>
-      {{ name }}
     </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item (click)="logout()">Logout</button>
+    </mat-menu>
   </div>
 
   <mat-icon style="margin-right: 0.5em">brightness_5</mat-icon>
@@ -28,6 +30,7 @@
     style="margin-right: 0.5em"
     [formControl]="toggleControl"
     (change)="toggleDarkMode($event)"
+    ngDefaultControl
   >
   </mat-slide-toggle>
   <mat-icon>bedtime</mat-icon>
