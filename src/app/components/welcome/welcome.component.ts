@@ -25,9 +25,7 @@ export class WelcomeComponent implements OnInit {
   filteredOptions$: Observable<Oidc[]> | undefined;
 
   login() {
-    console.log('called login ##');
     const selected = this.oidcSelection.value;
-    console.log('called login with ', selected);
 
     if (selected !== '' && !this.isValidUrl(selected)) {
       this.notificationService.error({
@@ -46,7 +44,6 @@ export class WelcomeComponent implements OnInit {
   }
 
   isValidUrl(url: string) {
-    console.log('valid url', url);
     try {
       // throws on invalid URL
       new URL(url);

@@ -1,7 +1,4 @@
-import {
-  ComponentFixture,
-  TestBed,
-} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { WelcomeComponent } from './welcome.component';
 import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
@@ -15,7 +12,6 @@ describe('WelcomeComponent', () => {
   let component: WelcomeComponent;
   let fixture: ComponentFixture<WelcomeComponent>;
   let authenticationServiceSpy: jasmine.SpyObj<SolidAuthenticationService>;
-  let notificationServiceSpy: jasmine.SpyObj<NotificationService>;
 
   beforeEach(async () => {
     const authenticationSpy = jasmine.createSpyObj(
@@ -49,9 +45,6 @@ describe('WelcomeComponent', () => {
     authenticationServiceSpy = TestBed.inject(
       SolidAuthenticationService
     ) as jasmine.SpyObj<SolidAuthenticationService>;
-    notificationServiceSpy = TestBed.inject(
-      NotificationService
-    ) as jasmine.SpyObj<NotificationService>;
 
     authenticationServiceSpy.isLoggedIn.and.returnValue(of(false));
   });
@@ -72,7 +65,7 @@ describe('WelcomeComponent', () => {
     expect(button?.textContent?.toLowerCase()).toContain('login');
   });
 
-  fit('should initiate login when clicking login button', () => {
+  it('should initiate login when clicking login button', () => {
     component.oidcSelection.setValue('https://solidweb.org/');
     fixture.detectChanges();
 
@@ -80,12 +73,14 @@ describe('WelcomeComponent', () => {
     const welcomeElement: HTMLElement = fixture.nativeElement;
     const button = welcomeElement.querySelector('button');
     button?.click();
-    // übeltäter
     expect(authenticationServiceSpy.goToLoginPage).toHaveBeenCalled();
   });
 
-  it('should display error on URL without protocol', () => {
-    authenticationServiceSpy.goToLoginPage('invalid.com');
-    expect(notificationServiceSpy.error).toHaveBeenCalled();
+  it('button should not be clickable for invalid url', () => {
+    component.oidcSelection.setValue('invalid.com');
+    fixture.detectChanges();
+    const welcomeElement: HTMLElement = fixture.nativeElement;
+    const button = welcomeElement.querySelector('button');
+    expect(button?.disabled).toBe(true);
   });
 });

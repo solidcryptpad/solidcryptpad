@@ -13,12 +13,10 @@ import { SolidAuthenticationService } from '../services/authentication/solid-aut
 export class LoggedInDirective implements OnInit {
   constructor(
     private element: ElementRef,
-    private templateRef: TemplateRef<any>,
+    private templateRef: TemplateRef<never>,
     private viewContainer: ViewContainerRef,
     private solidAuthenticationService: SolidAuthenticationService
   ) {}
-
-  //loggedIn$: Observable<boolean> | undefined;
 
   ngOnInit(): void {
     this.solidAuthenticationService.isLoggedIn().subscribe((isLoggedIn) => {

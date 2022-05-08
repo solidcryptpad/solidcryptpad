@@ -1,7 +1,9 @@
 import { LoggedInDirective } from './logged-in.directive';
-import { Component, DebugElement } from '@angular/core';
+import { Component, DebugNode } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { SolidAuthenticationService } from '../services/authentication/solid-authentication.service';
+import { of } from 'rxjs';
 
 // #docregion test-component
 @Component({
@@ -15,20 +17,33 @@ class TestComponent {}
 
 describe('LoggedInDirective', () => {
   let fixture: ComponentFixture<TestComponent>;
-  let des: DebugElement[]; // the three elements w/ the directive
+  let des: DebugNode[]; // the three elements w/ the directive
+  let authenticationServiceSpy: jasmine.SpyObj<SolidAuthenticationService>;
 
   beforeEach(() => {
+    const authenticationSpy = jasmine.createSpyObj(
+      'SolidAuthenticationService',
+      ['isLoggedIn', 'goToLoginPage']
+    );
+
     fixture = TestBed.configureTestingModule({
       declarations: [LoggedInDirective, TestComponent],
+      providers: [
+        { provide: SolidAuthenticationService, useValue: authenticationSpy },
+      ],
     }).createComponent(TestComponent);
 
-    fixture.detectChanges(); // initial binding
+    authenticationServiceSpy = TestBed.inject(
+      SolidAuthenticationService
+    ) as jasmine.SpyObj<SolidAuthenticationService>;
 
-    // all elements with an attached HighlightDirective
-    des = fixture.debugElement.queryAll(By.directive(LoggedInDirective));
+    authenticationServiceSpy.isLoggedIn.and.returnValue(of(false));
+    fixture.detectChanges();
   });
 
   it('should have three annotated elements', () => {
+    fixture.detectChanges(); // initial binding
+    des = fixture.debugElement.queryAllNodes(By.directive(LoggedInDirective));
     expect(des.length).toBe(3);
   });
 });
