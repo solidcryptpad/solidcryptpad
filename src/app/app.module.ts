@@ -11,7 +11,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { HomeComponent } from './components/home/home.component';
 import { SolidAuthenticationService } from './services/authentication/solid-authentication.service';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FileEditorComponent } from './components/file-editor/file-editor.component';
 import { KeystoreComponent } from './components/keystore/keystore.component';
 import { ToastrModule } from 'ngx-toastr';
@@ -19,6 +19,16 @@ import { TextEditorComponent } from './components/text-editor/text-editor.compon
 import { NgxEditorModule } from 'ngx-editor';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { GlobalErrorHandlerService } from './services/global_error_handler/global-error-handler.service';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatIconModule } from '@angular/material/icon';
+import { HttpClientModule } from '@angular/common/http';
+import { FaqComponent } from './components/faq/faq.component';
+import { MatListModule } from '@angular/material/list';
+import { LoggedInDirective } from './directives/logged-in.directive';
+import { MatMenuModule } from '@angular/material/menu';
 
 @NgModule({
   declarations: [
@@ -30,17 +40,28 @@ import { GlobalErrorHandlerService } from './services/global_error_handler/globa
     FileEditorComponent,
     KeystoreComponent,
     NavbarComponent,
+    FaqComponent,
+    LoggedInDirective,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    MatToolbarModule,
     MatExpansionModule,
+    MatToolbarModule,
     MatButtonModule,
     FormsModule,
+    HttpClientModule,
     NgxEditorModule,
     ToastrModule.forRoot({ closeButton: true }),
+    MatAutocompleteModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSlideToggleModule,
+    MatIconModule,
+    ReactiveFormsModule,
+    MatListModule,
+    MatMenuModule,
   ],
   providers: [
     SolidAuthenticationService,

@@ -10,6 +10,6 @@ describe("Test setup", function () {
       cy.login(user);
     });
     cy.contains("Home").click();
-    cy.contains("hello authenticated user!");
+    cy.contains("Welcome to your personal area.");
   });
 });

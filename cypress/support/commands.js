@@ -31,6 +31,11 @@ Cypress.Commands.add("createRandomAccount", function () {
     confirmPassword: password,
   });
 
+  // replace default card, because it does not contain a name and pod urls
+  // which we assume to exist in the pod
+  const cardUrl = config.webId.substring(0, config.webId.lastIndexOf("#"));
+  cy.intercept(cardUrl, { fixture: "profile-card.ttl" });
+
   return cy.wrap(config);
 });
 
@@ -44,9 +49,9 @@ Cypress.Commands.add("login", function (user) {
   };
   //cy.clearLocalStorage()
   cy.log("login", user);
-  cy.visit("localhost:4200/");
+  cy.visit("/");
 
-  cy.get("input").type(Cypress.config().cssUrl + "/");
+  cy.get("#provider").type(Cypress.config().cssUrl + "/");
   cy.contains("LOGIN").click();
 
   cy.url().should("include", user.idp);
