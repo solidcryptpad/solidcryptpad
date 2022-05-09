@@ -19,7 +19,6 @@ import {
   MatSlideToggle,
   MatSlideToggleModule,
 } from '@angular/material/slide-toggle';
-import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
 
 describe('NavbarComponent', () => {
   let component: NavbarComponent;
@@ -35,13 +34,6 @@ describe('NavbarComponent', () => {
   };
 
   beforeEach(async () => {
-    const authenticationSpy = jasmine.createSpyObj(
-      'SolidAuthenticationSpy',
-      ['goToLoginPage', 'isLoggedIn'],
-      {
-        oidc: [{ name: 'Solid Web', url: 'https://solidweb.org/' }],
-      }
-    );
     const notificationSpy = jasmine.createSpyObj('NotificationSpy', ['error']);
     const routes = [
       { path: '', component: {} },
@@ -67,11 +59,6 @@ describe('NavbarComponent', () => {
         {
           provide: NotificationService,
           useValue: notificationSpy,
-        },
-
-        {
-          provide: SolidAuthenticationService,
-          useValue: authenticationSpy,
         },
       ],
     }).compileComponents();
