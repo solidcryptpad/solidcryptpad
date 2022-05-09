@@ -7,6 +7,8 @@ import { WelcomeComponent } from './components/welcome/welcome.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatToolbarModule } from '@angular/material/toolbar';
+
+import { MatTreeModule } from '@angular/material/tree';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { HomeComponent } from './components/home/home.component';
@@ -19,11 +21,13 @@ import { TextEditorComponent } from './components/text-editor/text-editor.compon
 import { NgxEditorModule } from 'ngx-editor';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { GlobalErrorHandlerService } from './services/global_error_handler/global-error-handler.service';
+import { TreeNestedExplorerComponent } from './components/tree-nested-explorer/tree-nested-explorer.component';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatIconModule } from '@angular/material/icon';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatIconModule } from '@angular/material/icon';
 import { HttpClientModule } from '@angular/common/http';
 import { FaqComponent } from './components/faq/faq.component';
 import { MatListModule } from '@angular/material/list';
@@ -40,6 +44,7 @@ import { MatMenuModule } from '@angular/material/menu';
     FileEditorComponent,
     KeystoreComponent,
     NavbarComponent,
+    TreeNestedExplorerComponent,
     FaqComponent,
     LoggedInDirective,
   ],
@@ -47,6 +52,8 @@ import { MatMenuModule } from '@angular/material/menu';
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
+    MatToolbarModule,
+    MatTreeModule,
     MatExpansionModule,
     MatToolbarModule,
     MatButtonModule,
@@ -54,6 +61,8 @@ import { MatMenuModule } from '@angular/material/menu';
     HttpClientModule,
     NgxEditorModule,
     ToastrModule.forRoot({ closeButton: true }),
+    MatProgressBarModule,
+    MatIconModule,
     MatAutocompleteModule,
     MatFormFieldModule,
     MatInputModule,

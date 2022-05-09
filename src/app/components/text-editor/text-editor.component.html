@@ -1,8 +1,8 @@
 <div class="container">
   <div class="content">
-    <div *ngIf="filename">
+    <div *ngIf="fileUrl">
       <h3>
-        You are editing <i>{{ filename }}</i
+        You are editing <i>{{ fileUrl }}</i
         >!
       </h3>
       <div class="editor">
@@ -37,7 +37,7 @@
         Close file without saving.
       </button>
     </div>
-    <div *ngIf="!filename">
+    <div *ngIf="!fileUrl">
       <h3>No filename given. Open an example file:</h3>
       <ul>
         <li>

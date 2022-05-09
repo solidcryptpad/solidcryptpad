@@ -4,6 +4,7 @@ import { FileEditorComponent } from './file-editor.component';
 import { NotificationService } from 'src/app/services/notification/notification.service';
 import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
 import { FormsModule } from '@angular/forms';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('FileEditorComponent', () => {
   let component: FileEditorComponent;
@@ -17,7 +18,7 @@ describe('FileEditorComponent', () => {
       'sendFile',
     ]);
     await TestBed.configureTestingModule({
-      imports: [FormsModule],
+      imports: [FormsModule, RouterTestingModule],
       declarations: [FileEditorComponent],
       providers: [
         FileEditorComponent,
