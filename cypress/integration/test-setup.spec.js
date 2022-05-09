@@ -1,6 +1,6 @@
 describe("Test setup", function () {
   it("can use createRandomAccount", function () {
-    cy.createRandomAccount().then(console.log);
+    cy.createRandomAccount();
   });
 
   it("can use login command", function () {

@@ -12,6 +12,9 @@ describe('TextEditorComponent', () => {
       imports: [RouterTestingModule],
       declarations: [TextEditorComponent],
     }).compileComponents();
+
+    // ignoring debug output in the test
+    spyOn(console, 'debug');
   });
 
   beforeEach(() => {

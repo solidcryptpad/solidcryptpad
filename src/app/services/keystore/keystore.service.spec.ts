@@ -22,10 +22,10 @@ describe('KeystoreService', () => {
 
     service = TestBed.inject(KeystoreService);
 
+    // eslint-disable-next-line unused-imports/no-unused-vars
     authenticationServiceSpy = TestBed.inject(
       SolidAuthenticationService
     ) as jasmine.SpyObj<SolidAuthenticationService>;
-    console.log(authenticationServiceSpy); //Temp. Fix for lint error 'authenticationServiceSpy' is assigned a value but never used'
   });
 
   it('should be created', () => {
