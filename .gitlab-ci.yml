@@ -52,6 +52,7 @@ test-e2e:
   before_script:
     - *install_cached_node_modules
   script:
+    - npx cypress verify # circumvent verification timeout. see https://stackoverflow.com/q/63667880/6548154
     - npm run test:ci:e2e
 
 build:
