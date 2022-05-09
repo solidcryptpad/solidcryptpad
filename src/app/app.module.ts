@@ -19,6 +19,10 @@ import { TextEditorComponent } from './components/text-editor/text-editor.compon
 import { NgxEditorModule } from 'ngx-editor';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { GlobalErrorHandlerService } from './services/global_error_handler/global-error-handler.service';
+import { EnterMasterPasswordComponent } from './components/enter-master-password/enter-master-password.component';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatInputModule } from '@angular/material/input';
 
 @NgModule({
   declarations: [
@@ -30,8 +34,12 @@ import { GlobalErrorHandlerService } from './services/global_error_handler/globa
     FileEditorComponent,
     KeystoreComponent,
     NavbarComponent,
+    EnterMasterPasswordComponent,
   ],
   imports: [
+    MatInputModule,
+    MatFormFieldModule,
+    MatDialogModule,
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,

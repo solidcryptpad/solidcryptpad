@@ -17,9 +17,7 @@ import { KeystoreService } from '../keystore/keystore.service';
   providedIn: 'root',
 })
 export class SolidFileHandlerService {
-  constructor(private keystoreService: KeystoreService) {
-    keystoreService.setMasterPassword('testPassword182617042022'); //TEMP
-  }
+  constructor(private keystoreService: KeystoreService) {}
 
   /**
    * reads a file saved at the url
