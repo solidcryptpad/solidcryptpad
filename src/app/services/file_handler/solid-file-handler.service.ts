@@ -251,7 +251,7 @@ export class SolidFileHandlerService {
   async getContainer(
     containerURL: string
   ): Promise<SolidDataset & WithServerResourceInfo> {
-    return await getSolidDataset(containerURL);
+    return await getSolidDataset(containerURL, { fetch: fetch });
   }
 
   async getContainerContent(containerURL: string): Promise<UrlString[]> {

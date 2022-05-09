@@ -39,7 +39,7 @@ describe("File-Handler Test", function () {
     cy.contains(fileUrl);
   });
 
-  it("Open File Hanlder and show new nested folder", function () {
+  it.only("Open File Hanlder and show new nested folder", function () {
     var folderUrl = "test-folder";
     cy.givenFolder(this.user, this.user.podUrl + "/nested/" + folderUrl + "/");
 
@@ -48,6 +48,7 @@ describe("File-Handler Test", function () {
     cy.contains("change Directory").click();
     cy.contains("nested");
 
-    cy.contains("open").first().click(); //Permission denied
+    cy.contains("open").first().click();
+    cy.contains("card");
   });
 });
