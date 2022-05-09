@@ -1,4 +1,4 @@
-describe("File-Handler Test", function () {
+describe("File-Explorer Test", function () {
   beforeEach(function () {
     cy.visit("http://localhost:4200/");
     cy.createRandomAccount().as("user");
@@ -39,16 +39,37 @@ describe("File-Handler Test", function () {
     cy.contains(fileUrl);
   });
 
-  it.only("Open File Hanlder and show new nested folder", function () {
-    var folderUrl = "test-folder";
-    cy.givenFolder(this.user, this.user.podUrl + "/nested/" + folderUrl + "/");
+  it("Open PodUrl and show new nested folder", function () {
+    var folderName = "testFolder";
+    var nestedFolderName = "nested";
+    cy.givenFolder(
+      this.user,
+      this.user.podUrl + "/" + nestedFolderName + "/" + folderName
+    );
 
     cy.get("[id=currentFolderLink]").type(this.user.podUrl + "/");
 
     cy.contains("change Directory").click();
-    cy.contains("nested");
+    cy.contains(nestedFolderName);
 
-    cy.contains("open").first().click();
-    cy.contains("card");
+    cy.get("[id=nestedNode] button:last").click();
+    cy.contains(folderName);
+  });
+
+  it("Open PodUrl and show new file in nested folder", function () {
+    var fileName = "testFile.txt";
+    var folderName = "TestFolder";
+    cy.givenFile(
+      this.user,
+      this.user.podUrl + "/" + folderName + "/" + fileName
+    );
+
+    cy.get("[id=currentFolderLink]").type(this.user.podUrl + "/");
+    cy.contains("change Directory").click();
+
+    cy.contains(folderName);
+
+    cy.get("[id=TestFolderNode] button:first").click();
+    cy.contains(fileName);
   });
 });
