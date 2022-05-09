@@ -49,6 +49,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
         this.filename === ''
       ) {
         console.debug('no filename given');
+        this.closeEditor();
       } else {
         this.setupEditor();
       }
@@ -61,6 +62,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    */
   setupEditor(): void {
     this.closeEditor();
+    console.debug('setting up editor...');
     this.ydoc = new Y.Doc();
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -120,6 +122,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
         blob.text().then((text) => {
           this.html = text;
           this.readyForSave = true;
+          this.editor.commands.focus().exec();
         });
       },
       (reason) => {
@@ -151,6 +154,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    * closes editor and ydoc
    */
   closeEditor(): void {
+    console.debug('resting editor...');
     this.provider?.disconnect();
     this.ydoc?.destroy();
     this.editor?.destroy();
