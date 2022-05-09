@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import * as authnBrowser from '@inrupt/solid-client-authn-browser';
 import { Router } from '@angular/router';
 import { RequiresLoginException } from '../../exceptions/requires-login-exception';
+import { Oidc } from '../../models/oidc';
+import { Observable, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -13,10 +15,10 @@ import { RequiresLoginException } from '../../exceptions/requires-login-exceptio
  * before other methods can be used
  */
 export class SolidAuthenticationService {
-  private oidc_list: string[][] = [
-    ['https://solidweb.org/', 'solidweb'],
-    ['https://solidcommunity.net/', 'solidcommunity'],
-    ['https://inrupt.net/', 'inrupt'],
+  private oidc_list: Oidc[] = [
+    { name: 'Solid Web', url: 'https://solidweb.org/' },
+    { name: 'Solid Community', url: 'https://solidcommunity.net/' },
+    { name: 'Inrupt', url: 'https://inrupt.net/' },
   ];
   // store as member to allow mocking in tests
   private authnBrowser: typeof authnBrowser;
@@ -47,11 +49,14 @@ export class SolidAuthenticationService {
     this.router.navigateByUrl(url.pathname + url.search + url.hash);
   }
 
-  async isLoggedIn(): Promise<boolean> {
-    return this.authnBrowser.getDefaultSession().info.isLoggedIn;
+  /**
+   * Login status is never changing during session
+   */
+  isLoggedIn(): Observable<boolean> {
+    return of(this.authnBrowser.getDefaultSession().info.isLoggedIn);
   }
 
-  async goToLoginPage(oidc = 'https://solidweb.org/') {
+  async goToLoginPage(oidc: string) {
     await this.authnBrowser.login({
       oidcIssuer: oidc,
       redirectUrl: window.location.href,
@@ -63,10 +68,16 @@ export class SolidAuthenticationService {
     url: string,
     init?: RequestInit
   ): ReturnType<typeof authnBrowser.fetch> {
-    if (await this.isLoggedIn()) {
+    let loginStatus;
+    this.isLoggedIn().subscribe((status) => {
+      loginStatus = status;
+    });
+
+    if (loginStatus) {
       return this.authnBrowser.fetch(url, init);
+    } else {
+      throw new RequiresLoginException('Not authenticated yet!');
     }
-    throw new RequiresLoginException('Not authenticated yet!');
   }
 
   /**
@@ -80,5 +91,18 @@ export class SolidAuthenticationService {
       return webId === undefined ? '' : webId;
     }
     throw new RequiresLoginException('Not authenticated yet!');
+  }
+
+  logout() {
+    this.authnBrowser.onLogout(() => {
+      this.router.navigate(['/']);
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 0);
+
+      // timeout is needed due to race conditions caused by the framework
+    });
+    return this.authnBrowser.getDefaultSession().logout();
   }
 }

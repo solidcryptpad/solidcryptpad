@@ -4,8 +4,6 @@ import { SolidFileHandlerService } from './solid-file-handler.service';
 import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
 import { SolidClientService } from '../module-wrappers/solid-client/solid-client.service';
 
-
-
 describe('SolidFileHandlerService', () => {
   let service: SolidFileHandlerService;
   let authenticationServiceSpy: jasmine.SpyObj<SolidAuthenticationService>;
@@ -16,7 +14,6 @@ describe('SolidFileHandlerService', () => {
       'readAndDecryptFile',
       'writeAndEncryptFile',
     ]);
-
     const solidClientSpy = jasmine.createSpyObj('SolidClientService', [
       'getFile',
       'overwriteFile',

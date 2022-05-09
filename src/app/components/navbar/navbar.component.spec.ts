@@ -7,17 +7,23 @@ import {
 
 import { NavbarComponent } from './navbar.component';
 import { NotificationService } from 'src/app/services/notification/notification.service';
-import { SolidAuthenticationService } from 'src/app/services/authentication/solid-authentication.service';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Router, Routes } from '@angular/router';
 import { MatToolbar } from '@angular/material/toolbar';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatIcon } from '@angular/material/icon';
+import { By } from '@angular/platform-browser';
+import { MockLoggedInDirective } from 'src/app/directives/logged-in.directive.mock';
+import {
+  MatSlideToggle,
+  MatSlideToggleModule,
+} from '@angular/material/slide-toggle';
+import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
 
 describe('NavbarComponent', () => {
   let component: NavbarComponent;
   let fixture: ComponentFixture<NavbarComponent>;
-  let authenticationServiceSpy: jasmine.SpyObj<SolidAuthenticationService>;
-  let notificationServiceSpy: jasmine.SpyObj<NotificationService>;
   let router: Router;
 
   const getLinkByText = (text: string): HTMLElement => {
@@ -31,9 +37,9 @@ describe('NavbarComponent', () => {
   beforeEach(async () => {
     const authenticationSpy = jasmine.createSpyObj(
       'SolidAuthenticationSpy',
-      ['goToLoginPage'],
+      ['goToLoginPage', 'isLoggedIn'],
       {
-        oidc: [['https://solidweb.org/', 'solidweb']],
+        oidc: [{ name: 'Solid Web', url: 'https://solidweb.org/' }],
       }
     );
     const notificationSpy = jasmine.createSpyObj('NotificationSpy', ['error']);
@@ -44,32 +50,46 @@ describe('NavbarComponent', () => {
     ] as Routes;
 
     await TestBed.configureTestingModule({
-      imports: [FormsModule, RouterTestingModule.withRoutes(routes)],
-      declarations: [NavbarComponent, MatToolbar],
+      imports: [
+        ReactiveFormsModule,
+        MatMenuModule,
+        MatSlideToggleModule,
+        RouterTestingModule.withRoutes(routes),
+      ],
+      declarations: [
+        NavbarComponent,
+        MatToolbar,
+        MatIcon,
+        MatSlideToggle,
+        MockLoggedInDirective,
+      ],
       providers: [
-        {
-          provide: SolidAuthenticationService,
-          useValue: authenticationSpy,
-        },
         {
           provide: NotificationService,
           useValue: notificationSpy,
+        },
+
+        {
+          provide: SolidAuthenticationService,
+          useValue: authenticationSpy,
         },
       ],
     }).compileComponents();
 
     router = TestBed.inject(Router);
-    authenticationServiceSpy = TestBed.inject(
-      SolidAuthenticationService
-    ) as jasmine.SpyObj<SolidAuthenticationService>;
-    notificationServiceSpy = TestBed.inject(
-      NotificationService
-    ) as jasmine.SpyObj<NotificationService>;
   });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(NavbarComponent);
     component = fixture.componentInstance;
+
+    // simulate all mocked appLoggedIn directives to be true
+    for (const node of fixture.debugElement.queryAllNodes(
+      By.directive(MockLoggedInDirective)
+    )) {
+      const mockedLoggedInDirective = node.injector.get(MockLoggedInDirective);
+      mockedLoggedInDirective.mockLogin();
+    }
     fixture.detectChanges();
   });
 
@@ -106,24 +126,4 @@ describe('NavbarComponent', () => {
 
     expect(router.url).toBe('/fileEditor');
   }));
-
-  it('should have <button> containing "Login"', () => {
-    const welcomeElement: HTMLElement = fixture.nativeElement;
-    const button = welcomeElement.querySelector('button');
-    expect(button?.textContent?.toLowerCase()).toContain('login');
-  });
-
-  it('should initiate login when clicking login button', () => {
-    authenticationServiceSpy.goToLoginPage.and.resolveTo();
-    const welcomeElement: HTMLElement = fixture.nativeElement;
-    const button = welcomeElement.querySelector('button');
-    button?.click();
-    expect(authenticationServiceSpy.goToLoginPage).toHaveBeenCalled();
-  });
-
-  it('should display error on URL without protocol', () => {
-    component.selected = 'invalid.com';
-    component.login();
-    expect(notificationServiceSpy.error).toHaveBeenCalled();
-  });
 });
