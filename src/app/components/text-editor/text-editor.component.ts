@@ -62,7 +62,11 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   setupEditor(): void {
     this.closeEditor();
     this.ydoc = new Y.Doc();
-    this.provider = new WebrtcProvider(this.getRoomName(), this.ydoc);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    this.provider = new WebrtcProvider(this.getRoomName(), this.ydoc, {
+      password: this.getRoomPassword(),
+    });
 
     this.xmlFragement = this.ydoc.getXmlFragment('prosemirror');
 
