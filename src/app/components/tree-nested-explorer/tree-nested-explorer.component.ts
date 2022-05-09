@@ -80,7 +80,7 @@ export class FolderDataSource implements DataSource<Node> {
 
         const new_children: Node[] = [];
         children.forEach(async (child) => {
-          new_children.push(await this.createNode(child, node.level + 1));
+          new_children.push(this.createNode(child, node.level + 1));
           this.data.splice(index + 1, 0, ...new_children);
           node.isLoading = false;
           this.dataChange.next(this.data);

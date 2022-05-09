@@ -1,6 +1,4 @@
 import { Component } from '@angular/core';
-import { SolidFileHandlerService } from '../../services/file_handler/solid-file-handler.service';
-import { NotificationService } from 'src/app/services/notification/notification.service';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
@@ -15,12 +13,7 @@ export class FileEditorComponent {
   public currentUrl = '';
   public moveUrl = '';
 
-  constructor(
-    private solidFileHandler: SolidFileHandlerService,
-    private notificationService: NotificationService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {
+  constructor(private router: Router, private route: ActivatedRoute) {
     this.route.queryParams.subscribe((params) => {
       this.currentUrl = params['url'];
     });
