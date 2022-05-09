@@ -7,6 +7,17 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { of } from 'rxjs';
+import {
+  MatFormField,
+  MatFormFieldModule,
+  MatLabel,
+} from '@angular/material/form-field';
+import { MatIcon, MatIconRegistry } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { DomSanitizer } from '@angular/platform-browser';
+import { HttpClientModule } from '@angular/common/http';
+import { MatInputModule } from '@angular/material/input';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('WelcomeComponent', () => {
   let component: WelcomeComponent;
@@ -28,8 +39,13 @@ describe('WelcomeComponent', () => {
         ReactiveFormsModule,
         RouterTestingModule,
         MatAutocompleteModule,
+        MatFormFieldModule,
+        MatMenuModule,
+        HttpClientModule,
+        MatInputModule,
+        NoopAnimationsModule,
       ],
-      declarations: [WelcomeComponent],
+      declarations: [WelcomeComponent, MatFormField, MatLabel, MatIcon],
       providers: [
         {
           provide: SolidAuthenticationService,
@@ -45,6 +61,14 @@ describe('WelcomeComponent', () => {
     authenticationServiceSpy = TestBed.inject(
       SolidAuthenticationService
     ) as jasmine.SpyObj<SolidAuthenticationService>;
+
+    const matIconRegistry = TestBed.inject(MatIconRegistry);
+    const domSanitizer = TestBed.inject(DomSanitizer);
+
+    matIconRegistry.addSvgIcon(
+      'solid',
+      domSanitizer.bypassSecurityTrustResourceUrl('../assets/solid-emblem.svg')
+    );
 
     authenticationServiceSpy.isLoggedIn.and.returnValue(of(false));
   });

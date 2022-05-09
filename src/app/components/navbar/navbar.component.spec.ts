@@ -15,6 +15,11 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatIcon } from '@angular/material/icon';
 import { By } from '@angular/platform-browser';
 import { MockLoggedInDirective } from 'src/app/directives/logged-in.directive.mock';
+import {
+  MatSlideToggle,
+  MatSlideToggleModule,
+} from '@angular/material/slide-toggle';
+import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
 
 describe('NavbarComponent', () => {
   let component: NavbarComponent;
@@ -30,6 +35,13 @@ describe('NavbarComponent', () => {
   };
 
   beforeEach(async () => {
+    const authenticationSpy = jasmine.createSpyObj(
+      'SolidAuthenticationSpy',
+      ['goToLoginPage', 'isLoggedIn'],
+      {
+        oidc: [{ name: 'Solid Web', url: 'https://solidweb.org/' }],
+      }
+    );
     const notificationSpy = jasmine.createSpyObj('NotificationSpy', ['error']);
     const routes = [
       { path: '', component: {} },
@@ -41,18 +53,25 @@ describe('NavbarComponent', () => {
       imports: [
         ReactiveFormsModule,
         MatMenuModule,
+        MatSlideToggleModule,
         RouterTestingModule.withRoutes(routes),
       ],
       declarations: [
         NavbarComponent,
         MatToolbar,
         MatIcon,
+        MatSlideToggle,
         MockLoggedInDirective,
       ],
       providers: [
         {
           provide: NotificationService,
           useValue: notificationSpy,
+        },
+
+        {
+          provide: SolidAuthenticationService,
+          useValue: authenticationSpy,
         },
       ],
     }).compileComponents();
@@ -64,7 +83,7 @@ describe('NavbarComponent', () => {
     fixture = TestBed.createComponent(NavbarComponent);
     component = fixture.componentInstance;
 
-    // simulate all mocked appLogedIn directives to be true
+    // simulate all mocked appLoggedIn directives to be true
     for (const node of fixture.debugElement.queryAllNodes(
       By.directive(MockLoggedInDirective)
     )) {

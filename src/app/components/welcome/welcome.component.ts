@@ -33,7 +33,6 @@ export class WelcomeComponent implements OnInit {
         message: `"${selected}" is not a valid URL`,
       });
     } else {
-      console.log('called else with ??? ', selected);
       this.solidAuthenticationService.goToLoginPage(selected).catch((reason) =>
         this.notificationService.error({
           title: 'Login error',

@@ -12,6 +12,7 @@ describe('SolidFileHandlerService', () => {
       'readAndDecryptFile',
       'writeAndEncryptFile',
     ]);
+
     TestBed.configureTestingModule({
       providers: [
         SolidFileHandlerService,
