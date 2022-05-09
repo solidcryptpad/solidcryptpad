@@ -1,4 +1,7 @@
 <div class="box">
-  <h2>Hello {{ name }}</h2>
+  <h2 *ngIf="name$; else noUser">Hello {{ name$ | async }}</h2>
+  <ng-template #noUser>
+    <h2>Hello User!</h2>
+  </ng-template>
   <h2>Welcome to your personal area.</h2>
 </div>

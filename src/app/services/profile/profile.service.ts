@@ -18,7 +18,7 @@ export class ProfileService {
   /**
    * Retrieves the name of the logged in person.
    */
-  async getUserName() {
+  async getUserName(): Promise<string> {
     const profile = this.solidClientService.getThing(
       await this.getProfileDataset(),
       await this.getWebId()

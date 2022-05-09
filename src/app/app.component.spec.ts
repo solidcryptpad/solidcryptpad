@@ -9,9 +9,13 @@ import {
 } from '@angular/material/slide-toggle';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatIcon } from '@angular/material/icon';
+import { SolidAuthenticationService } from './services/authentication/solid-authentication.service';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
+    const authenticationSpy = jasmine.createSpyObj('SolidAuthenticationSpy', [
+      'getWebId',
+    ]);
     await TestBed.configureTestingModule({
       imports: [RouterTestingModule, MatMenuModule, MatSlideToggleModule],
       declarations: [
@@ -20,6 +24,9 @@ describe('AppComponent', () => {
         MatToolbar,
         MatIcon,
         MatSlideToggle,
+      ],
+      providers: [
+        { provide: SolidAuthenticationService, useValue: authenticationSpy },
       ],
     }).compileComponents();
   });

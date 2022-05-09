@@ -17,6 +17,7 @@ import { By } from '@angular/platform-browser';
 import { MockLoggedInDirective } from 'src/app/directives/logged-in.directive.mock';
 import {
   MatSlideToggle,
+  MatSlideToggleChange,
   MatSlideToggleModule,
 } from '@angular/material/slide-toggle';
 import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
@@ -35,13 +36,9 @@ describe('NavbarComponent', () => {
   };
 
   beforeEach(async () => {
-    const authenticationSpy = jasmine.createSpyObj(
-      'SolidAuthenticationSpy',
-      ['goToLoginPage', 'isLoggedIn'],
-      {
-        oidc: [{ name: 'Solid Web', url: 'https://solidweb.org/' }],
-      }
-    );
+    const authenticationSpy = jasmine.createSpyObj('SolidAuthenticationSpy', [
+      'logout',
+    ]);
     const notificationSpy = jasmine.createSpyObj('NotificationSpy', ['error']);
     const routes = [
       { path: '', component: {} },
@@ -126,4 +123,19 @@ describe('NavbarComponent', () => {
 
     expect(router.url).toBe('/fileEditor');
   }));
+
+  it('should redirect to home when logging out', () => {
+    component.logout();
+    expect(router.url).toBe('/');
+  });
+
+  it('should toggle dakrmode on slider change', () => {
+    const componentDebug = fixture.debugElement;
+    const slider = componentDebug.query(By.directive(MatSlideToggle));
+
+    spyOn(component, 'toggleDarkMode'); // set your spy
+    slider.triggerEventHandler('change', MatSlideToggleChange);
+
+    expect(component.toggleDarkMode).toHaveBeenCalled();
+  });
 });
