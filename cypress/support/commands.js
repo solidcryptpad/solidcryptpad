@@ -66,13 +66,9 @@ Cypress.Commands.add("login", function (user) {
   cy.url().should("include", "/consent");
   cy.contains("button", "Consent").click();
 
+  // wait until app processed login credentials
   cy.url().should("include", Cypress.config().baseUrl + "/");
-  /** TODO (depends on #17)
-   *  this gives the app time to process the credentials from the redirect
-   *  in the future: use a visual indicator of being loggedin
-   *  like checking if a logout button exists instead
-   */
-  cy.wait(1000);
+  cy.contains("Welcome to your personal area");
 });
 
 /**
