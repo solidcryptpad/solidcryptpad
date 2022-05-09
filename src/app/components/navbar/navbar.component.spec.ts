@@ -124,6 +124,6 @@ describe('NavbarComponent', () => {
     getLinkByText('Files').click();
     tick();
 
-    expect(router.url).toBe('/fileEditor');
+    expect(router.url).toBe('/fileEditor?url=');
   }));
 });
