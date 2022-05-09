@@ -1,35 +1,67 @@
-<div class="box">
-  <h2>Editor</h2>
-  <div *ngIf="filename">
-    <div class="NgxEditor__Wrapper">
-      <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
-      <ngx-editor
-        [editor]="editor"
-        [(ngModel)]="html"
-        [disabled]="false"
-        [placeholder]="'Type here...'"
-      ></ngx-editor>
+<div class="container">
+  <div class="content">
+    <div *ngIf="filename">
+      <h3>
+        You are editing <i>{{ filename }}</i
+        >!
+      </h3>
+      <div class="editor">
+        <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
+        <ngx-editor
+          [editor]="editor"
+          [(ngModel)]="html"
+          [disabled]="false"
+          [placeholder]="'Type here...'"
+        ></ngx-editor>
+      </div>
+      <br />
+      <button
+        mat-raised-button
+        type="button"
+        class="editor-button"
+        (click)="closeFile(true)"
+      >
+        Save and close file
+      </button>
+      <mat-slide-toggle class="editor-button" [(ngModel)]="autoSave"
+        >Auto-Save</mat-slide-toggle
+      >
+      <button
+        *ngIf="!autoSave"
+        color="warn"
+        mat-raised-button
+        type="button"
+        class="editor-button"
+        (click)="closeFile(false)"
+      >
+        Close file without saving.
+      </button>
     </div>
-    <button type="button" (click)="closeFile()">Close file</button>
-  </div>
-  <div *ngIf="!filename">
-    <h3>No filename given. Open an example file:</h3>
-    <ul>
-      <li>
-        <a [routerLink]="['/editor']" [queryParams]="{ file: 'document0.txt' }"
-          >document0.txt</a
-        >
-      </li>
-      <li>
-        <a [routerLink]="['/editor']" [queryParams]="{ file: 'document1.txt' }"
-          >document1.txt</a
-        >
-      </li>
-      <li>
-        <a [routerLink]="['/editor']" [queryParams]="{ file: 'document2.txt' }"
-          >document2.txt</a
-        >
-      </li>
-    </ul>
+    <div *ngIf="!filename">
+      <h3>No filename given. Open an example file:</h3>
+      <ul>
+        <li>
+          <a
+            [routerLink]="['/editor']"
+            [queryParams]="{ file: 'document0.txt' }"
+            >document0.txt</a
+          >
+        </li>
+        <li>
+          <a
+            [routerLink]="['/editor']"
+            [queryParams]="{ file: 'document1.txt' }"
+            >document1.txt</a
+          >
+        </li>
+        <li>
+          <a
+            [routerLink]="['/editor']"
+            [queryParams]="{ file: 'document2.txt' }"
+            >document2.txt</a
+          >
+        </li>
+      </ul>
+    </div>
   </div>
 </div>

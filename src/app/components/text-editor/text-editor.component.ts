@@ -31,6 +31,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   filename = '';
   provider!: WebrtcProvider;
   ydoc!: Y.Doc;
+  autoSave = true;
 
   constructor(
     private profileService: ProfileService,
@@ -59,6 +60,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    * https://github.com/yjs/y-prosemirror#utilities
    */
   setupEditor(): void {
+    this.closeEditor();
     this.ydoc = new Y.Doc();
     this.provider = new WebrtcProvider(this.getRoomName(), this.ydoc);
 
@@ -85,7 +87,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       const updateYdoc = fromEvent(this.ydoc, 'update');
       const result = updateYdoc.pipe(debounceTime(1000));
       result.subscribe(() => {
-        if (!this.readyForSave) {
+        if (!this.readyForSave || !this.autoSave) {
           return;
         }
         this.saveFile();
@@ -131,9 +133,11 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   /**
    * closes the current file with saving it
    */
-  closeFile(): void {
+  closeFile(saveFile: boolean): void {
     this.readyForSave = false;
-    this.saveFile();
+    if (saveFile) {
+      this.saveFile();
+    }
     this.closeEditor();
     this.html = '';
     this.router.navigate(['/editor'], { queryParams: { filename: '' } });
