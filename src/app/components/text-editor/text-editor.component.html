@@ -1,5 +1,6 @@
 <div class="container">
   <div class="content">
+    <h3>{{ errorMsg }}</h3>
     <div *ngIf="fileUrl">
       <h3>
         You are editing <i>{{ fileUrl }}</i
@@ -39,29 +40,27 @@
     </div>
     <div *ngIf="!fileUrl">
       <h3>No filename given. Open an example file:</h3>
-      <ul>
-        <li>
-          <a
-            [routerLink]="['/editor']"
-            [queryParams]="{ file: 'document0.txt' }"
-            >document0.txt</a
-          >
-        </li>
-        <li>
-          <a
-            [routerLink]="['/editor']"
-            [queryParams]="{ file: 'document1.txt' }"
-            >document1.txt</a
-          >
-        </li>
-        <li>
-          <a
-            [routerLink]="['/editor']"
-            [queryParams]="{ file: 'document2.txt' }"
-            >document2.txt</a
-          >
-        </li>
-      </ul>
+      <a
+        mat-raised-button
+        class="editor-button"
+        [routerLink]="['/editor']"
+        [queryParams]="{ file: getExampleUrl('ExampleFile0.txt') }"
+        >Open <b>ExampleFile0.txt</b></a
+      >
+      <a
+        mat-raised-button
+        class="editor-button"
+        [routerLink]="['/editor']"
+        [queryParams]="{ file: getExampleUrl('ExampleFile1.txt') }"
+        >Open <b>ExampleFile1.txt</b></a
+      >
+      <a
+        mat-raised-button
+        class="editor-button"
+        [routerLink]="['/editor']"
+        [queryParams]="{ file: getExampleUrl('ExampleFile2.txt') }"
+        >Open <b>ExampleFile2.txt</b></a
+      >
     </div>
   </div>
 </div>

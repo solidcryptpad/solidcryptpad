@@ -29,6 +29,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   xmlFragement: YXmlFragment | undefined;
   baseUrl = '';
   fileUrl = '';
+  errorMsg = '';
   provider!: WebrtcProvider;
   ydoc!: Y.Doc;
   autoSave = true;
@@ -41,6 +42,18 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.setupBaseUrl();
+  }
+
+  setupBaseUrl(): void {
+    this.profileService.getPodUrls().then((podUrls) => {
+      this.baseUrl = podUrls[0];
+      console.debug('using base url:  ' + this.baseUrl);
+      this.setupFilenameFromParams();
+    });
+  }
+
+  setupFilenameFromParams(): void {
     this.route.queryParams.subscribe((params) => {
       this.fileUrl = params['file'];
       if (
@@ -86,38 +99,33 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       ],
     });
 
-    this.profileService.getPodUrls().then((podUrls) => {
-      this.baseUrl = podUrls[0];
-      console.debug('using URL:  ' + this.getUrl());
-
-      const updateYdoc = fromEvent(this.ydoc, 'update');
-      const result = updateYdoc.pipe(debounceTime(1000));
-      result.subscribe(() => {
-        if (!this.readyForSave || !this.autoSave) {
-          return;
-        }
-        this.saveFile();
-      });
-
-      this.loadFile();
+    const updateYdoc = fromEvent(this.ydoc, 'update');
+    const result = updateYdoc.pipe(debounceTime(1000));
+    result.subscribe(() => {
+      if (!this.readyForSave || !this.autoSave) {
+        return;
+      }
+      this.saveFile();
     });
+
+    this.loadFile();
   }
 
   /**
    * saves the current file that is open in editor
    */
   saveFile(): void {
-    console.debug('saving file');
+    console.debug('saving file to file url: ' + this.fileUrl);
     const data = this.html;
     const blob = new Blob([data], { type: 'text/plain' });
-    this.fileService.writeAndEncryptFile(blob, this.getUrl());
+    this.fileService.writeAndEncryptFile(blob, this.fileUrl);
   }
 
   /**
    * loads the current file that is open in editor
    */
   loadFile(): void {
-    this.fileService.readAndDecryptFile(this.getUrl()).then(
+    this.fileService.readAndDecryptFile(this.fileUrl).then(
       (blob) => {
         blob.text().then((text) => {
           this.html = text;
@@ -131,6 +139,8 @@ export class TextEditorComponent implements OnInit, OnDestroy {
           this.readyForSave = true;
           this.saveFile();
           return;
+        } else {
+          this.errorMsg = 'Error while opening your file: ' + reason;
         }
         console.error('couldnt load file: ' + reason);
       }
@@ -154,17 +164,11 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    * closes editor and ydoc
    */
   closeEditor(): void {
+    this.errorMsg = '';
     console.debug('resting editor...');
     this.provider?.disconnect();
     this.ydoc?.destroy();
     this.editor?.destroy();
-  }
-
-  /**
-   * @return the url for the current opened file
-   */
-  getUrl(): string {
-    return this.fileUrl[0];
   }
 
   /**
@@ -173,21 +177,21 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    * @returns string with the example directory addes to the beginning
    */
   getExampleUrl(filename: string): string {
-    return `${this.baseUrl}private/cryptopad/${filename}`;
+    return this.baseUrl + 'private/cryptopad/' + filename;
   }
 
   /**
    * @return the room name for the current opened file
    */
   getRoomName(): string {
-    return 'room-' + this.getUrl();
+    return 'room-' + this.fileUrl;
   }
 
   /**
    * @return the room pw for the current opened file
    */
   getRoomPassword(): string {
-    return 'pw-' + this.getUrl(); //TODO generate room pw
+    return 'pw-' + this.fileUrl; //TODO generate room pw
   }
 
   ngOnDestroy(): void {
