@@ -1,4 +1,4 @@
-import { Component, HostBinding } from '@angular/core';
+import { Component, HostBinding, OnInit } from '@angular/core';
 import { SolidFileHandlerService } from './services/file_handler/solid-file-handler.service';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -8,7 +8,7 @@ import { DomSanitizer } from '@angular/platform-browser';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   link = '';
 
   @HostBinding('class') className = '';
@@ -17,16 +17,18 @@ export class AppComponent {
     private solidFileHandler: SolidFileHandlerService,
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer
-  ) {
+  ) {}
+
+  toggleDarkMode(darkModeOff: boolean) {
+    this.className = darkModeOff ? '' : 'darkMode';
+  }
+
+  ngOnInit(): void {
     this.matIconRegistry.addSvgIcon(
       'solid',
       this.domSanitizer.bypassSecurityTrustResourceUrl(
         '../assets/solid-emblem.svg'
       )
     );
-  }
-
-  toggleDarkMode(darkModeOff: boolean) {
-    this.className = darkModeOff ? '' : 'darkMode';
   }
 }
