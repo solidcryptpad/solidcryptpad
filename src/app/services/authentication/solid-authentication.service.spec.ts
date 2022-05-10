@@ -1,12 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import * as authnBrowser from '@inrupt/solid-client-authn-browser';
+import { Session } from '@inrupt/solid-client-authn-browser';
 
 import { SolidAuthenticationService } from './solid-authentication.service';
+import { Router } from '@angular/router';
 
 describe('SolidAuthenticationService', () => {
   let service: SolidAuthenticationService;
   let authnBrowserSpy: jasmine.SpyObj<typeof authnBrowser>;
+  let router: Router;
 
   const mockLoginStatus = (isLoggedIn: boolean) =>
     authnBrowserSpy.getDefaultSession.and.returnValue({
@@ -26,8 +29,11 @@ describe('SolidAuthenticationService', () => {
       'login',
       'getDefaultSession',
       'fetch',
+      'logout',
+      'onLogout',
     ]);
     service['authnBrowser'] = authnBrowserSpy;
+    router = TestBed.inject(Router);
   });
 
   it('should be created', () => {
@@ -81,5 +87,22 @@ describe('SolidAuthenticationService', () => {
     expect(authnBrowserSpy.fetch).toHaveBeenCalledWith('https://example.test', {
       method: 'POST',
     });
+  });
+
+  it('should return webId stored in session', async () => {
+    const session = new Session();
+    session.info.webId = 'myWebId';
+    authnBrowserSpy.getDefaultSession.and.returnValue(session);
+
+    expect(await service.getWebId()).toBe('myWebId');
+  });
+
+  it('should redirect back to landing page by triggering onLogout', () => {
+    const session = new Session();
+    authnBrowserSpy.getDefaultSession.and.returnValue(session);
+
+    service.logout();
+    expect(authnBrowserSpy.onLogout).toHaveBeenCalled();
+    expect(router.url).toBe('/');
   });
 });
