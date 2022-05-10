@@ -106,7 +106,7 @@ export class SolidFileHandlerService {
 
     try {
       return await overwriteFile(fileURL, file, {
-        contentType: file.type,
+        contentType: file.type || 'text/plain', //TODO standard content type?
         fetch: fetch,
       });
     } catch (error: any) {
