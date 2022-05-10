@@ -25,7 +25,6 @@ export class SolidAuthenticationService {
 
   constructor(private router: Router) {
     this.authnBrowser = authnBrowser;
-    this.authnBrowser.onSessionRestore((url) => this.onSessionRestore(url));
   }
 
   public get oidc() {
@@ -39,6 +38,7 @@ export class SolidAuthenticationService {
    *  - if previously logged in: initiates redirect to restore previous session
    */
   async initializeLoginStatus() {
+    this.authnBrowser.onSessionRestore((url) => this.onSessionRestore(url));
     await this.authnBrowser.handleIncomingRedirect({
       restorePreviousSession: true,
     });

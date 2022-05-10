@@ -52,6 +52,7 @@ test-e2e:
   before_script:
     - *install_cached_node_modules
   script:
+    - npx cypress verify # circumvent verification timeout. see https://stackoverflow.com/q/63667880/6548154
     - npm run test:ci:e2e
 
 build:
@@ -69,6 +70,7 @@ build:
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
       --destination "${CI_REGISTRY_IMAGE}:${CI_PIPELINE_ID}"
+      --verbosity=debug
   only:
     - development
 

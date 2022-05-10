@@ -74,10 +74,10 @@ export class KeystoreService {
   async loadKeystore(): Promise<KeyEntry[]> {
     let keystore: KeyEntry[];
     keystore = [];
-    const userName = await this.profileService.getUserName();
+    const userName = await this.profileService.getPodUrls();
     try {
       const encryptedKeystore = await getFile(
-        `https://${userName}.solidweb.org/private/Keystore`,
+        `${userName[0]}private/Keystore`,
         {
           fetch: fetch,
         }
@@ -105,18 +105,14 @@ export class KeystoreService {
    * Writes the current keystore from the local storage to the solid pod.
    */
   private async writeKeystoreToPod() {
-    const userName = await this.profileService.getUserName();
+    const userName = await this.profileService.getPodUrls();
     const encryptedKeystore = this.encryptKeystore(this.getLocalKeystore());
     const keyStoreBlob = new Blob([encryptedKeystore], { type: 'text/plain' });
 
-    await overwriteFile(
-      `https://${userName}.solidweb.org/private/Keystore`,
-      keyStoreBlob,
-      {
-        contentType: keyStoreBlob.type,
-        fetch: fetch,
-      }
-    );
+    await overwriteFile(`${userName[0]}private/Keystore`, keyStoreBlob, {
+      contentType: keyStoreBlob.type,
+      fetch: fetch,
+    });
   }
 
   /**

@@ -28,10 +28,10 @@ describe('KeystoreComponent', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
 
+    // eslint-disable-next-line unused-imports/no-unused-vars
     authenticationServiceSpy = TestBed.inject(
       SolidAuthenticationService
     ) as jasmine.SpyObj<SolidAuthenticationService>;
-    console.log(authenticationServiceSpy);
   });
 
   it('should create', () => {

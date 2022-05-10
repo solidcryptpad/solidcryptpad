@@ -6,8 +6,6 @@ describe("can navigate with navbar as logged in user", () => {
   });
 
   it("can navigate all links in navbar as logged in user", function () {
-    cy.log(JSON.stringify(this.user));
-
     cy.contains("Home").click();
     cy.url().should("include", "home");
 

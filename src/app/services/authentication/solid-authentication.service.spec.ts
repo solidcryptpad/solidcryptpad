@@ -24,6 +24,7 @@ describe('SolidAuthenticationService', () => {
     });
     service = TestBed.inject(SolidAuthenticationService);
     authnBrowserSpy = jasmine.createSpyObj('authnBrowserSpy', [
+      'onSessionRestore',
       'handleIncomingRedirect',
       'login',
       'getDefaultSession',

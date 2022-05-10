@@ -6,7 +6,9 @@
     </li>
 
     <li routerLinkActive="active" *appLoggedIn>
-      <a routerLink="fileEditor">Files</a>
+      <a [routerLink]="['fileEditor']" [queryParams]="{ url: pod_url }"
+        >Files</a
+      >
     </li>
     <li routerLinkActive="active" *appLoggedIn>
       <a routerLink="editor">Editor</a>
