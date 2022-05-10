@@ -28,9 +28,10 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   readyForSave = false;
   xmlFragement: YXmlFragment | undefined;
   baseUrl = '';
-  filename = '';
+  fileUrl = '';
   provider!: WebrtcProvider;
   ydoc!: Y.Doc;
+  autoSave = true;
 
   constructor(
     private profileService: ProfileService,
@@ -41,13 +42,14 @@ export class TextEditorComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
-      this.filename = params['file'];
+      this.fileUrl = params['file'];
       if (
-        this.filename === null ||
-        this.filename === undefined ||
-        this.filename === ''
+        this.fileUrl === null ||
+        this.fileUrl === undefined ||
+        this.fileUrl === ''
       ) {
         console.debug('no filename given');
+        this.closeEditor();
       } else {
         this.setupEditor();
       }
@@ -59,8 +61,14 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    * https://github.com/yjs/y-prosemirror#utilities
    */
   setupEditor(): void {
+    this.closeEditor();
+    console.debug('setting up editor...');
     this.ydoc = new Y.Doc();
-    this.provider = new WebrtcProvider(this.getRoomName(), this.ydoc);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    this.provider = new WebrtcProvider(this.getRoomName(), this.ydoc, {
+      password: this.getRoomPassword(),
+    });
 
     this.xmlFragement = this.ydoc.getXmlFragment('prosemirror');
 
@@ -85,7 +93,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       const updateYdoc = fromEvent(this.ydoc, 'update');
       const result = updateYdoc.pipe(debounceTime(1000));
       result.subscribe(() => {
-        if (!this.readyForSave) {
+        if (!this.readyForSave || !this.autoSave) {
           return;
         }
         this.saveFile();
@@ -114,6 +122,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
         blob.text().then((text) => {
           this.html = text;
           this.readyForSave = true;
+          this.editor.commands.focus().exec();
         });
       },
       (reason) => {
@@ -131,9 +140,11 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   /**
    * closes the current file with saving it
    */
-  closeFile(): void {
+  closeFile(saveFile: boolean): void {
     this.readyForSave = false;
-    this.saveFile();
+    if (saveFile) {
+      this.saveFile();
+    }
     this.closeEditor();
     this.html = '';
     this.router.navigate(['/editor'], { queryParams: { filename: '' } });
@@ -143,6 +154,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    * closes editor and ydoc
    */
   closeEditor(): void {
+    console.debug('resting editor...');
     this.provider?.disconnect();
     this.ydoc?.destroy();
     this.editor?.destroy();
@@ -152,7 +164,16 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    * @return the url for the current opened file
    */
   getUrl(): string {
-    return this.baseUrl + 'private/solidcryptpad/' + this.filename;
+    return this.fileUrl[0];
+  }
+
+  /**
+   * adds the default example directory
+   * @param filename the file it should use
+   * @returns string with the example directory addes to the beginning
+   */
+  getExampleUrl(filename: string): string {
+    return `${this.baseUrl}private/cryptopad/${filename}`;
   }
 
   /**

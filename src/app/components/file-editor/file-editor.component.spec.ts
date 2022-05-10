@@ -3,6 +3,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FileEditorComponent } from './file-editor.component';
 import { NotificationService } from 'src/app/services/notification/notification.service';
 import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
+import { FormsModule } from '@angular/forms';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('FileEditorComponent', () => {
   let component: FileEditorComponent;
@@ -16,6 +18,7 @@ describe('FileEditorComponent', () => {
       'sendFile',
     ]);
     await TestBed.configureTestingModule({
+      imports: [FormsModule, RouterTestingModule],
       declarations: [FileEditorComponent],
       providers: [
         FileEditorComponent,
@@ -32,10 +35,10 @@ describe('FileEditorComponent', () => {
     fixture = TestBed.createComponent(FileEditorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    // eslint-disable-next-line unused-imports/no-unused-vars
     authenticationServiceSpy = TestBed.inject(
       SolidAuthenticationService
     ) as jasmine.SpyObj<SolidAuthenticationService>;
-    console.log(authenticationServiceSpy); //Temp. Fix for lint error 'authenticationServiceSpy' is assigned a value but never used'
   });
 
   it('should create', () => {

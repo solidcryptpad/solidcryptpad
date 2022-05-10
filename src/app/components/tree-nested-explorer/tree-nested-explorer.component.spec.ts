@@ -1,24 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { TextEditorComponent } from './text-editor.component';
 import { RouterTestingModule } from '@angular/router/testing';
 
-describe('TextEditorComponent', () => {
-  let component: TextEditorComponent;
-  let fixture: ComponentFixture<TextEditorComponent>;
+import { TreeNestedExplorerComponent } from './tree-nested-explorer.component';
+
+describe('TreeNestedExplorerComponent', () => {
+  let component: TreeNestedExplorerComponent;
+  let fixture: ComponentFixture<TreeNestedExplorerComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [RouterTestingModule],
-      declarations: [TextEditorComponent],
+      declarations: [TreeNestedExplorerComponent],
     }).compileComponents();
-
-    // ignoring debug output in the test
-    spyOn(console, 'debug');
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(TextEditorComponent);
+    fixture = TestBed.createComponent(TreeNestedExplorerComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

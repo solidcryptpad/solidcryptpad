@@ -1,6 +1,6 @@
 describe("Test setup", function () {
   it("can use createRandomAccount", function () {
-    cy.createRandomAccount().then(console.log);
+    cy.createRandomAccount();
   });
 
   it("can use login command", function () {
@@ -10,6 +10,6 @@ describe("Test setup", function () {
       cy.login(user);
     });
     cy.contains("Home").click();
-    cy.contains("hello authenticated user!");
+    cy.contains("Welcome to your personal area.");
   });
 });

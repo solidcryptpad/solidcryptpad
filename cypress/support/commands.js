@@ -31,6 +31,11 @@ Cypress.Commands.add("createRandomAccount", function () {
     confirmPassword: password,
   });
 
+  // replace default card, because it does not contain a name and pod urls
+  // which we assume to exist in the pod
+  const cardUrl = config.webId.substring(0, config.webId.lastIndexOf("#"));
+  cy.intercept(cardUrl, { fixture: "profile-card.ttl" });
+
   return cy.wrap(config);
 });
 
@@ -44,9 +49,9 @@ Cypress.Commands.add("login", function (user) {
   };
   //cy.clearLocalStorage()
   cy.log("login", user);
-  cy.visit("localhost:4200/");
+  cy.visit("/");
 
-  cy.get("input").type(Cypress.config().cssUrl + "/");
+  cy.get("#provider").type(Cypress.config().cssUrl + "/");
   cy.contains("LOGIN").click();
 
   cy.url().should("include", user.idp);
@@ -61,13 +66,9 @@ Cypress.Commands.add("login", function (user) {
   cy.url().should("include", "/consent");
   cy.contains("button", "Consent").click();
 
+  // wait until app processed login credentials
   cy.url().should("include", Cypress.config().baseUrl + "/");
-  /** TODO (depends on #17)
-   *  this gives the app time to process the credentials from the redirect
-   *  in the future: use a visual indicator of being loggedin
-   *  like checking if a logout button exists instead
-   */
-  cy.wait(1000);
+  cy.contains("Welcome to your personal area");
 });
 
 /**

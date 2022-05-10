@@ -1,26 +1,5 @@
-<p>File URL:</p>
-<input type="text" id="fileLink" name="fileLink" #link />
-<button type="button" (click)="sendRequest(link.value)">show content</button>
-<p>File Content: {{ fileContent }}</p>
+<p>Folder URL: {{ currentUrl }}</p>
+<input type="text" id="currentFolderLink" [(ngModel)]="this.moveUrl" />
+<button (click)="this.goToFolder(moveUrl)">change Directory</button>
 
-<p>New File Content</p>
-<input
-  type="text"
-  id="fileContent"
-  name="fileContent"
-  [(ngModel)]="newFileContent"
-/>
-<p>New File URL:</p>
-<input type="text" id="sendfileLink" name="sendfileLink" #newLink />
-<button type="button" (click)="sendFile(newLink.value)">send content</button>
-<p>upload file</p>
-<input type="text" id="uploadfileLink" name="uploadfileLink" #uploadLink />
-<input type="file" (change)="selectFile($event)" />
-<button type="button" (click)="uploadFiles(file, uploadLink.value)">
-  send
-</button>
-<p>create folder</p>
-<input type="text" id="folderLink" name="folderLink" #folderLink />
-<button type="button" (click)="createFolder(folderLink.value)">
-  create folder
-</button>
+<app-tree-nested-explorer></app-tree-nested-explorer>

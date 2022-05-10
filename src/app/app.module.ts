@@ -7,11 +7,13 @@ import { WelcomeComponent } from './components/welcome/welcome.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatToolbarModule } from '@angular/material/toolbar';
+
+import { MatTreeModule } from '@angular/material/tree';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { HomeComponent } from './components/home/home.component';
 import { SolidAuthenticationService } from './services/authentication/solid-authentication.service';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FileEditorComponent } from './components/file-editor/file-editor.component';
 import { KeystoreComponent } from './components/keystore/keystore.component';
 import { ToastrModule } from 'ngx-toastr';
@@ -20,9 +22,19 @@ import { NgxEditorModule } from 'ngx-editor';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { GlobalErrorHandlerService } from './services/global_error_handler/global-error-handler.service';
 import { EnterMasterPasswordComponent } from './components/enter-master-password/enter-master-password.component';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatDialogModule } from '@angular/material/dialog';
+import { TreeNestedExplorerComponent } from './components/tree-nested-explorer/tree-nested-explorer.component';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatIconModule } from '@angular/material/icon';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { HttpClientModule } from '@angular/common/http';
+import { FaqComponent } from './components/faq/faq.component';
+import { MatListModule } from '@angular/material/list';
+import { LoggedInDirective } from './directives/logged-in.directive';
+import { MatMenuModule } from '@angular/material/menu';
 
 @NgModule({
   declarations: [
@@ -35,6 +47,9 @@ import { MatInputModule } from '@angular/material/input';
     KeystoreComponent,
     NavbarComponent,
     EnterMasterPasswordComponent,
+    TreeNestedExplorerComponent,
+    FaqComponent,
+    LoggedInDirective,
   ],
   imports: [
     MatInputModule,
@@ -44,11 +59,24 @@ import { MatInputModule } from '@angular/material/input';
     AppRoutingModule,
     BrowserAnimationsModule,
     MatToolbarModule,
+    MatTreeModule,
     MatExpansionModule,
+    MatToolbarModule,
     MatButtonModule,
     FormsModule,
+    HttpClientModule,
     NgxEditorModule,
     ToastrModule.forRoot({ closeButton: true }),
+    MatProgressBarModule,
+    MatIconModule,
+    MatAutocompleteModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSlideToggleModule,
+    MatIconModule,
+    ReactiveFormsModule,
+    MatListModule,
+    MatMenuModule,
   ],
   providers: [
     SolidAuthenticationService,
