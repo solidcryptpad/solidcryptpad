@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KeystoreComponent } from './keystore.component';
 import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
+import { MatDialogModule } from '@angular/material/dialog';
 
 describe('KeystoreComponent', () => {
   let component: KeystoreComponent;
@@ -10,6 +11,7 @@ describe('KeystoreComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [MatDialogModule],
       declarations: [KeystoreComponent],
     }).compileComponents();
   });

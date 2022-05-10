@@ -9,11 +9,17 @@ import {
 } from '@angular/material/slide-toggle';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatIcon } from '@angular/material/icon';
+import { MatDialogModule } from '@angular/material/dialog';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RouterTestingModule, MatMenuModule, MatSlideToggleModule],
+      imports: [
+        RouterTestingModule,
+        MatMenuModule,
+        MatSlideToggleModule,
+        MatDialogModule,
+      ],
       declarations: [
         AppComponent,
         NavbarComponent,

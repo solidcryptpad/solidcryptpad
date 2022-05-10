@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { SolidFileHandlerService } from './solid-file-handler.service';
 import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
 import { SolidClientService } from '../module-wrappers/solid-client/solid-client.service';
+import { MatDialogModule } from '@angular/material/dialog';
+import { KeystoreService } from '../keystore/keystore.service';
 
 describe('SolidFileHandlerService', () => {
   let service: SolidFileHandlerService;
@@ -22,7 +24,9 @@ describe('SolidFileHandlerService', () => {
     ]);
 
     TestBed.configureTestingModule({
+      imports: [MatDialogModule],
       providers: [
+        KeystoreService,
         SolidFileHandlerService,
         { provide: SolidAuthenticationService, useValue: authenticationSpy },
         { provide: SolidClientService, useValue: solidClientSpy },
