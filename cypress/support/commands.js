@@ -82,14 +82,21 @@ Cypress.Commands.add("authenticatedRequest", (user, ...args) => {
 });
 
 /**
- * create a folder by creating a .test.keep file in it
+ * create a folder
  *
  * @param {object} user the user who has permissions to create this folder
  * @param {string} url the url of the new folder
  */
 Cypress.Commands.add("givenFolder", (user, url) => {
   if (!url.endsWith("/")) url += "/";
-  return cy.givenFile(user, `${url}.test.keep`, "");
+  // Solid allows PUT-ting containser, if the url ends with /
+  cy.authenticatedRequest(user, {
+    url,
+    method: "PUT",
+    headers: {
+      "content-type": "text/turtle",
+    },
+  });
 });
 
 /**
