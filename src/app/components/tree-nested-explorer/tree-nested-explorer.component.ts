@@ -212,7 +212,7 @@ export class TreeNestedExplorerComponent {
 
   open(node: Node) {
     if (node.expandable) {
-      this.router.navigateByUrl(`/fileEditor?url=${node.link}`);
+      this.router.navigateByUrl(`/files?url=${node.link}`);
     } else {
       this.router.navigateByUrl(`/editor?file=${node.link}`);
     }

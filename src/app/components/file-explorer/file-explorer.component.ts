@@ -2,14 +2,11 @@ import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
-  selector: 'app-file-editor',
-  templateUrl: './file-editor.component.html',
-  styleUrls: ['./file-editor.component.scss'],
+  selector: 'app-file-explorer',
+  templateUrl: './file-explorer.component.html',
+  styleUrls: ['./file-explorer.component.scss'],
 })
-/**
- * This component is a simple example for uploading and downloading and will be replaced in the future
- */
-export class FileEditorComponent {
+export class FileExplorerComponent {
   public currentUrl = '';
   public moveUrl = '';
 
@@ -20,6 +17,6 @@ export class FileEditorComponent {
   }
 
   async goToFolder(link: string): Promise<void> {
-    this.router.navigateByUrl(`fileEditor?url=${link}`);
+    this.router.navigateByUrl(`files?url=${link}`);
   }
 }

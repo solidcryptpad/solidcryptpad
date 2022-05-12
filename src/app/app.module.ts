@@ -14,7 +14,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { HomeComponent } from './components/home/home.component';
 import { SolidAuthenticationService } from './services/authentication/solid-authentication.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { FileEditorComponent } from './components/file-editor/file-editor.component';
+import { FileExplorerComponent } from './components/file-explorer/file-explorer.component';
 import { KeystoreComponent } from './components/keystore/keystore.component';
 import { ToastrModule } from 'ngx-toastr';
 import { TextEditorComponent } from './components/text-editor/text-editor.component';
@@ -41,7 +41,7 @@ import { MatMenuModule } from '@angular/material/menu';
     PageNotFoundComponent,
     HomeComponent,
     TextEditorComponent,
-    FileEditorComponent,
+    FileExplorerComponent,
     KeystoreComponent,
     NavbarComponent,
     TreeNestedExplorerComponent,
