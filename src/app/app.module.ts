@@ -20,7 +20,7 @@ import { ToastrModule } from 'ngx-toastr';
 import { TextEditorComponent } from './components/text-editor/text-editor.component';
 import { NgxEditorModule } from 'ngx-editor';
 import { NavbarComponent } from './components/navbar/navbar.component';
-import { GlobalErrorHandlerService } from './services/global_error_handler/global-error-handler.service';
+import { GlobalErrorHandlerService } from './services/global-error-handler/global-error-handler.service';
 import { TreeNestedExplorerComponent } from './components/tree-nested-explorer/tree-nested-explorer.component';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';

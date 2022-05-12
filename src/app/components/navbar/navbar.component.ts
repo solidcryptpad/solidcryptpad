@@ -10,13 +10,13 @@ import { SolidAuthenticationService } from '../../services/authentication/solid-
   styleUrls: ['./navbar.component.scss'],
 })
 export class NavbarComponent implements OnInit {
-  pod_url = '';
+  podUrl = '';
 
   constructor(
     private solidAuthenticationService: SolidAuthenticationService,
     private profileService: ProfileService
   ) {
-    profileService.getPodUrls().then((pods) => (this.pod_url = pods[0]));
+    profileService.getPodUrls().then((pods) => (this.podUrl = pods[0]));
   }
   @Output() darkModeToggleEvent: EventEmitter<boolean> =
     new EventEmitter<boolean>();

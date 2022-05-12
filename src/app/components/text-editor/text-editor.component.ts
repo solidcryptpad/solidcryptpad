@@ -11,7 +11,7 @@ import {
 } from 'y-prosemirror';
 import { keymap } from 'prosemirror-keymap';
 import { ProfileService } from '../../services/profile/profile.service';
-import { SolidFileHandlerService } from '../../services/file_handler/solid-file-handler.service';
+import { SolidFileHandlerService } from '../../services/file-handler/solid-file-handler.service';
 import { YXmlFragment } from 'yjs/dist/src/types/YXmlFragment';
 import { fromEvent, debounceTime } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
