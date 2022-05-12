@@ -1,14 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { FileEditorComponent } from './file-editor.component';
+import { FileExplorerComponent } from './file-explorer.component';
 import { NotificationService } from 'src/app/services/notification/notification.service';
 import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 
-describe('FileEditorComponent', () => {
-  let component: FileEditorComponent;
-  let fixture: ComponentFixture<FileEditorComponent>;
+describe('FileExplorerComponent', () => {
+  let component: FileExplorerComponent;
+  let fixture: ComponentFixture<FileExplorerComponent>;
   let authenticationServiceSpy: jasmine.SpyObj<SolidAuthenticationService>;
 
   beforeEach(async () => {
@@ -19,9 +19,9 @@ describe('FileEditorComponent', () => {
     ]);
     await TestBed.configureTestingModule({
       imports: [FormsModule, RouterTestingModule],
-      declarations: [FileEditorComponent],
+      declarations: [FileExplorerComponent],
       providers: [
-        FileEditorComponent,
+        FileExplorerComponent,
         { provide: SolidAuthenticationService, useValue: authenticationSpy },
         {
           provide: NotificationService,
@@ -32,7 +32,7 @@ describe('FileEditorComponent', () => {
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(FileEditorComponent);
+    fixture = TestBed.createComponent(FileExplorerComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
     // eslint-disable-next-line unused-imports/no-unused-vars

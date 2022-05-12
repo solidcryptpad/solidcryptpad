@@ -15,7 +15,7 @@ import { Observable, of } from 'rxjs';
  * before other methods can be used
  */
 export class SolidAuthenticationService {
-  private oidc_list: Oidc[] = [
+  private oidcList: Oidc[] = [
     { name: 'Solid Web', url: 'https://solidweb.org/' },
     { name: 'Solid Community', url: 'https://solidcommunity.net/' },
     { name: 'Inrupt', url: 'https://inrupt.net/' },
@@ -28,7 +28,7 @@ export class SolidAuthenticationService {
   }
 
   public get oidc() {
-    return this.oidc_list;
+    return this.oidcList;
   }
 
   /**

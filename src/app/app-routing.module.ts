@@ -5,14 +5,14 @@ import { WelcomeComponent } from './components/welcome/welcome.component';
 import { HomeComponent } from './components/home/home.component';
 import { AuthenticatedGuard } from './guards/authenticated.guard';
 import { TextEditorComponent } from './components/text-editor/text-editor.component';
-import { FileEditorComponent } from './components/file-editor/file-editor.component';
+import { FileExplorerComponent } from './components/file-explorer/file-explorer.component';
 import { KeystoreComponent } from './components/keystore/keystore.component';
 import { FaqComponent } from './components/faq/faq.component';
 
 const routes: Routes = [
   { path: '', component: WelcomeComponent },
   { path: 'keystore', component: KeystoreComponent },
-  { path: 'fileEditor', component: FileEditorComponent },
+  { path: 'files', component: FileExplorerComponent },
   {
     path: 'home',
     component: HomeComponent,

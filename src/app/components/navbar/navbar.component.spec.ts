@@ -43,7 +43,7 @@ describe('NavbarComponent', () => {
     const routes = [
       { path: '', component: {} },
       { path: 'home', component: {} },
-      { path: 'fileEditor', component: {} },
+      { path: 'files', component: {} },
     ] as Routes;
 
     await TestBed.configureTestingModule({
@@ -121,7 +121,7 @@ describe('NavbarComponent', () => {
     getLinkByText('Files').click();
     tick();
 
-    expect(router.url).toBe('/fileEditor?url=');
+    expect(router.url).toBe('/files?url=');
   }));
 
   it('should redirect to home when logging out', () => {
