@@ -1,5 +1,5 @@
 import { Component, HostBinding, OnInit } from '@angular/core';
-import { SolidFileHandlerService } from './services/file_handler/solid-file-handler.service';
+import { SolidFileHandlerService } from './services/file-handler/solid-file-handler.service';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 

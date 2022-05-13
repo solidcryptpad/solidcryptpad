@@ -10,7 +10,7 @@ import { BehaviorSubject, merge, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { setErrorContext } from 'src/app/exceptions/error-options';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
-import { SolidFileHandlerService } from 'src/app/services/file_handler/solid-file-handler.service';
+import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 
 /**
  * represents an element in the tree
@@ -18,7 +18,7 @@ import { SolidFileHandlerService } from 'src/app/services/file_handler/solid-fil
 export class Node {
   constructor(
     public link: string, //link to the folder in a pod
-    public short_name: string, // name displayed in the frontend
+    public shortName: string, // name displayed in the frontend
     public level: number = 1, // how deep is it from root
     public expandable: boolean = true, // is it a folder and therefor can it be opened
     public isLoading: boolean = false // is that object currently busy loading data
@@ -78,10 +78,10 @@ export class FolderDataSource implements DataSource<Node> {
           node.link
         );
 
-        const new_children: Node[] = [];
+        const newChildren: Node[] = [];
         children.forEach(async (child) => {
-          new_children.push(this.createNode(child, node.level + 1));
-          this.data.splice(index + 1, 0, ...new_children);
+          newChildren.push(this.createNode(child, node.level + 1));
+          this.data.splice(index + 1, 0, ...newChildren);
           node.isLoading = false;
           this.dataChange.next(this.data);
         });
@@ -100,8 +100,8 @@ export class FolderDataSource implements DataSource<Node> {
   }
 
   private createNode(url: string, level = 1): Node {
-    const is_container = this.solidFileHandlerService.isContainer(url);
-    return new Node(url, this.prepareName(url), level, is_container);
+    const isContainer = this.solidFileHandlerService.isContainer(url);
+    return new Node(url, this.prepareName(url), level, isContainer);
   }
 
   /**
@@ -160,7 +160,7 @@ export class FolderDataSource implements DataSource<Node> {
   styleUrls: ['./tree-nested-explorer.component.scss'],
 })
 export class TreeNestedExplorerComponent {
-  root_path?: string;
+  rootPath?: string;
 
   constructor(
     public solidFileHandlerService: SolidFileHandlerService,
@@ -175,12 +175,12 @@ export class TreeNestedExplorerComponent {
     this.dataSource = new FolderDataSource(
       this.treeControl,
       solidFileHandlerService,
-      this.root_path
+      this.rootPath
     );
 
     // setup if url is given
     this.route.queryParams.subscribe((params) => {
-      this.root_path = params['url'];
+      this.rootPath = params['url'];
 
       this.treeControl = new FlatTreeControl<Node>(
         this.getLevel,
@@ -189,7 +189,7 @@ export class TreeNestedExplorerComponent {
       this.dataSource = new FolderDataSource(
         this.treeControl,
         solidFileHandlerService,
-        this.root_path
+        this.rootPath
       );
     });
   }
@@ -212,7 +212,7 @@ export class TreeNestedExplorerComponent {
 
   open(node: Node) {
     if (node.expandable) {
-      this.router.navigateByUrl(`/fileEditor?url=${node.link}`);
+      this.router.navigateByUrl(`/files?url=${node.link}`);
     } else {
       this.router.navigateByUrl(`/editor?file=${node.link}`);
     }

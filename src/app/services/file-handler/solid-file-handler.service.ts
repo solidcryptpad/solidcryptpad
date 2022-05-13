@@ -62,7 +62,7 @@ export class SolidFileHandlerService {
 
   /**
    * writes a file to an url
-   * if the given link is a directory the file_name is appended
+   * if the given link is a directory the fileName is appended
    * if the file already exists then it is overwritten
    * if the file does not exist then a new one is created
    *
@@ -76,10 +76,10 @@ export class SolidFileHandlerService {
   async writeFile(
     file: Blob,
     fileURL: string,
-    file_name = 'unnamed'
+    fileName = 'unnamed'
   ): Promise<Blob> {
     if (this.isContainer(fileURL)) {
-      fileURL = fileURL + '' + file_name;
+      fileURL = fileURL + '' + fileName;
     }
 
     try {
@@ -94,7 +94,7 @@ export class SolidFileHandlerService {
 
   /**
    * encrypts a file and writes it to an url
-   * if the given link is a directory the file_name is appended
+   * if the given link is a directory the fileName is appended
    * if the file already exists then it is overwritten
    * if the file does not exist then a new one is created
    *
@@ -108,14 +108,14 @@ export class SolidFileHandlerService {
   async writeAndEncryptFile(
     file: Blob,
     fileURL: string,
-    file_name = 'unnamed'
+    fileName = 'unnamed'
   ): Promise<Blob> {
     if (this.isContainer(fileURL)) {
-      fileURL = fileURL + '' + file_name;
+      fileURL = fileURL + '' + fileName;
     }
     const encryptedFile = await this.keystoreService.encryptFile(file, fileURL);
 
-    return await this.writeFile(encryptedFile, fileURL, file_name);
+    return await this.writeFile(encryptedFile, fileURL, fileName);
   }
 
   /**
