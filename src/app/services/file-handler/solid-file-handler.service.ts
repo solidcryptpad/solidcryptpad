@@ -125,22 +125,21 @@ export class SolidFileHandlerService {
    * if the file does not exist then a new one is created
    *
    * @param containerURL the url the container should be created
-   * @returns a promise for the saved folder
+   * @returns a promise with a soliddataset of the container
    * @throws InvalidUrlException if the given url is not considered valid
    * @throws PermissionException if the given url cannot be written to cause of missing permissions
    * @throws UnknownException on all errors that are not explicitly caught
    * @throws AlreadyExistsException if the file cannot be overwritten
    */
-  async writeContainer(containerURL: string): Promise<Blob> {
+  async writeContainer(
+    containerURL: string
+  ): Promise<SolidDataset & WithServerResourceInfo> {
     if (!this.isContainer(containerURL)) {
       containerURL = containerURL + '/';
     }
 
     try {
-      return await this.solidClientService.overwriteFile(
-        containerURL,
-        new Blob()
-      );
+      return await this.solidClientService.createContainerAt(containerURL);
     } catch (error: any) {
       this.convertError(error);
     }
@@ -211,7 +210,6 @@ export class SolidFileHandlerService {
           break;
       }
     }
-    console.log('unknown error:', error instanceof FetchError);
     throw new UnknownException(`an unknown error appeared`, {
       cause: error,
     });

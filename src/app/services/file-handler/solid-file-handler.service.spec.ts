@@ -6,11 +6,15 @@ import { SolidClientService } from '../module-wrappers/solid-client/solid-client
 import { NotFoundException } from 'src/app/exceptions/not-found-exception';
 import {
   FetchError,
+  mockContainerFrom,
   mockFileFrom,
   WithResourceInfo,
 } from '@inrupt/solid-client';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { KeystoreService } from '../keystore/keystore.service';
+import { AlreadyExistsException } from 'src/app/exceptions/already-exists-exception';
+import { UnknownException } from 'src/app/exceptions/unknown-exception';
+import { BaseException } from 'src/app/exceptions/base-exception';
 
 describe('SolidFileHandlerService', () => {
   let service: SolidFileHandlerService;
@@ -27,6 +31,9 @@ describe('SolidFileHandlerService', () => {
       'getFile',
       'overwriteFile',
       'isContainer',
+      'createContainerAt',
+      'getSolidDataset',
+      'getContainedResourceUrlAll',
     ]);
     const keyStoreSpy = jasmine.createSpyObj('KeystoreService', [
       'decryptFile',
@@ -102,6 +109,17 @@ describe('SolidFileHandlerService', () => {
     await expectAsync(service.readFile(url)).toBeResolvedTo(file);
   });
 
+  it('readFile calls convertError on error', async () => {
+    const url = 'https://real.url.com';
+    solidClientServiceSpy.getFile.and.throwError(new Error());
+
+    spyOn(service, 'convertError');
+
+    await service.readFile(url);
+
+    expect(service.convertError).toHaveBeenCalled();
+  });
+
   it('readAndDecryptFile calls decryptFile with returned file', async () => {
     const url = 'https://real.url.com';
     const file = mockFileFrom(url);
@@ -147,6 +165,19 @@ describe('SolidFileHandlerService', () => {
     );
   });
 
+  it('writeFile calls convertError on error', async () => {
+    const url = 'https://real.url.com';
+    const file = new Blob(['blob']);
+
+    solidClientServiceSpy.overwriteFile.and.throwError(new Error());
+
+    spyOn(service, 'convertError');
+
+    await service.writeFile(file, url);
+
+    expect(service.convertError).toHaveBeenCalled();
+  });
+
   it('writeAndEncryptFile calls writeFile and encryptFile', async () => {
     const url = 'https://real.url.com';
     const file = mockFileFrom(url);
@@ -165,6 +196,139 @@ describe('SolidFileHandlerService', () => {
       jasmine.anything()
     );
   });
+
+  it('convertError converts 404 to NotFoundException', () => {
+    const url = 'https://real.url.com';
+
+    expect(() => service.convertError(createFetchMock(url, 404))).toThrowError(
+      NotFoundException
+    );
+  });
+
+  it('convertError converts 401 to PermissionException', () => {
+    const url = 'https://real.url.com';
+
+    expect(() => service.convertError(createFetchMock(url, 401))).toThrowError(
+      PermissionException
+    );
+  });
+
+  it('convertError converts 403 to PermissionException', () => {
+    const url = 'https://real.url.com';
+
+    expect(() => service.convertError(createFetchMock(url, 403))).toThrowError(
+      PermissionException
+    );
+  });
+
+  it('convertError converts 405 to AlreadyExistsException', () => {
+    const url = 'https://real.url.com';
+
+    expect(() => service.convertError(createFetchMock(url, 405))).toThrowError(
+      AlreadyExistsException
+    );
+  });
+
+  it('convertError converts non baseexception to UnknownException', () => {
+    expect(() => service.convertError(new Error(''))).toThrowError(
+      UnknownException
+    );
+  });
+
+  it('convertError throws baseException', () => {
+    const exception = new BaseException('BaseException', 'message');
+    expect(() => service.convertError(exception)).toThrowError(
+      BaseException,
+      exception.message
+    );
+  });
+
+  it('isContainer calls SolidClientService::isContainer', () => {
+    service.isContainer('https://real.url.com');
+
+    expect(solidClientServiceSpy.isContainer).toHaveBeenCalled();
+  });
+
+  it('writeContainer appends / if path is not a folder', async () => {
+    const url = 'https://real.url.com/newFolder';
+    const container = mockContainerFrom(url + '/');
+
+    solidClientServiceSpy.createContainerAt.and.returnValue(
+      Promise.resolve(container)
+    );
+
+    solidClientServiceSpy.isContainer.and.returnValue(false);
+
+    await service.writeContainer(url);
+
+    expect(solidClientServiceSpy.createContainerAt).toHaveBeenCalledWith(
+      url + '/'
+    );
+  });
+
+  it('writeContainer calls convertError on error', async () => {
+    const url = 'https://real.url.com';
+
+    solidClientServiceSpy.createContainerAt.and.throwError(new Error());
+
+    spyOn(service, 'convertError');
+
+    await service.writeContainer(url);
+
+    expect(service.convertError).toHaveBeenCalled();
+  });
+
+  it('writeContainer calls createContainerAt', async () => {
+    const url = 'https://real.url.com';
+    await service.writeContainer(url);
+
+    expect(solidClientServiceSpy.createContainerAt).toHaveBeenCalled();
+  });
+
+  it('getContainer calls convertError on error', async () => {
+    const url = 'https://real.url.com';
+
+    solidClientServiceSpy.getSolidDataset.and.throwError(new Error());
+
+    spyOn(service, 'convertError');
+
+    await service.getContainer(url);
+
+    expect(service.convertError).toHaveBeenCalled();
+  });
+
+  it('getContainer calls getSolidDataset', async () => {
+    const url = 'https://real.url.com';
+    await service.getContainer(url);
+    expect(solidClientServiceSpy.getSolidDataset).toHaveBeenCalled();
+  });
+
+  it('getContainerContent calls convertError on error', async () => {
+    const url = 'https://real.url.com';
+
+    solidClientServiceSpy.getContainedResourceUrlAll.and.throwError(
+      new Error()
+    );
+
+    spyOn(service, 'convertError');
+
+    await service.getContainerContent(url);
+
+    expect(service.convertError).toHaveBeenCalled();
+  });
+
+  it('getContainerContent calls getContainer and getContainedResourceUrlAll', async () => {
+    const url = 'https://real.url.com/';
+    spyOn(service, 'getContainer');
+
+    await service.getContainerContent(url);
+
+    expect(service.getContainer).toHaveBeenCalled();
+
+    expect(solidClientServiceSpy.getContainedResourceUrlAll).toHaveBeenCalled();
+  });
+  //todo getcontainercontent
+  //todo check call for convertError
 });
 
 /**
