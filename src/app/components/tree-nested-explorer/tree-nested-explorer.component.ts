@@ -34,8 +34,8 @@ export class FolderDataSource implements DataSource<Node> {
 
   constructor(
     private treeControl: FlatTreeControl<Node>,
-    public solidFileHandlerService: SolidFileHandlerService,
-    public root?: string
+    private solidFileHandlerService: SolidFileHandlerService,
+    private root?: string
   ) {
     if (root != undefined) {
       solidFileHandlerService.getContainerContent(root).then((x) => {
@@ -69,7 +69,7 @@ export class FolderDataSource implements DataSource<Node> {
    * @param event the change that occured in the tree
    */
   //todo check if node is actually openable
-  async openFolder(event: SelectionChange<Node>): Promise<void> {
+  private async openFolder(event: SelectionChange<Node>): Promise<void> {
     event.added.forEach(async (node) => {
       try {
         const index = this.data.indexOf(node);
@@ -108,7 +108,7 @@ export class FolderDataSource implements DataSource<Node> {
    * handles closing the folders
    * @param event the change that occured in the folder
    */
-  async closeFolder(event: SelectionChange<Node>): Promise<void> {
+  private async closeFolder(event: SelectionChange<Node>): Promise<void> {
     event.removed
       .slice()
       .reverse()
