@@ -13,6 +13,7 @@ import { UnknownException } from 'src/app/exceptions/unknown-exception';
 import { KeystoreService } from '../keystore/keystore.service';
 import { BaseException } from 'src/app/exceptions/base-exception';
 import { SolidClientService } from '../module-wrappers/solid-client/solid-client.service';
+import { NotFoundException } from 'src/app/exceptions/not-found-exception';
 
 @Injectable({
   providedIn: 'root',
@@ -196,6 +197,10 @@ export class SolidFileHandlerService {
             'you do not have the permission needed for this file',
             { cause: error }
           );
+        case 404:
+          throw new NotFoundException('the requested file was not found', {
+            cause: error,
+          });
         case 405:
           throw new AlreadyExistsException(
             'A file or folder of that name already exists and cannot be overwritten',
@@ -206,7 +211,7 @@ export class SolidFileHandlerService {
           break;
       }
     }
-    console.log('unknown error:', error);
+    console.log('unknown error:', error instanceof FetchError);
     throw new UnknownException(`an unknown error appeared`, {
       cause: error,
     });
