@@ -68,7 +68,6 @@ export class FolderDataSource implements DataSource<Node> {
    * handles the opening of the folder
    * @param event the change that occured in the tree
    */
-  //todo check if node is actually openable
   private async openFolder(event: SelectionChange<Node>): Promise<void> {
     event.added.forEach(async (node) => {
       try {
