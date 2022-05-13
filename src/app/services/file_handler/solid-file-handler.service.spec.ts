@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { SolidFileHandlerService } from './solid-file-handler.service';
 import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
 import { SolidClientService } from '../module-wrappers/solid-client/solid-client.service';
+import { NotFoundException } from 'src/app/exceptions/not-found-exception';
+import { mockFetchError } from '@inrupt/solid-client';
 
 describe('SolidFileHandlerService', () => {
   let service: SolidFileHandlerService;
@@ -47,11 +49,18 @@ describe('SolidFileHandlerService', () => {
     expect(service).toBeTruthy();
   });
 
-  /*it('readFile throws NotFoundException on 404', async () => {
-    expect(() => true).toBe(false);
+  it('readFile throws NotFoundException on 404', async () => {
+    const url = 'https://real.url.com';
+    const fetchError = mockFetchError(url, 404);
+
+    solidClientServiceSpy.getFile.and.throwError(fetchError);
+
+    await expectAsync(service.readFile(url)).toBeRejectedWithError(
+      NotFoundException
+    );
   });
 
-  it('readFile throws PermissionException on 401', async () => {
+  /*it('readFile throws PermissionException on 401', async () => {
     expect(() => true).toBe(false);
   });
 

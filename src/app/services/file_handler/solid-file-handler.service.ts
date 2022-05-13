@@ -1,29 +1,27 @@
 import { Injectable } from '@angular/core';
 import {
   FetchError,
-  getContainedResourceUrlAll,
-  getFile,
-  getSolidDataset,
-  isContainer,
-  overwriteFile,
   SolidDataset,
   UrlString,
   WithServerResourceInfo,
 } from '@inrupt/solid-client';
 import { fetch } from '@inrupt/solid-client-authn-browser';
 import { AlreadyExistsException } from 'src/app/exceptions/already-exists-exception';
-import { NotFoundException } from 'src/app/exceptions/not-found-exception';
 import { InvalidUrlException } from 'src/app/exceptions/invalid-url-exception';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
 import { KeystoreService } from '../keystore/keystore.service';
 import { BaseException } from 'src/app/exceptions/base-exception';
+import { SolidClientService } from '../module-wrappers/solid-client/solid-client.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SolidFileHandlerService {
-  constructor(private keystoreService: KeystoreService) {
+  constructor(
+    private keystoreService: KeystoreService,
+    private solidClientService: SolidClientService
+  ) {
     keystoreService.setMasterPassword('testPassword182617042022'); //TEMP
   }
 
@@ -39,33 +37,11 @@ export class SolidFileHandlerService {
    */
   async readFile(fileURL: string): Promise<Blob> {
     try {
-      return await getFile(fileURL, {
+      return await this.solidClientService.getFile(fileURL, {
         fetch: fetch,
       });
     } catch (error: any) {
-      if (error instanceof TypeError) {
-        throw new InvalidUrlException('the given url is not valid', {
-          cause: error,
-        });
-      }
-      if (error instanceof FetchError) {
-        switch (error.statusCode) {
-          case 401:
-          case 403:
-            throw new PermissionException(
-              'you do not have the permission to read this file',
-              { cause: error }
-            );
-          case 404:
-            throw new NotFoundException('file was not found', { cause: error });
-          default:
-            break;
-        }
-      }
-      console.log(error);
-      throw new UnknownException(`an unknown error appeared ${error.name}`, {
-        cause: error,
-      });
+      this.convertError(error);
     }
   }
 
@@ -102,40 +78,17 @@ export class SolidFileHandlerService {
     fileURL: string,
     file_name = 'unnamed'
   ): Promise<Blob> {
-    if (isContainer(fileURL)) {
+    if (this.isContainer(fileURL)) {
       fileURL = fileURL + '' + file_name;
     }
 
     try {
-      return await overwriteFile(fileURL, file, {
+      return await this.solidClientService.overwriteFile(fileURL, file, {
         contentType: file.type || 'text/plain', //TODO standard content type?
         fetch: fetch,
       });
     } catch (error: any) {
-      if (error instanceof TypeError) {
-        throw new InvalidUrlException('the given url is not valid', {
-          cause: error,
-        });
-      }
-      if (error instanceof FetchError) {
-        switch (error.statusCode) {
-          case 401:
-          case 403:
-            throw new PermissionException(
-              'you do not have the permission to write to this file',
-              { cause: error }
-            );
-          case 405:
-            throw new AlreadyExistsException(
-              'A file or folder of that name already exists and cannot be overwritten',
-              { cause: error }
-            );
-
-          default:
-            break;
-        }
-      }
-      throw new UnknownException(`an unknown error appeared ${error.name}`);
+      this.convertError(error);
     }
   }
 
@@ -157,7 +110,7 @@ export class SolidFileHandlerService {
     fileURL: string,
     file_name = 'unnamed'
   ): Promise<Blob> {
-    if (isContainer(fileURL)) {
+    if (this.isContainer(fileURL)) {
       fileURL = fileURL + '' + file_name;
     }
     const encryptedFile = await this.keystoreService.encryptFile(file, fileURL);
@@ -178,39 +131,17 @@ export class SolidFileHandlerService {
    * @throws AlreadyExistsException if the file cannot be overwritten
    */
   async writeContainer(containerURL: string): Promise<Blob> {
-    if (!isContainer(containerURL)) {
+    if (!this.isContainer(containerURL)) {
       containerURL = containerURL + '/';
     }
 
     try {
-      return await overwriteFile(containerURL, new Blob());
+      return await this.solidClientService.overwriteFile(
+        containerURL,
+        new Blob()
+      );
     } catch (error: any) {
-      if (error instanceof TypeError) {
-        throw new InvalidUrlException('the given url is not valid', {
-          cause: error,
-        });
-      }
-      if (error instanceof FetchError) {
-        switch (error.statusCode) {
-          case 401:
-          case 403:
-            throw new PermissionException(
-              'you do not have the permission to write to this file',
-              { cause: error }
-            );
-          case 405:
-            throw new AlreadyExistsException(
-              'A file or folder of that name already exists and cannot be overwritten',
-              { cause: error }
-            );
-
-          default:
-            break;
-        }
-      }
-      throw new UnknownException(`an unknown error appeared ${error.name}`, {
-        cause: error,
-      });
+      this.convertError(error);
     }
   }
 
@@ -218,71 +149,20 @@ export class SolidFileHandlerService {
     containerURL: string
   ): Promise<SolidDataset & WithServerResourceInfo> {
     try {
-      return await getSolidDataset(containerURL, { fetch: fetch });
-    } catch (error: any) {
-      if (error instanceof TypeError) {
-        throw new InvalidUrlException('the given url is not valid', {
-          cause: error,
-        });
-      }
-      if (error instanceof FetchError) {
-        switch (error.statusCode) {
-          case 401:
-          case 403:
-            throw new PermissionException(
-              'you do not have the permission to read this file',
-              { cause: error }
-            );
-          case 405:
-            throw new AlreadyExistsException(
-              'A file or folder of that name already exists and cannot be overwritten',
-              { cause: error }
-            );
-
-          default:
-            break;
-        }
-      }
-      throw new UnknownException(`an unknown error appeared ${error.name}`, {
-        cause: error,
+      return await this.solidClientService.getSolidDataset(containerURL, {
+        fetch: fetch,
       });
+    } catch (error: any) {
+      this.convertError(error);
     }
   }
 
   async getContainerContent(containerURL: string): Promise<UrlString[]> {
     try {
       const container = await this.getContainer(containerURL);
-      return getContainedResourceUrlAll(container);
+      return this.solidClientService.getContainedResourceUrlAll(container);
     } catch (error: any) {
-      if (error instanceof BaseException) {
-        throw error;
-      }
-      if (error instanceof TypeError) {
-        throw new InvalidUrlException('the given url is not valid', {
-          cause: error,
-        });
-      }
-      if (error instanceof FetchError) {
-        switch (error.statusCode) {
-          case 401:
-          case 403:
-            throw new PermissionException(
-              'you do not have the permission to read this file',
-              { cause: error }
-            );
-          case 405:
-            throw new AlreadyExistsException(
-              'A file or folder of that name already exists and cannot be overwritten',
-              { cause: error }
-            );
-
-          default:
-            break;
-        }
-      }
-      throw new UnknownException(`an unknown error appeared ${error.name}`, {
-        cause: error,
-      });
+      this.convertError(error);
     }
   }
 
@@ -292,6 +172,43 @@ export class SolidFileHandlerService {
    * @returns if the file is a container or not
    */
   isContainer(containerURL: string): boolean {
-    return isContainer(containerURL);
+    return this.solidClientService.isContainer(containerURL);
+  }
+
+  /**
+   * converts any given error
+   * @param error the error to convert
+   */
+  convertError(error: Error): never {
+    if (error instanceof BaseException) {
+      throw error;
+    }
+    if (error instanceof TypeError) {
+      throw new InvalidUrlException('the given url is not valid', {
+        cause: error,
+      });
+    }
+    if (error instanceof FetchError) {
+      switch (error.statusCode) {
+        case 401:
+        case 403:
+          throw new PermissionException(
+            'you do not have the permission needed for this file',
+            { cause: error }
+          );
+        case 405:
+          throw new AlreadyExistsException(
+            'A file or folder of that name already exists and cannot be overwritten',
+            { cause: error }
+          );
+
+        default:
+          break;
+      }
+    }
+    console.log('unknown error:', error);
+    throw new UnknownException(`an unknown error appeared`, {
+      cause: error,
+    });
   }
 }
