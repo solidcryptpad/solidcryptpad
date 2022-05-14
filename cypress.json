@@ -1,5 +1,10 @@
 {
   "chromeWebSecurity": false,
   "baseUrl": "http://localhost:4200",
-  "cssUrl": "http://localhost:3000"
+  "cssUrl": "http://localhost:3000",
+  "retries": {
+    "runMode": 1,
+    "openMode": 0
+  },
+  "defaultCommandTimeout": 10000
 }
