@@ -1,0 +1,12 @@
+{
+  "@context": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^4.0.0/components/context.jsonld",
+  "import": [
+    "files-scs:config/file-no-setup.json",
+    "memory-long-lock-expiration.json"
+  ],
+  "@graph": [
+    {
+      "comment": "A single-pod server that stores its resources on disk."
+    }
+  ]
+}

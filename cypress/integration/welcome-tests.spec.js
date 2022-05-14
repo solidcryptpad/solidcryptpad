@@ -14,7 +14,7 @@ describe("Welcome Page Tests", function () {
   it("Can initiate login on welcome page", function () {
     cy.get("#provider").type(Cypress.config().cssUrl);
     cy.contains("button", "LOGIN").click();
-    cy.url().should("include", Cypress.config().cssUrl);
+    cy.url({ timeout: 30000 }).should("include", Cypress.config().cssUrl);
   });
 
   it("Can logout", function () {
