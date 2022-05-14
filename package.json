@@ -16,7 +16,7 @@
     "prepare": "husky install",
     "cypress:open": "cypress open",
     "precss": "node delete_css_storage.js",
-    "css": "community-solid-server -p 3000 -c @css:config/file-no-setup.json -f ./community-solid-server",
+    "css": "community-solid-server -p 3000 -c ./custom-css-config/file-no-setup.json -f ./community-solid-server",
     "start-wait": "npm run start-wait:frontend && npm run start-wait:css",
     "start-wait:frontend": "npm start & wait-on -t 300000 http://localhost:4200",
     "start-wait:css": "npm run css & wait-on -t 300000 http://localhost:3000"
