@@ -54,6 +54,14 @@ test-e2e:
   script:
     - npx cypress verify # circumvent verification timeout. see https://stackoverflow.com/q/63667880/6548154
     - npm run test:ci:e2e
+  artifacts:
+    # failure debugging artifacts
+    when: on_failure
+    expose_as: 'Cypress Artifacts'
+    paths:
+      - cypress/screenshots
+      - cypress/videos
+    expire_in: 1 day
 
 build:
   # based on: https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
