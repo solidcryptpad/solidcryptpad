@@ -4,7 +4,7 @@ import {
   SelectionChange,
 } from '@angular/cdk/collections';
 import { FlatTreeControl } from '@angular/cdk/tree';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, merge, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -34,17 +34,21 @@ export class FolderDataSource implements DataSource<Node> {
 
   constructor(
     private treeControl: FlatTreeControl<Node>,
-    public solidFileHandlerService: SolidFileHandlerService,
-    public root?: string
-  ) {
-    if (root != undefined) {
-      solidFileHandlerService.getContainerContent(root).then((x) => {
-        const data: Node[] = [];
-        x.forEach((element) => {
-          this.createNode(element);
-          data.push(this.createNode(element));
-          this.dataChange.next(data);
-        });
+    private solidFileHandlerService: SolidFileHandlerService,
+    private root: string | null
+  ) {}
+
+  public async init() {
+    if (this.root != null) {
+      const content = await this.solidFileHandlerService.getContainerContent(
+        this.root
+      );
+
+      const data: Node[] = [];
+      content.forEach((element) => {
+        this.createNode(element);
+        data.push(this.createNode(element));
+        this.dataChange.next(data);
       });
     }
   }
@@ -68,8 +72,7 @@ export class FolderDataSource implements DataSource<Node> {
    * handles the opening of the folder
    * @param event the change that occured in the tree
    */
-  //todo check if node is actually openable
-  async openFolder(event: SelectionChange<Node>): Promise<void> {
+  private async openFolder(event: SelectionChange<Node>): Promise<void> {
     event.added.forEach(async (node) => {
       try {
         const index = this.data.indexOf(node);
@@ -81,10 +84,11 @@ export class FolderDataSource implements DataSource<Node> {
         const newChildren: Node[] = [];
         children.forEach(async (child) => {
           newChildren.push(this.createNode(child, node.level + 1));
-          this.data.splice(index + 1, 0, ...newChildren);
-          node.isLoading = false;
-          this.dataChange.next(this.data);
         });
+
+        this.data.splice(index + 1, 0, ...newChildren);
+        node.isLoading = false;
+        this.dataChange.next(this.data);
       } catch (error) {
         setErrorContext('Error while loading Foldercontent')(error as Error);
 
@@ -108,7 +112,7 @@ export class FolderDataSource implements DataSource<Node> {
    * handles closing the folders
    * @param event the change that occured in the folder
    */
-  async closeFolder(event: SelectionChange<Node>): Promise<void> {
+  private async closeFolder(event: SelectionChange<Node>): Promise<void> {
     event.removed
       .slice()
       .reverse()
@@ -159,44 +163,34 @@ export class FolderDataSource implements DataSource<Node> {
   templateUrl: './tree-nested-explorer.component.html',
   styleUrls: ['./tree-nested-explorer.component.scss'],
 })
-export class TreeNestedExplorerComponent {
-  rootPath?: string;
+export class TreeNestedExplorerComponent implements OnInit {
+  rootPath: string | null = null;
+
+  treeControl!: FlatTreeControl<Node>;
+
+  dataSource!: FolderDataSource;
 
   constructor(
     public solidFileHandlerService: SolidFileHandlerService,
     private route: ActivatedRoute,
     private router: Router
-  ) {
-    // init if no url is given
-    this.treeControl = new FlatTreeControl<Node>(
-      this.getLevel,
-      this.isExpandable
-    );
-    this.dataSource = new FolderDataSource(
-      this.treeControl,
-      solidFileHandlerService,
-      this.rootPath
-    );
+  ) {}
 
-    // setup if url is given
-    this.route.queryParams.subscribe((params) => {
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(async (params) => {
       this.rootPath = params['url'];
-
       this.treeControl = new FlatTreeControl<Node>(
         this.getLevel,
         this.isExpandable
       );
       this.dataSource = new FolderDataSource(
         this.treeControl,
-        solidFileHandlerService,
+        this.solidFileHandlerService,
         this.rootPath
       );
+      await this.dataSource.init();
     });
   }
-
-  treeControl: FlatTreeControl<Node>;
-
-  dataSource: FolderDataSource;
 
   getLevel(node: Node): number {
     return node.level;
