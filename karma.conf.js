@@ -29,12 +29,20 @@ module.exports = function (config) {
       subdir: ".",
       reporters: [{ type: "html" }, { type: "text-summary" }],
     },
-    reporters: ["progress", "kjhtml"],
+    reporters: ["progress", "kjhtml", "coverage"],
+    preprocessors: { "**/*.ts": ["coverage"] },
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: ["ChromiumHeadless"],
+    browsers: ["Chrome"],
+    customLaunchers: {
+      ChromeHeadlessCI: {
+        base: "ChromeHeadless",
+        flags: ["--no-sandbox"],
+      },
+    },
+
     singleRun: false,
     restartOnFileChange: true,
   });

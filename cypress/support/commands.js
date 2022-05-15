@@ -6,6 +6,9 @@
 
 import { getAuthenticatedRequest } from "./css-authentication";
 
+// page load usually takes a lot of time, hence it should have a longer timeout
+const PAGE_LOAD_TIMEOUT = 30000;
+
 Cypress.Commands.add("createRandomAccount", function () {
   const uuid = require("uuid");
   const username = "test-" + uuid.v4();
@@ -47,14 +50,13 @@ Cypress.Commands.add("login", function (user) {
   const typeFastConfig = {
     delay: 0,
   };
-  //cy.clearLocalStorage()
   cy.log("login", user);
   cy.visit("/");
 
   cy.get("#provider").type(Cypress.config().cssUrl + "/");
   cy.contains("LOGIN").click();
 
-  cy.url().should("include", user.idp);
+  cy.url({ timeout: PAGE_LOAD_TIMEOUT }).should("include", user.idp);
 
   cy.get("label").contains("Email").click().type(user.email, typeFastConfig);
   cy.get("label")
@@ -63,11 +65,14 @@ Cypress.Commands.add("login", function (user) {
     .type(user.password, typeFastConfig);
   cy.contains("button", "Log in").click();
 
-  cy.url().should("include", "/consent");
+  cy.url({ timeout: PAGE_LOAD_TIMEOUT }).should("include", "/consent");
   cy.contains("button", "Consent").click();
 
   // wait until app processed login credentials
-  cy.url().should("include", Cypress.config().baseUrl + "/");
+  cy.url({ timeout: PAGE_LOAD_TIMEOUT }).should(
+    "include",
+    Cypress.config().baseUrl + "/"
+  );
   cy.contains("Welcome to your personal area");
 });
 
@@ -82,14 +87,21 @@ Cypress.Commands.add("authenticatedRequest", (user, ...args) => {
 });
 
 /**
- * create a folder by creating a .test.keep file in it
+ * create a folder
  *
  * @param {object} user the user who has permissions to create this folder
  * @param {string} url the url of the new folder
  */
 Cypress.Commands.add("givenFolder", (user, url) => {
   if (!url.endsWith("/")) url += "/";
-  return cy.givenFile(user, `${url}.test.keep`, "");
+  // Solid allows PUT-ting containser, if the url ends with /
+  cy.authenticatedRequest(user, {
+    url,
+    method: "PUT",
+    headers: {
+      "content-type": "text/turtle",
+    },
+  });
 });
 
 /**

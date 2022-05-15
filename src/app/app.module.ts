@@ -14,15 +14,15 @@ import { MatButtonModule } from '@angular/material/button';
 import { HomeComponent } from './components/home/home.component';
 import { SolidAuthenticationService } from './services/authentication/solid-authentication.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { FileEditorComponent } from './components/file-editor/file-editor.component';
+import { FileExplorerComponent } from './components/file-explorer/file-explorer.component';
 import { KeystoreComponent } from './components/keystore/keystore.component';
 import { ToastrModule } from 'ngx-toastr';
 import { TextEditorComponent } from './components/text-editor/text-editor.component';
 import { NgxEditorModule } from 'ngx-editor';
 import { NavbarComponent } from './components/navbar/navbar.component';
-import { GlobalErrorHandlerService } from './services/global_error_handler/global-error-handler.service';
 import { EnterMasterPasswordComponent } from './components/enter-master-password/enter-master-password.component';
 import { MatDialogModule } from '@angular/material/dialog';
+import { GlobalErrorHandlerService } from './services/global-error-handler/global-error-handler.service';
 import { TreeNestedExplorerComponent } from './components/tree-nested-explorer/tree-nested-explorer.component';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
@@ -43,7 +43,7 @@ import { MatMenuModule } from '@angular/material/menu';
     PageNotFoundComponent,
     HomeComponent,
     TextEditorComponent,
-    FileEditorComponent,
+    FileExplorerComponent,
     KeystoreComponent,
     NavbarComponent,
     EnterMasterPasswordComponent,
