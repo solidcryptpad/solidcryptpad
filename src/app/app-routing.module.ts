@@ -12,7 +12,11 @@ import { FaqComponent } from './components/faq/faq.component';
 const routes: Routes = [
   { path: '', component: WelcomeComponent },
   { path: 'keystore', component: KeystoreComponent },
-  { path: 'files', component: FileExplorerComponent },
+  {
+    path: 'files',
+    component: FileExplorerComponent,
+    canActivate: [AuthenticatedGuard],
+  },
   {
     path: 'home',
     component: HomeComponent,
