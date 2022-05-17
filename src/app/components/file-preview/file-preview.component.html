@@ -1,0 +1,25 @@
+<div class="container">
+  <div class="content">
+    <h3>
+      Preview from <i>{{ fileUrl }} </i>!
+    </h3>
+    <button *ngIf="fileType.includes('text')" (click)="this.open(fileUrl)">
+      open in Editor
+    </button>
+
+    <div class="previewImages" *ngIf="fileType.includes('image')">
+      <img src="{{ fileUrl }}" />
+    </div>
+
+    <div
+      class="previewText"
+      *ngIf="fileType.includes('text') && !(fileType === 'text/markdown')"
+    >
+      <p>{{ fileContent }}</p>
+    </div>
+
+    <div class="previewText" *ngIf="fileType === 'text/markdown'">
+      <markdown lineHighlight [data]="fileContent"> </markdown>
+    </div>
+  </div>
+</div>

@@ -8,11 +8,13 @@ import { TextEditorComponent } from './components/text-editor/text-editor.compon
 import { FileExplorerComponent } from './components/file-explorer/file-explorer.component';
 import { KeystoreComponent } from './components/keystore/keystore.component';
 import { FaqComponent } from './components/faq/faq.component';
+import { FilePreviewComponent } from './components/file-preview/file-preview.component';
 
 const routes: Routes = [
   { path: '', component: WelcomeComponent },
   { path: 'keystore', component: KeystoreComponent },
   { path: 'files', component: FileExplorerComponent },
+  { path: 'preview', component: FilePreviewComponent },
   {
     path: 'home',
     component: HomeComponent,
