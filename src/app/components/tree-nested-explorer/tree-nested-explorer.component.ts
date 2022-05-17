@@ -11,6 +11,10 @@ import { map } from 'rxjs/operators';
 import { setErrorContext } from 'src/app/exceptions/error-options';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
+import {
+  MatDialog,
+} from '@angular/material/dialog';
+import { FileUploadComponent } from '../dialogs/file-upload/file-upload.component';
 
 /**
  * represents an element in the tree
@@ -173,7 +177,8 @@ export class TreeNestedExplorerComponent implements OnInit {
   constructor(
     public solidFileHandlerService: SolidFileHandlerService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    public dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -210,5 +215,18 @@ export class TreeNestedExplorerComponent implements OnInit {
     } else {
       this.router.navigateByUrl(`/editor?file=${node.link}`);
     }
+  }
+
+  upload(node: Node) {
+    const dialogRef = this.dialog.open(FileUploadComponent, {
+      data: {
+        folder: {
+          url: node.link,
+        },
+      },
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('finished uploading', result);
+    });
   }
 }

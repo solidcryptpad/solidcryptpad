@@ -33,6 +33,8 @@ import { FaqComponent } from './components/faq/faq.component';
 import { MatListModule } from '@angular/material/list';
 import { LoggedInDirective } from './directives/logged-in.directive';
 import { MatMenuModule } from '@angular/material/menu';
+import { FileUploadComponent } from './components/dialogs/file-upload/file-upload.component';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
   declarations: [
@@ -47,6 +49,7 @@ import { MatMenuModule } from '@angular/material/menu';
     TreeNestedExplorerComponent,
     FaqComponent,
     LoggedInDirective,
+    FileUploadComponent,
   ],
   imports: [
     BrowserModule,
@@ -56,6 +59,7 @@ import { MatMenuModule } from '@angular/material/menu';
     MatTreeModule,
     MatExpansionModule,
     MatToolbarModule,
+    MatDialogModule,
     MatButtonModule,
     FormsModule,
     HttpClientModule,
