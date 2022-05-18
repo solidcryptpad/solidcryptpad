@@ -13,6 +13,11 @@ import { FilePreviewComponent } from './components/file-preview/file-preview.com
 const routes: Routes = [
   { path: '', component: WelcomeComponent },
   { path: 'keystore', component: KeystoreComponent },
+  {
+    path: 'files',
+    component: FileExplorerComponent,
+    canActivate: [AuthenticatedGuard],
+  },
   { path: 'files', component: FileExplorerComponent },
   { path: 'preview', component: FilePreviewComponent },
   {
