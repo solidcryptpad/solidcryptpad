@@ -8,11 +8,11 @@
     </button>
 
     <div class="previewImages" *ngIf="fileType.includes('image')">
-      <img src="{{ fileUrl }}" />
+      <img src="{{ imageUrl }}" />
     </div>
 
     <div class="previewText" *ngIf="fileType.includes('text')">
-      <markdown [data]="fileContent"> </markdown>
+      <markdown [data]="textFileContent"> </markdown>
     </div>
   </div>
 </div>

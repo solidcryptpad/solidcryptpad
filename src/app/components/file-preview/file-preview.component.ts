@@ -9,9 +9,10 @@ import { SolidFileHandlerService } from '../../services/file-handler/solid-file-
 })
 export class FilePreviewComponent {
   fileUrl = '';
-  fileContent = 'no content';
+  textFileContent = 'no content';
   fileType = '';
   errorMsg = '';
+  imageUrl: string | ArrayBuffer | null | undefined;
 
   constructor(
     private fileService: SolidFileHandlerService,
@@ -21,8 +22,8 @@ export class FilePreviewComponent {
 
   ngOnInit(): void {
     this.setupFilenameFromParams();
-    this.loadFile();
-    //this.loadDecryptedFile();
+    // this.loadFile();
+    this.loadDecryptedFile();
   }
 
   setupFilenameFromParams(): void {
@@ -40,38 +41,16 @@ export class FilePreviewComponent {
   }
 
   /**
-   * loads the current file that is open in editor
+   * loads the current file and decrypted the File
    */
   loadDecryptedFile(): void {
     this.fileService.readAndDecryptFile(this.fileUrl).then(
       (blob) => {
-        blob.text().then((text) => {
-          console.log(text);
-          this.fileContent = text;
-        });
-      },
-      (reason) => {
-        this.errorMsg = 'Error while opening your file: ' + reason;
-        console.error('couldnt load file: ' + reason);
-      }
-    );
-  }
-
-  /**
-   * loads the current file that is open in editor
-   */
-  loadFile(): void {
-    console.log(this.fileUrl);
-    this.fileService.readFile(this.fileUrl).then(
-      (blob) => {
-        console.log(blob.type);
         this.fileType = blob.type;
         if (this.fileType.includes('text')) {
-          this.getTextFileContent();
+          this.getTextFileContent(blob);
         } else if (this.fileType.includes('image')) {
-          this.fileContent = 'Image';
-        } else {
-          this.fileContent = 'File Type not supported';
+          this.getImageUrlFromBlob(blob);
         }
       },
       (reason) => {
@@ -81,9 +60,27 @@ export class FilePreviewComponent {
     );
   }
 
-  getTextFileContent(): void {
-    this.loadDecryptedFile();
-    console.log(this.fileContent);
+  /**
+   * Get Text File Content from Blob
+   * @param blob
+   */
+  getTextFileContent(blob: Blob): void {
+    blob.text().then((text) => {
+      this.textFileContent = text;
+    });
+  }
+
+  /**
+   * Get Image Url from Blob
+   * @param blob
+   */
+  getImageUrlFromBlob(blob: Blob): void {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob); //FileStream response from .NET core backend
+    // eslint-disable-next-line unused-imports/no-unused-vars
+    reader.onload = (_event) => {
+      this.imageUrl = reader.result; //url declared earlier
+    };
   }
 
   open(link: string) {
