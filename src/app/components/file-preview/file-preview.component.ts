@@ -8,8 +8,8 @@ import { SolidFileHandlerService } from '../../services/file-handler/solid-file-
   styleUrls: ['./file-preview.component.scss'],
 })
 export class FilePreviewComponent {
-  fileUrl = 'test';
-  fileContent = '##no content';
+  fileUrl = '';
+  fileContent = 'no content';
   fileType = '';
   errorMsg = '';
 
@@ -22,6 +22,7 @@ export class FilePreviewComponent {
   ngOnInit(): void {
     this.setupFilenameFromParams();
     this.loadFile();
+    //this.loadDecryptedFile();
   }
 
   setupFilenameFromParams(): void {
@@ -41,27 +42,34 @@ export class FilePreviewComponent {
   /**
    * loads the current file that is open in editor
    */
+  loadDecryptedFile(): void {
+    this.fileService.readAndDecryptFile(this.fileUrl).then(
+      (blob) => {
+        blob.text().then((text) => {
+          console.log(text);
+          this.fileContent = text;
+        });
+      },
+      (reason) => {
+        this.errorMsg = 'Error while opening your file: ' + reason;
+        console.error('couldnt load file: ' + reason);
+      }
+    );
+  }
+
+  /**
+   * loads the current file that is open in editor
+   */
   loadFile(): void {
     console.log(this.fileUrl);
     this.fileService.readFile(this.fileUrl).then(
       (blob) => {
         console.log(blob.type);
-
         this.fileType = blob.type;
-        if (this.fileType == 'text/plain') {
-          blob.text().then((text) => {
-            console.log(text);
-            this.getTextFileContent(text);
-          });
-        } else if (this.fileType == 'text/markdown') {
-          blob.text().then((text) => {
-            this.getMarkdownFileContent(text);
-          });
-        } else if (this.fileType == 'text/html') {
-          blob.text().then((text) => {
-            this.getHTMLFileContent(text);
-          });
+        if (this.fileType.includes('text')) {
+          this.getTextFileContent();
         } else if (this.fileType.includes('image')) {
+          this.fileContent = 'Image';
         } else {
           this.fileContent = 'File Type not supported';
         }
@@ -73,17 +81,8 @@ export class FilePreviewComponent {
     );
   }
 
-  getTextFileContent(content: string): void {
-    this.fileContent = content;
-    console.log(this.fileContent);
-  }
-
-  getMarkdownFileContent(content: string): void {
-    this.fileContent = content;
-    console.log(this.fileContent);
-  }
-  getHTMLFileContent(content: string): void {
-    this.fileContent = content;
+  getTextFileContent(): void {
+    this.loadDecryptedFile();
     console.log(this.fileContent);
   }
 

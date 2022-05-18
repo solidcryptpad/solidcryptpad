@@ -11,15 +11,8 @@
       <img src="{{ fileUrl }}" />
     </div>
 
-    <div
-      class="previewText"
-      *ngIf="fileType.includes('text') && !(fileType === 'text/markdown')"
-    >
-      <p>{{ fileContent }}</p>
-    </div>
-
-    <div class="previewText" *ngIf="fileType === 'text/markdown'">
-      <markdown lineHighlight [data]="fileContent"> </markdown>
+    <div class="previewText" *ngIf="fileType.includes('text')">
+      <markdown [data]="fileContent"> </markdown>
     </div>
   </div>
 </div>

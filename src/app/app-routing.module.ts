@@ -18,8 +18,11 @@ const routes: Routes = [
     component: FileExplorerComponent,
     canActivate: [AuthenticatedGuard],
   },
-  { path: 'files', component: FileExplorerComponent },
-  { path: 'preview', component: FilePreviewComponent },
+  {
+    path: 'preview',
+    component: FilePreviewComponent,
+    canActivate: [AuthenticatedGuard],
+  },
   {
     path: 'home',
     component: HomeComponent,
