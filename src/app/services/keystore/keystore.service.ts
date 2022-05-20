@@ -179,13 +179,26 @@ export class KeystoreService {
       key = this.generateNewKey();
       await this.storeKey(fileURL, key);
     }
+
     const encryptedFileContent = cryptoJS.AES.encrypt(
-      await file.text(),
+      await this.blobToDataURL(file),
       key
     ).toString();
     const encryptedFile = new Blob([encryptedFileContent]);
 
     return encryptedFile;
+  }
+
+  private blobToDataURL(data: Blob): Promise<string> {
+    const reader = new FileReader();
+    return new Promise((resolve) => {
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(data);
+    });
+  }
+
+  private dataURLtoBlob(dataUrl: string): Promise<Blob> {
+    return window.fetch(dataUrl).then((res) => res.blob());
   }
 
   /**
@@ -201,9 +214,8 @@ export class KeystoreService {
       await file.text(),
       key
     ).toString(cryptoJS.enc.Utf8);
-    const decryptedFile = new Blob([decryptedFileContent]);
 
-    return decryptedFile;
+    return this.dataURLtoBlob(decryptedFileContent);
   }
 
   /**

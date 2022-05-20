@@ -208,7 +208,7 @@ export class TreeNestedExplorerComponent implements OnInit {
     if (node.expandable) {
       this.router.navigateByUrl(`/files?url=${node.link}`);
     } else {
-      this.router.navigateByUrl(`/editor?file=${node.link}`);
+      this.router.navigateByUrl(`/preview?file=${node.link}`);
     }
   }
 }

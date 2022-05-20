@@ -35,6 +35,8 @@ import { FaqComponent } from './components/faq/faq.component';
 import { MatListModule } from '@angular/material/list';
 import { LoggedInDirective } from './directives/logged-in.directive';
 import { MatMenuModule } from '@angular/material/menu';
+import { FilePreviewComponent } from './components/file-preview/file-preview.component';
+import { MarkdownModule } from 'ngx-markdown';
 
 @NgModule({
   declarations: [
@@ -50,6 +52,7 @@ import { MatMenuModule } from '@angular/material/menu';
     TreeNestedExplorerComponent,
     FaqComponent,
     LoggedInDirective,
+    FilePreviewComponent,
   ],
   imports: [
     MatInputModule,
@@ -77,6 +80,7 @@ import { MatMenuModule } from '@angular/material/menu';
     ReactiveFormsModule,
     MatListModule,
     MatMenuModule,
+    MarkdownModule.forRoot(),
   ],
   providers: [
     SolidAuthenticationService,

@@ -44,6 +44,7 @@
     "@types/crypto-js": "^4.1.1",
     "crypto-js": "^4.1.1",
     "ngx-editor": "^12.2.2",
+    "ngx-markdown": "^13.1.0",
     "ngx-toastr": "^14.2.4",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",
