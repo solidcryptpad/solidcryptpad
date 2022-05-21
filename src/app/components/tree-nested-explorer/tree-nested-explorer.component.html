@@ -24,6 +24,7 @@
       id="{{ node.shortName }}Node"
       *matTreeNodeDef="let node; when: hasChild"
       matTreeNodePadding="2px"
+      data-cy="tree-node"
     >
       <button
         mat-icon-button
@@ -45,7 +46,7 @@
 
       <span class="spacer"></span>
 
-      <div class="menu">
+      <div class="menu" data-cy="folder-menu">
         <button mat-icon-button style="color: gray" [matMenuTriggerFor]="menu">
           <mat-icon class="mat-icon" title="Options">more_horiz</mat-icon>
         </button>
