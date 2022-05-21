@@ -1,0 +1,9 @@
+<h1 mat-dialog-title>Create Folder</h1>
+<div mat-dialog-content>
+  <mat-label for="create-folder">folder name</mat-label>
+  <input type="text" id="create-folder" [(ngModel)]="folder_name" />
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="close()">Cancel</button>
+  <button mat-button (click)="createFolder()">Create</button>
+</div>

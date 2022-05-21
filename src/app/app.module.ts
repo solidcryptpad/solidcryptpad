@@ -37,6 +37,7 @@ import { FilePreviewComponent } from './components/file-preview/file-preview.com
 import { MarkdownModule } from 'ngx-markdown';
 import { FileUploadComponent } from './components/dialogs/file-upload/file-upload.component';
 import { MatDialogModule } from '@angular/material/dialog';
+import { FolderCreateComponent } from './components/dialogs/folder-create/folder-create.component';
 
 @NgModule({
   declarations: [
@@ -53,6 +54,7 @@ import { MatDialogModule } from '@angular/material/dialog';
     LoggedInDirective,
     FilePreviewComponent,
     FileUploadComponent,
+    FolderCreateComponent,
   ],
   imports: [
     BrowserModule,

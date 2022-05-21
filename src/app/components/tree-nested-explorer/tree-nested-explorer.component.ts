@@ -13,6 +13,7 @@ import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 import { MatDialog } from '@angular/material/dialog';
 import { FileUploadComponent } from '../dialogs/file-upload/file-upload.component';
+import { FolderCreateComponent } from '../dialogs/folder-create/folder-create.component';
 
 /**
  * represents an element in the tree
@@ -225,6 +226,15 @@ export class TreeNestedExplorerComponent implements OnInit {
     });
     dialogRef.afterClosed().subscribe((result) => {
       console.log('finished uploading', result);
+    });
+  }
+
+  create_folder(node: Node) {
+    const dialogRef = this.dialog.open(FolderCreateComponent, {
+      data: node,
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('folder created', result);
     });
   }
 }
