@@ -6,6 +6,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { fetch } from '@inrupt/solid-client-authn-browser';
 import { firstValueFrom } from 'rxjs';
 import { EnterMasterPasswordComponent } from 'src/app/components/enter-master-password/enter-master-password.component';
+import { WrongMasterPasswordException } from 'src/app/exceptions/wrong-master-password-exception';
+import { KeyNotFoundException } from 'src/app/exceptions/key-not-found-exception';
+import { NotFoundException } from 'src/app/exceptions/not-found-exception';
 
 @Injectable({
   providedIn: 'root',
@@ -89,14 +92,15 @@ export class KeystoreService {
     let keystore: KeyEntry[];
     keystore = [];
     const podUrls = await this.profileService.getPodUrls();
+    let encryptedKeystore;
     try {
-      const encryptedKeystore = await getFile(`${podUrls[0]}private/Keystore`, {
+      encryptedKeystore = await getFile(`${podUrls[0]}private/Keystore`, {
         fetch: fetch,
       });
-      keystore = await this.decryptKeystore(await encryptedKeystore.text());
     } catch (error: any) {
-      console.log('No Keystore found'); // TODO: Exception-Handling
+      throw new NotFoundException('No keystore found'); //TODO: Replace with set-master-password-component
     }
+    keystore = await this.decryptKeystore(await encryptedKeystore.text());
 
     localStorage.setItem('keystore', JSON.stringify(keystore));
     return keystore;
@@ -147,13 +151,15 @@ export class KeystoreService {
     encryptedKeystore: string
   ): Promise<KeyEntry[]> {
     const masterPassword = await this.getMasterPassword();
-
-    return JSON.parse(
-      // TODO: Exception-Handling
-      cryptoJS.AES.decrypt(encryptedKeystore, masterPassword).toString(
-        cryptoJS.enc.Utf8
-      )
-    );
+    try {
+      return JSON.parse(
+        cryptoJS.AES.decrypt(encryptedKeystore, masterPassword).toString(
+          cryptoJS.enc.Utf8
+        )
+      );
+    } catch (error) {
+      throw new WrongMasterPasswordException('Wrong master password');
+    }
   }
 
   /**
@@ -194,8 +200,7 @@ export class KeystoreService {
   async decryptFile(file: Blob, fileURL: string): Promise<Blob> {
     const key = await this.getKey(fileURL);
     if (!key) {
-      console.log('Key not found'); // TODO: Exception-Handling
-      return new Blob(['ERROR']); // TODO: Exception-Handling
+      throw new KeyNotFoundException('Decryption key not found');
     }
     const decryptedFileContent = cryptoJS.AES.decrypt(
       await file.text(),
