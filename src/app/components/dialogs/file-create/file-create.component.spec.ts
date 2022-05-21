@@ -1,15 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
-import { FolderCreateComponent } from './folder-create.component';
+import { FileCreateComponent } from './file-create.component';
 
-describe('FolderCreateComponent', () => {
-  let component: FolderCreateComponent;
-  let fixture: ComponentFixture<FolderCreateComponent>;
+describe('FileCreateComponent', () => {
+  let component: FileCreateComponent;
+  let fixture: ComponentFixture<FileCreateComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [FolderCreateComponent],
+      declarations: [FileCreateComponent],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: {} },
         { provide: MatDialogRef, useValue: {} },
@@ -18,7 +18,7 @@ describe('FolderCreateComponent', () => {
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(FolderCreateComponent);
+    fixture = TestBed.createComponent(FileCreateComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

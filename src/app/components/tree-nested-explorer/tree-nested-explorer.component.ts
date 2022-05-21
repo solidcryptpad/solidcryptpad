@@ -14,6 +14,7 @@ import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-fil
 import { MatDialog } from '@angular/material/dialog';
 import { FileUploadComponent } from '../dialogs/file-upload/file-upload.component';
 import { FolderCreateComponent } from '../dialogs/folder-create/folder-create.component';
+import { FileCreateComponent } from '../dialogs/file-create/file-create.component';
 
 /**
  * represents an element in the tree
@@ -235,6 +236,15 @@ export class TreeNestedExplorerComponent implements OnInit {
     });
     dialogRef.afterClosed().subscribe((result) => {
       console.log('folder created', result);
+    });
+  }
+
+  create_file(node: Node) {
+    const dialogRef = this.dialog.open(FileCreateComponent, {
+      data: node,
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('file created', result);
     });
   }
 }

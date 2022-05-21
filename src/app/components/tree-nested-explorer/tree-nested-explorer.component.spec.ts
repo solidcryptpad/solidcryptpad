@@ -75,6 +75,8 @@ describe('TreeNestedExplorerComponent', () => {
     fileHandlerServiceSpy.getContainerContent.and.returnValue(
       Promise.resolve(['example.url.com/root0', 'example.url.com/root1/'])
     );
+
+    // for some reason if this is set to true the elements are not added
     fileHandlerServiceSpy.isContainer.and.returnValue(true);
 
     fixture.detectChanges();

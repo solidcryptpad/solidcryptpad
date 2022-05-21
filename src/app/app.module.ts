@@ -38,6 +38,7 @@ import { MarkdownModule } from 'ngx-markdown';
 import { FileUploadComponent } from './components/dialogs/file-upload/file-upload.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { FolderCreateComponent } from './components/dialogs/folder-create/folder-create.component';
+import { FileCreateComponent } from './components/dialogs/file-create/file-create.component';
 
 @NgModule({
   declarations: [
@@ -55,6 +56,7 @@ import { FolderCreateComponent } from './components/dialogs/folder-create/folder
     FilePreviewComponent,
     FileUploadComponent,
     FolderCreateComponent,
+    FileCreateComponent,
   ],
   imports: [
     BrowserModule,
