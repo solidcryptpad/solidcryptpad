@@ -11,9 +11,7 @@ import { map } from 'rxjs/operators';
 import { setErrorContext } from 'src/app/exceptions/error-options';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
-import {
-  MatDialog,
-} from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { FileUploadComponent } from '../dialogs/file-upload/file-upload.component';
 
 /**
@@ -213,7 +211,7 @@ export class TreeNestedExplorerComponent implements OnInit {
     if (node.expandable) {
       this.router.navigateByUrl(`/files?url=${node.link}`);
     } else {
-      this.router.navigateByUrl(`/editor?file=${node.link}`);
+      this.router.navigateByUrl(`/preview?file=${node.link}`);
     }
   }
 

@@ -2,21 +2,35 @@ import { Injectable } from '@angular/core';
 import * as cryptoJS from 'crypto-js';
 import { ProfileService } from '../profile/profile.service';
 import { overwriteFile, getFile } from '@inrupt/solid-client';
+import { MatDialog } from '@angular/material/dialog';
 import { fetch } from '@inrupt/solid-client-authn-browser';
+import { firstValueFrom } from 'rxjs';
+import { EnterMasterPasswordComponent } from 'src/app/components/enter-master-password/enter-master-password.component';
 
 @Injectable({
   providedIn: 'root',
 })
 export class KeystoreService {
-  constructor(private profileService: ProfileService) {}
+  constructor(
+    private profileService: ProfileService,
+    private dialog: MatDialog
+  ) {}
 
-  masterPassword = '';
-
+  declare masterPasswordHash: string;
   /**
    * Sets the masterpassword .
    */
-  setMasterPassword(pwd: string) {
-    this.masterPassword = pwd;
+  async setMasterPassword(pwd: string) {
+    this.masterPasswordHash = cryptoJS
+      .SHA256(pwd + '1205sOlIDCryptPADsalt1502')
+      .toString();
+  }
+
+  async getMasterPassword(): Promise<string> {
+    if (!this.masterPasswordHash) {
+      this.setMasterPassword(await this.openMasterPasswordDialog());
+    }
+    return this.masterPasswordHash;
   }
 
   /**
@@ -74,15 +88,12 @@ export class KeystoreService {
   async loadKeystore(): Promise<KeyEntry[]> {
     let keystore: KeyEntry[];
     keystore = [];
-    const userName = await this.profileService.getPodUrls();
+    const podUrls = await this.profileService.getPodUrls();
     try {
-      const encryptedKeystore = await getFile(
-        `${userName[0]}private/Keystore`,
-        {
-          fetch: fetch,
-        }
-      );
-      keystore = this.decryptKeystore(await encryptedKeystore.text());
+      const encryptedKeystore = await getFile(`${podUrls[0]}private/Keystore`, {
+        fetch: fetch,
+      });
+      keystore = await this.decryptKeystore(await encryptedKeystore.text());
     } catch (error: any) {
       console.log('No Keystore found'); // TODO: Exception-Handling
     }
@@ -105,11 +116,13 @@ export class KeystoreService {
    * Writes the current keystore from the local storage to the solid pod.
    */
   private async writeKeystoreToPod() {
-    const userName = await this.profileService.getPodUrls();
-    const encryptedKeystore = this.encryptKeystore(this.getLocalKeystore());
+    const podUrls = await this.profileService.getPodUrls();
+    const encryptedKeystore = await this.encryptKeystore(
+      this.getLocalKeystore()
+    );
     const keyStoreBlob = new Blob([encryptedKeystore], { type: 'text/plain' });
 
-    await overwriteFile(`${userName[0]}private/Keystore`, keyStoreBlob, {
+    await overwriteFile(`${podUrls[0]}private/Keystore`, keyStoreBlob, {
       contentType: keyStoreBlob.type,
       fetch: fetch,
     });
@@ -118,19 +131,26 @@ export class KeystoreService {
   /**
    * Encrypts the keystore using the masterpassword.
    */
-  private encryptKeystore(keystore: KeyEntry[]): string {
+  private async encryptKeystore(keystore: KeyEntry[]): Promise<string> {
+    const masterPassword = await this.getMasterPassword();
+
     return cryptoJS.AES.encrypt(
       JSON.stringify(keystore),
-      this.masterPassword
+      masterPassword
     ).toString();
   }
 
   /**
    * Decrypts the keystore using the masterpassword.
    */
-  private decryptKeystore(encryptedKeystore: string): KeyEntry[] {
+  private async decryptKeystore(
+    encryptedKeystore: string
+  ): Promise<KeyEntry[]> {
+    const masterPassword = await this.getMasterPassword();
+
     return JSON.parse(
-      cryptoJS.AES.decrypt(encryptedKeystore, this.masterPassword).toString(
+      // TODO: Exception-Handling
+      cryptoJS.AES.decrypt(encryptedKeystore, masterPassword).toString(
         cryptoJS.enc.Utf8
       )
     );
@@ -194,6 +214,12 @@ export class KeystoreService {
     const key256Bits = cryptoJS.PBKDF2(secret, salt, { keySize: 256 / 32 });
 
     return key256Bits.toString();
+  }
+
+  async openMasterPasswordDialog(): Promise<string> {
+    const dialogRef = this.dialog.open(EnterMasterPasswordComponent, {});
+
+    return await firstValueFrom(dialogRef.afterClosed());
   }
 }
 interface KeyEntry {

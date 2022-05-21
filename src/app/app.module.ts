@@ -20,6 +20,8 @@ import { ToastrModule } from 'ngx-toastr';
 import { TextEditorComponent } from './components/text-editor/text-editor.component';
 import { NgxEditorModule } from 'ngx-editor';
 import { NavbarComponent } from './components/navbar/navbar.component';
+import { EnterMasterPasswordComponent } from './components/enter-master-password/enter-master-password.component';
+import { MatDialogModule } from '@angular/material/dialog';
 import { GlobalErrorHandlerService } from './services/global-error-handler/global-error-handler.service';
 import { TreeNestedExplorerComponent } from './components/tree-nested-explorer/tree-nested-explorer.component';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -34,7 +36,8 @@ import { MatListModule } from '@angular/material/list';
 import { LoggedInDirective } from './directives/logged-in.directive';
 import { MatMenuModule } from '@angular/material/menu';
 import { FileUploadComponent } from './components/dialogs/file-upload/file-upload.component';
-import { MatDialogModule } from '@angular/material/dialog';
+import { FilePreviewComponent } from './components/file-preview/file-preview.component';
+import { MarkdownModule } from 'ngx-markdown';
 
 @NgModule({
   declarations: [
@@ -46,12 +49,17 @@ import { MatDialogModule } from '@angular/material/dialog';
     FileExplorerComponent,
     KeystoreComponent,
     NavbarComponent,
+    EnterMasterPasswordComponent,
     TreeNestedExplorerComponent,
     FaqComponent,
     LoggedInDirective,
     FileUploadComponent,
+    FilePreviewComponent,
   ],
   imports: [
+    MatInputModule,
+    MatFormFieldModule,
+    MatDialogModule,
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
@@ -75,6 +83,7 @@ import { MatDialogModule } from '@angular/material/dialog';
     ReactiveFormsModule,
     MatListModule,
     MatMenuModule,
+    MarkdownModule.forRoot(),
   ],
   providers: [
     SolidAuthenticationService,
