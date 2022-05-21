@@ -16,22 +16,21 @@ export class KeystoreService {
     private dialog: MatDialog
   ) {}
 
+  declare masterPasswordHash: string;
   /**
    * Sets the masterpassword .
    */
-  setMasterPassword(pwd: string) {
-    const masterPasswordHash = cryptoJS.SHA256(pwd).toString();
-    localStorage.setItem('masterPasswordHash', masterPasswordHash);
+  async setMasterPassword(pwd: string) {
+    this.masterPasswordHash = cryptoJS
+      .SHA256(pwd + '1205sOlIDCryptPADsalt1502')
+      .toString();
   }
 
-  getMasterPassword(): string {
-    let masterPasswordHash = localStorage.getItem('masterPasswordHash');
-
-    if (!masterPasswordHash) {
-      masterPasswordHash = '';
+  async getMasterPassword(): Promise<string> {
+    if (!this.masterPasswordHash) {
+      this.setMasterPassword(await this.openMasterPasswordDialog());
     }
-
-    return masterPasswordHash;
+    return this.masterPasswordHash;
   }
 
   /**
@@ -89,14 +88,11 @@ export class KeystoreService {
   async loadKeystore(): Promise<KeyEntry[]> {
     let keystore: KeyEntry[];
     keystore = [];
-    const userName = await this.profileService.getPodUrls();
+    const podUrls = await this.profileService.getPodUrls();
     try {
-      const encryptedKeystore = await getFile(
-        `${userName[0]}private/Keystore`,
-        {
-          fetch: fetch,
-        }
-      );
+      const encryptedKeystore = await getFile(`${podUrls[0]}private/Keystore`, {
+        fetch: fetch,
+      });
       keystore = await this.decryptKeystore(await encryptedKeystore.text());
     } catch (error: any) {
       console.log('No Keystore found'); // TODO: Exception-Handling
@@ -120,13 +116,13 @@ export class KeystoreService {
    * Writes the current keystore from the local storage to the solid pod.
    */
   private async writeKeystoreToPod() {
-    const userName = await this.profileService.getPodUrls();
+    const podUrls = await this.profileService.getPodUrls();
     const encryptedKeystore = await this.encryptKeystore(
       this.getLocalKeystore()
     );
     const keyStoreBlob = new Blob([encryptedKeystore], { type: 'text/plain' });
 
-    await overwriteFile(`${userName[0]}private/Keystore`, keyStoreBlob, {
+    await overwriteFile(`${podUrls[0]}private/Keystore`, keyStoreBlob, {
       contentType: keyStoreBlob.type,
       fetch: fetch,
     });
@@ -136,12 +132,7 @@ export class KeystoreService {
    * Encrypts the keystore using the masterpassword.
    */
   private async encryptKeystore(keystore: KeyEntry[]): Promise<string> {
-    let masterPassword = this.getMasterPassword();
-
-    if (!masterPassword) {
-      this.setMasterPassword(await this.openMasterPasswordDialog());
-      masterPassword = this.getMasterPassword();
-    }
+    const masterPassword = await this.getMasterPassword();
 
     return cryptoJS.AES.encrypt(
       JSON.stringify(keystore),
@@ -155,14 +146,10 @@ export class KeystoreService {
   private async decryptKeystore(
     encryptedKeystore: string
   ): Promise<KeyEntry[]> {
-    let masterPassword = this.getMasterPassword();
-
-    if (!masterPassword) {
-      this.setMasterPassword(await this.openMasterPasswordDialog());
-      masterPassword = this.getMasterPassword();
-    }
+    const masterPassword = await this.getMasterPassword();
 
     return JSON.parse(
+      // TODO: Exception-Handling
       cryptoJS.AES.decrypt(encryptedKeystore, masterPassword).toString(
         cryptoJS.enc.Utf8
       )
