@@ -24,6 +24,9 @@
     </button>
     {{ node.shortName }}
     <button mat-icon-button (click)="this.open(node)">open</button>
+    <button mat-icon-button (click)="this.upload(node)">
+      <mat-icon class="mat-icon" title="Upload Files"> add_box </mat-icon>
+    </button>
     <mat-progress-bar
       *ngIf="node.isLoading"
       mode="indeterminate"

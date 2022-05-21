@@ -7,6 +7,7 @@ import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-fil
 import { MatTreeModule } from '@angular/material/tree';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
+import { MatDialogModule } from '@angular/material/dialog';
 
 describe('TreeNestedExplorerComponent', () => {
   let component: TreeNestedExplorerComponent;
@@ -20,7 +21,7 @@ describe('TreeNestedExplorerComponent', () => {
     ]);
 
     await TestBed.configureTestingModule({
-      imports: [RouterTestingModule, MatTreeModule],
+      imports: [RouterTestingModule, MatTreeModule, MatDialogModule],
       declarations: [TreeNestedExplorerComponent],
       providers: [
         {

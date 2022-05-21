@@ -35,6 +35,8 @@ import { LoggedInDirective } from './directives/logged-in.directive';
 import { MatMenuModule } from '@angular/material/menu';
 import { FilePreviewComponent } from './components/file-preview/file-preview.component';
 import { MarkdownModule } from 'ngx-markdown';
+import { FileUploadComponent } from './components/dialogs/file-upload/file-upload.component';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
   declarations: [
@@ -50,6 +52,7 @@ import { MarkdownModule } from 'ngx-markdown';
     FaqComponent,
     LoggedInDirective,
     FilePreviewComponent,
+    FileUploadComponent,
   ],
   imports: [
     BrowserModule,
@@ -59,6 +62,7 @@ import { MarkdownModule } from 'ngx-markdown';
     MatTreeModule,
     MatExpansionModule,
     MatToolbarModule,
+    MatDialogModule,
     MatButtonModule,
     FormsModule,
     HttpClientModule,
