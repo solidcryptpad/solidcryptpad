@@ -35,7 +35,7 @@
         </mat-icon>
       </button>
 
-      <div (click)="this.open(node)">{{ node.shortName }}</div>
+      <span>{{ node.shortName }}</span>
 
       <mat-progress-bar
         *ngIf="node.isLoading"
