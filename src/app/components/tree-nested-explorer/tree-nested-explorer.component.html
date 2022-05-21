@@ -1,36 +1,62 @@
-<mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
-  <mat-tree-node
-    id="{{ node.shortName }}Node"
-    *matTreeNodeDef="let node"
-    matTreeNodePadding
-  >
-    <button mat-icon-button disabled></button>
-    {{ node.shortName }}
-    <button mat-icon-button (click)="this.open(node)">open</button>
-  </mat-tree-node>
-  <mat-tree-node
-    id="{{ node.shortName }}Node"
-    *matTreeNodeDef="let node; when: hasChild"
-    matTreeNodePadding
-  >
-    <button
-      mat-icon-button
-      [attr.aria-label]="'Toggle ' + node.shortName"
-      matTreeNodeToggle
+<div class="box">
+  <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+    <!-- NODE FOR FILES -->
+    <mat-tree-node
+      id="{{ node.shortName }}Node"
+      *matTreeNodeDef="let node"
+      matTreeNodePadding="2px"
     >
-      <mat-icon class="mat-icon-rtl-mirror">
-        {{ treeControl.isExpanded(node) ? "expand_more" : "chevron_right" }}
-      </mat-icon>
-    </button>
-    {{ node.shortName }}
-    <button mat-icon-button (click)="this.open(node)">open</button>
-    <button mat-icon-button (click)="this.upload(node)">
-      <mat-icon class="mat-icon" title="Upload Files"> add_box </mat-icon>
-    </button>
-    <mat-progress-bar
-      *ngIf="node.isLoading"
-      mode="indeterminate"
-      class="example-tree-progress-bar"
-    ></mat-progress-bar>
-  </mat-tree-node>
-</mat-tree>
+      <button mat-icon-button disabled></button>
+      {{ node.shortName }}
+
+      <button
+        mat-icon-button
+        (click)="this.open(node)"
+        style="margin-left: 20px"
+      >
+        <mat-icon class="mat-icon" title="Open in editor">open_in_new</mat-icon>
+      </button>
+    </mat-tree-node>
+    <!-- NODE FOR FILES -->
+
+    <!-- NODE FOR FOLDERS -->
+    <mat-tree-node
+      id="{{ node.shortName }}Node"
+      *matTreeNodeDef="let node; when: hasChild"
+      matTreeNodePadding="2px"
+    >
+      <button
+        mat-icon-button
+        [attr.aria-label]="'Toggle ' + node.shortName"
+        matTreeNodeToggle
+      >
+        <mat-icon class="mat-icon-rtl-mirror">
+          {{ treeControl.isExpanded(node) ? "folder_open" : "folder" }}
+        </mat-icon>
+      </button>
+
+      <div (click)="this.open(node)">{{ node.shortName }}</div>
+
+      <mat-progress-bar
+        *ngIf="node.isLoading"
+        mode="indeterminate"
+        class="example-tree-progress-bar"
+      ></mat-progress-bar>
+
+      <span class="spacer"></span>
+
+      <div class="menu">
+        <button mat-icon-button style="color: gray" [matMenuTriggerFor]="menu">
+          <mat-icon class="mat-icon" title="Options">more_horiz</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="this.open(node)">Open Folder</button>
+          <button mat-menu-item (click)="this.upload(node)">
+            Upload Files
+          </button>
+        </mat-menu>
+      </div>
+    </mat-tree-node>
+    <!-- NODE FOR FOLDERS -->
+  </mat-tree>
+</div>
