@@ -8,6 +8,7 @@ import { MatTreeModule } from '@angular/material/tree';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatMenu } from '@angular/material/menu';
 
 describe('TreeNestedExplorerComponent', () => {
   let component: TreeNestedExplorerComponent;
@@ -22,7 +23,7 @@ describe('TreeNestedExplorerComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [RouterTestingModule, MatTreeModule, MatDialogModule],
-      declarations: [TreeNestedExplorerComponent],
+      declarations: [TreeNestedExplorerComponent, MatMenu],
       providers: [
         {
           provide: SolidFileHandlerService,
@@ -91,6 +92,7 @@ describe('TreeNestedExplorerComponent', () => {
     );
 
     const tree = await loader.getHarness(MatTreeHarness);
+    console.log(tree.getNodes());
     await (await tree.getNodes())[1].expand();
 
     expect((await tree.getNodes()).length).toBe(5);
