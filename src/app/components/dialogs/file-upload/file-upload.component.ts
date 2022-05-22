@@ -44,8 +44,12 @@ export class FileUploadComponent {
   }
 
   handleChange(e: Event) {
-    const fileInput = e as unknown as FileList;
-    this.files = Array.from(fileInput || []);
+    const fileInput = e.currentTarget as HTMLInputElement;
+    this.files = Array.from(fileInput.files || []);
+  }
+
+  handleDrop(files: FileList) {
+    this.files = Array.from(files);
   }
 
   close(): void {

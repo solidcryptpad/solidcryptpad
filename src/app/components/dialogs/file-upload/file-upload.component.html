@@ -1,7 +1,13 @@
 <h1 mat-dialog-title>File Upload</h1>
 <div mat-dialog-content>
-  <div class="dropzone" appDragAndDrop (fileDropped)="handleChange($event)">
-    <input type="file" #fileDropRef id="fileDropRef" multiple />
+  <div class="dropzone" appDragAndDrop (fileDropped)="handleDrop($event)">
+    <input
+      type="file"
+      #fileDropRef
+      id="fileDropRef"
+      multiple
+      (change)="handleChange($event)"
+    />
     <h3>Drag and Drop file here</h3>
     <label for="fileDropRef">Browse for file</label>
   </div>
