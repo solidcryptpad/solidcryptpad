@@ -1,5 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatDialog,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
+import { Router } from '@angular/router';
 
 import { FolderCreateComponent } from './folder-create.component';
 
@@ -12,6 +17,8 @@ describe('FolderCreateComponent', () => {
       declarations: [FolderCreateComponent],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: {} },
+        { provide: MatDialog, useValue: {} },
+        { provide: Router, useValue: {} },
         { provide: MatDialogRef, useValue: {} },
       ],
     }).compileComponents();
