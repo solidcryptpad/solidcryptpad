@@ -24,9 +24,13 @@ export class NavbarComponent implements OnInit {
   toggleControl = new FormControl(false);
 
   ngOnInit(): void {
-    // necessary for proper initialization, could be improved
+    const darkModeEnabled =
+      window.localStorage.getItem('darkMode') === 'darkMode';
+
+    this.toggleControl.setValue(darkModeEnabled);
+
     this.toggleControl.valueChanges.subscribe(() =>
-      this.darkModeToggleEvent.emit(false)
+      this.darkModeToggleEvent.emit(darkModeEnabled)
     );
   }
 

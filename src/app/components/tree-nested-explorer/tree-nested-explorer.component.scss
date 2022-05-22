@@ -1,0 +1,27 @@
+.box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  width: 100%;
+}
+
+.ng-star-inserted {
+  border-bottom: 1px solid;
+  border-radius: 10px;
+  border-color: gray;
+}
+
+.mat-tree {
+  border: 1px solid gray;
+  border-radius: 10px;
+  min-width: 60%;
+}
+
+.mat-tree-node:hover {
+  background-color: #f4cfab;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}

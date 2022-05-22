@@ -1,0 +1,20 @@
+<h1 mat-dialog-title>File Upload</h1>
+<div mat-dialog-content>
+  <mat-label for="file-input">Select files</mat-label>
+  <input
+    type="file"
+    id="file-input"
+    #file_input
+    multiple
+    (change)="handleChange($event)"
+  />
+  <ul *ngIf="files.length">
+    <li *ngFor="let file of files">
+      {{ file.name }}
+    </li>
+  </ul>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="close()">Cancel</button>
+  <button mat-button (click)="uploadFiles()">Upload</button>
+</div>

@@ -35,6 +35,7 @@ import { FaqComponent } from './components/faq/faq.component';
 import { MatListModule } from '@angular/material/list';
 import { LoggedInDirective } from './directives/logged-in.directive';
 import { MatMenuModule } from '@angular/material/menu';
+import { FileUploadComponent } from './components/dialogs/file-upload/file-upload.component';
 import { FilePreviewComponent } from './components/file-preview/file-preview.component';
 import { MarkdownModule } from 'ngx-markdown';
 
@@ -52,6 +53,7 @@ import { MarkdownModule } from 'ngx-markdown';
     TreeNestedExplorerComponent,
     FaqComponent,
     LoggedInDirective,
+    FileUploadComponent,
     FilePreviewComponent,
   ],
   imports: [
@@ -65,6 +67,7 @@ import { MarkdownModule } from 'ngx-markdown';
     MatTreeModule,
     MatExpansionModule,
     MatToolbarModule,
+    MatDialogModule,
     MatButtonModule,
     FormsModule,
     HttpClientModule,

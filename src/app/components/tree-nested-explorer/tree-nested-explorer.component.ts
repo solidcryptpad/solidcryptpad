@@ -8,9 +8,10 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, merge, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { setErrorContext } from 'src/app/exceptions/error-options';
-import { PermissionException } from 'src/app/exceptions/permission-exception';
+import { setErrorContext as throwWithContext } from 'src/app/exceptions/error-options';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
+import { MatDialog } from '@angular/material/dialog';
+import { FileUploadComponent } from '../dialogs/file-upload/file-upload.component';
 
 /**
  * represents an element in the tree
@@ -90,11 +91,7 @@ export class FolderDataSource implements DataSource<Node> {
         node.isLoading = false;
         this.dataChange.next(this.data);
       } catch (error) {
-        setErrorContext('Error while loading Foldercontent')(error as Error);
-
-        if (error instanceof PermissionException) {
-          throw error;
-        }
+        throwWithContext('Error while loading Foldercontent')(error as Error);
       } finally {
         // make sure the loading animation stops at the end even if some error occured
         node.isLoading = false;
@@ -173,7 +170,8 @@ export class TreeNestedExplorerComponent implements OnInit {
   constructor(
     public solidFileHandlerService: SolidFileHandlerService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    public dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -210,5 +208,16 @@ export class TreeNestedExplorerComponent implements OnInit {
     } else {
       this.router.navigateByUrl(`/preview?file=${node.link}`);
     }
+  }
+
+  upload(node: Node) {
+    const dialogRef = this.dialog.open(FileUploadComponent, {
+      data: {
+        folder: {
+          url: node.link,
+        },
+      },
+    });
+    dialogRef.afterClosed().subscribe();
   }
 }
