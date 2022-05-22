@@ -1,17 +1,13 @@
 describe("File-Explorer Test", function () {
   beforeEach(function () {
-    cy.visit("http://localhost:4200/");
     cy.createRandomAccount().as("user");
     cy.get("@user").then(function (user) {
       cy.login(user);
     });
-    cy.contains("Files").click();
-    cy.contains("Folder URL");
   });
 
   it("Open podUrl and show standard files, folders and open-Button", function () {
-    cy.get("[id=currentFolderLink]").type(this.user.podUrl + "/");
-    cy.contains("change Directory").click();
+    cy.contains("Files").click();
 
     cy.contains("open");
     cy.contains("profile");
@@ -21,9 +17,7 @@ describe("File-Explorer Test", function () {
   it("Open PodUrl and show new folder", function () {
     var folderUrl = "test-folder";
     cy.givenFolder(this.user, this.user.podUrl + "/" + folderUrl + "/");
-
-    cy.get("[id=currentFolderLink]").type(this.user.podUrl + "/");
-    cy.contains("change Directory").click();
+    cy.contains("Files").click();
 
     cy.contains(folderUrl);
   });
@@ -32,9 +26,7 @@ describe("File-Explorer Test", function () {
     var fileUrl = "file.txt";
     var fileContent = "some random text content";
     cy.givenFile(this.user, this.user.podUrl + "/" + fileUrl, fileContent);
-
-    cy.get("[id=currentFolderLink]").type(this.user.podUrl + "/");
-    cy.contains("change Directory").click();
+    cy.contains("Files").click();
 
     cy.contains(fileUrl);
   });
@@ -46,10 +38,8 @@ describe("File-Explorer Test", function () {
       this.user,
       this.user.podUrl + "/" + nestedFolderName + "/" + folderName
     );
+    cy.contains("Files").click();
 
-    cy.get("[id=currentFolderLink]").type(this.user.podUrl + "/");
-
-    cy.contains("change Directory").click();
     cy.contains(nestedFolderName);
 
     cy.contains("nested")
@@ -67,9 +57,7 @@ describe("File-Explorer Test", function () {
       this.user,
       this.user.podUrl + "/" + folderName + "/" + fileName
     );
-
-    cy.get("[id=currentFolderLink]").type(this.user.podUrl + "/");
-    cy.contains("change Directory").click();
+    cy.contains("Files").click();
 
     cy.contains(folderName);
 
