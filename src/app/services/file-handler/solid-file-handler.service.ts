@@ -22,9 +22,7 @@ export class SolidFileHandlerService {
   constructor(
     private keystoreService: KeystoreService,
     private solidClientService: SolidClientService
-  ) {
-    keystoreService.setMasterPassword('testPassword182617042022'); //TEMP
-  }
+  ) {}
 
   /**
    * reads a file saved at the url

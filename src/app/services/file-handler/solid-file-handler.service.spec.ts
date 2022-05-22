@@ -55,7 +55,6 @@ describe('SolidFileHandlerService', () => {
     authenticationServiceSpy = TestBed.inject(
       SolidAuthenticationService
     ) as jasmine.SpyObj<SolidAuthenticationService>;
-    console.log(authenticationServiceSpy); //Temp. Fix for lint error 'authenticationServiceSpy' is assigned a value but never used'
 
     solidClientServiceSpy = TestBed.inject(
       SolidClientService

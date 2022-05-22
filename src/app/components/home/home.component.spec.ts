@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HomeComponent } from './home.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ProfileService } from '../../services/profile/profile.service';
+import { firstValueFrom } from 'rxjs';
 
 describe('HomeComponent', () => {
   let component: HomeComponent;
@@ -41,9 +42,10 @@ describe('HomeComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should set username if exists', () => {
-    component.name$?.subscribe((val) => {
-      expect(val).toBe('testerson');
-    });
+  it('should set username if exists', async () => {
+    expect(component.name$).toBeDefined();
+    await firstValueFrom(component.name$!).then((val) =>
+      expect(val).toBe('testerson')
+    );
   });
 });
