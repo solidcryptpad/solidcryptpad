@@ -5,6 +5,7 @@ import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-fil
 import { MatDialog } from '@angular/material/dialog';
 import { FileUploadComponent } from '../dialogs/file-upload/file-upload.component';
 import { FolderDataSource, Node } from './folder-data-source.class';
+import { ProfileService } from 'src/app/services/profile/profile.service';
 
 @Component({
   selector: 'app-tree-nested-explorer',
@@ -17,15 +18,20 @@ export class TreeNestedExplorerComponent implements OnInit {
   dataSource!: FolderDataSource;
 
   constructor(
-    public solidFileHandlerService: SolidFileHandlerService,
+    private solidFileHandlerService: SolidFileHandlerService,
+    private profileService: ProfileService,
     private route: ActivatedRoute,
     private router: Router,
-    public dialog: MatDialog
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(async (params) => {
-      this.rootPath = params['url'];
+      const rootPath =
+        params['url'] ??
+        (await this.profileService.getPodUrls().then((urls) => urls[0]));
+      console.log('rootPath', rootPath);
+      this.rootPath = rootPath;
       this.treeControl = new FlatTreeControl<Node>(
         this.getLevel,
         this.isExpandable

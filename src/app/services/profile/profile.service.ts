@@ -44,6 +44,12 @@ export class ProfileService {
    * Retrieves all Pod Urls connected to the logged in webId.
    */
   async getPodUrls(): Promise<string[]> {
+    console.log('getPodUrls', await this.getWebId());
+    console.log(
+      await this.solidClientService
+        .getPodUrlAll(await this.getWebId())
+        .catch(() => 'could not get podUrls')
+    );
     return this.solidClientService.getPodUrlAll(await this.getWebId());
   }
 
