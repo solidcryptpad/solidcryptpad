@@ -8,7 +8,6 @@ import { firstValueFrom } from 'rxjs';
 import { EnterMasterPasswordComponent } from 'src/app/components/enter-master-password/enter-master-password.component';
 import { WrongMasterPasswordException } from 'src/app/exceptions/wrong-master-password-exception';
 import { KeyNotFoundException } from 'src/app/exceptions/key-not-found-exception';
-import { NotFoundException } from 'src/app/exceptions/not-found-exception';
 
 @Injectable({
   providedIn: 'root',
@@ -97,10 +96,10 @@ export class KeystoreService {
       encryptedKeystore = await getFile(`${podUrls[0]}private/Keystore`, {
         fetch: fetch,
       });
-    } catch (error: any) {
-      throw new NotFoundException('No keystore found'); //TODO: Replace with set-master-password-component
+      keystore = await this.decryptKeystore(await encryptedKeystore.text());
+    } catch (error) {
+      console.log('No keystore found'); //TODO: Replace with set-master-password-component
     }
-    keystore = await this.decryptKeystore(await encryptedKeystore.text());
 
     localStorage.setItem('keystore', JSON.stringify(keystore));
     return keystore;
