@@ -1,6 +1,6 @@
 import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { setErrorContext } from 'src/app/exceptions/error-options';
+import { throwWithContext } from 'src/app/exceptions/error-options';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 
 interface FileUploadData {
@@ -36,7 +36,7 @@ export class FileUploadComponent {
     const url = this.data.folder.url + file.name;
     await this.fileService
       .writeAndEncryptFile(file, url)
-      .catch(setErrorContext('could not upload file'));
+      .catch(throwWithContext('could not upload file'));
   }
 
   handleChange(e: Event) {
