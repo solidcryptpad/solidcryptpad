@@ -34,4 +34,36 @@ describe('KeystoreService', () => {
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
+
+  it('should create unique keys', () => {
+    const key1 = service.generateNewKey();
+    const key2 = service.generateNewKey();
+    expect(key1).not.toBe(key2);
+  });
+
+  it('should set master password', async () => {
+    service.setMasterPassword('testpwd');
+    expect(await service.getMasterPassword()).not.toEqual('');
+  });
+
+  it('should hash master password', async () => {
+    service.setMasterPassword('testpwd');
+    expect(await service.getMasterPassword()).not.toEqual('testpwd');
+  });
+
+  it('should load keystore from localstorage', () => {
+    const key = service.generateNewKey();
+    const id = 'testURL/test';
+    const keystore = [{ ID: id, KEY: key }];
+    localStorage.setItem('keystore', JSON.stringify(keystore));
+    expect(service.getLocalKeystore()).toEqual(keystore);
+  });
+
+  it('should find key in localstorage', () => {
+    const key = service.generateNewKey();
+    const id = 'testURL/test';
+    const keystore = [{ ID: id, KEY: key }];
+    localStorage.setItem('keystore', JSON.stringify(keystore));
+    expect(service.getKeyFromLocalKeystore(id)).toBe(key);
+  });
 });
