@@ -30,7 +30,6 @@ export class TreeNestedExplorerComponent implements OnInit {
       const rootPath =
         params['url'] ??
         (await this.profileService.getPodUrls().then((urls) => urls[0]));
-      console.log('rootPath', rootPath);
       this.rootPath = rootPath;
       this.treeControl = new FlatTreeControl<Node>(
         this.getLevel,

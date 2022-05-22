@@ -13,6 +13,7 @@ Cypress.Commands.add("createRandomAccount", function () {
   const uuid = require("uuid");
   const username = "test-" + uuid.v4();
   const password = "12345";
+  const masterPassword = "master password";
   const email = username + "@example.org";
   const config = {
     idp: Cypress.config().cssUrl + "/",
@@ -20,6 +21,7 @@ Cypress.Commands.add("createRandomAccount", function () {
     webId: Cypress.config().cssUrl + "/" + username + "/profile/card#me",
     username: username,
     password: password,
+    masterPassword: masterPassword,
     email: email,
   };
   const registerEndpoint = Cypress.config().cssUrl + "/idp/register/";
@@ -122,4 +124,23 @@ Cypress.Commands.add("givenFile", (user, url, content, options = {}) => {
     },
     body: content,
   });
+});
+
+/**
+ * fills out and submits a master password dialog
+ */
+Cypress.Commands.add("enterMasterPassword", (user) => {
+  /* when directly using cy.get(input...).type(masterPassword)
+    it sometimes failed, I guess because the typing wasn't yet processed by the input
+    Therefore this tries to make the input process the typing
+    and ensures it's processed completely before continuing */
+  cy.get("input[data-cy=master-password-input]").click();
+  cy.wait(1000);
+  cy.get("input[data-cy=master-password-input]").type(user.masterPassword);
+  cy.get("input[data-cy=master-password-input]").should(
+    "have.value",
+    user.masterPassword
+  );
+
+  cy.contains("Ok").click();
 });
