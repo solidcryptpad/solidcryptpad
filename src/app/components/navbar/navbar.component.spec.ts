@@ -121,7 +121,7 @@ describe('NavbarComponent', () => {
     getLinkByText('Files').click();
     tick();
 
-    expect(router.url).toBe('/files?url=');
+    expect(router.url).toBe('/files');
   }));
 
   it('should redirect to home when logging out', () => {

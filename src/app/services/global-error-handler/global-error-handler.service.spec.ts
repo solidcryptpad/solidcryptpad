@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { BaseException } from 'src/app/exceptions/base-exception';
-import { setErrorContext } from 'src/app/exceptions/error-options';
+import { throwWithContext } from 'src/app/exceptions/error-options';
 import { NotFoundException } from 'src/app/exceptions/not-found-exception';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
 import { NotificationService } from '../notification/notification.service';
@@ -84,21 +84,21 @@ describe('GlobalErrorHandlerService', () => {
     expect(console.error).toHaveBeenCalled();
   });
 
-  it('should change the title on call for setErrorContext', () => {
+  it('should change the title on call for throwWithContext', () => {
     const context = 'new context';
 
     expect(() =>
-      setErrorContext(context)(
+      throwWithContext(context)(
         new BaseException('TestException', 'message', 'some title')
       )
     ).toThrow(new BaseException('TestException', 'message', context));
   });
 
-  it('should throw unknownexception with correct arguments on call for setErrorContext on unknown error', () => {
+  it('should throw unknownexception with correct arguments on call for throwWithContext on unknown error', () => {
     const context = 'new context';
     const error = new Error('some message');
 
-    expect(() => setErrorContext(context)(error)).toThrow(
+    expect(() => throwWithContext(context)(error)).toThrow(
       new UnknownException(context, { cause: error })
     );
   });
