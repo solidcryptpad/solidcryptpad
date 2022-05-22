@@ -8,6 +8,9 @@ import { MatTreeModule } from '@angular/material/tree';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 describe('TreeNestedExplorerComponent', () => {
   let component: TreeNestedExplorerComponent;
@@ -21,7 +24,14 @@ describe('TreeNestedExplorerComponent', () => {
     ]);
 
     await TestBed.configureTestingModule({
-      imports: [RouterTestingModule, MatTreeModule, MatDialogModule],
+      imports: [
+        RouterTestingModule,
+        MatTreeModule,
+        MatProgressBarModule,
+        MatDialogModule,
+        MatIconModule,
+        MatMenuModule,
+      ],
       declarations: [TreeNestedExplorerComponent],
       providers: [
         {
@@ -93,7 +103,9 @@ describe('TreeNestedExplorerComponent', () => {
     );
 
     const tree = await loader.getHarness(MatTreeHarness);
-    await (await tree.getNodes())[1].expand();
+    const nodes = await tree.getNodes();
+    expect(nodes.length).toEqual(2);
+    await nodes[1].expand();
 
     expect((await tree.getNodes()).length).toBe(5);
   });

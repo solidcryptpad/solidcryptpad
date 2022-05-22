@@ -52,7 +52,11 @@ describe("File-Explorer Test", function () {
     cy.contains("change Directory").click();
     cy.contains(nestedFolderName);
 
-    cy.contains("nested").contains("open").click();
+    cy.contains("nested")
+      .closest("[data-cy=tree-node]")
+      .find("[data-cy=folder-menu]")
+      .click();
+    cy.contains("Open Folder").click();
     cy.contains(folderName);
   });
 

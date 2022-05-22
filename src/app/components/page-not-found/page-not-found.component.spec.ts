@@ -34,7 +34,6 @@ describe('PageNotFoundComponent', () => {
 
   it('button should redirect back', () => {
     const button = fixture.nativeElement.querySelector('button');
-    console.log(button);
     button.click();
     expect(router.url).toBe('/');
   });
