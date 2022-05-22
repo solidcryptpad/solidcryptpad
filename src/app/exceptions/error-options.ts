@@ -1,7 +1,13 @@
 import { BaseException } from './base-exception';
 import { UnknownException } from './unknown-exception';
 
-export const setErrorContext = (context: string) => (error: Error) => {
+/**
+ * @param context context of the error
+ * @returns function that throws errors with specified context
+ * @example
+ * fetch(url).catch(throwWithContext('could not fetch document'))
+ */
+export const throwWithContext = (context: string) => (error: Error) => {
   if (error instanceof BaseException) {
     error.title = context;
   } else {

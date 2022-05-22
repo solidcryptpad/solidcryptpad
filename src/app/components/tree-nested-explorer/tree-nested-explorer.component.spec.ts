@@ -7,21 +7,26 @@ import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-fil
 import { MatTreeModule } from '@angular/material/tree';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { Node } from './folder-data-source.class';
+import { FileUploadComponent } from '../dialogs/file-upload/file-upload.component';
 
 describe('TreeNestedExplorerComponent', () => {
   let component: TreeNestedExplorerComponent;
   let fixture: ComponentFixture<TreeNestedExplorerComponent>;
   let fileHandlerServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
+  let dialogSpy: jasmine.SpyObj<MatDialog>;
 
   beforeEach(async () => {
     const fileHandlerSpy = jasmine.createSpyObj('SolidFileHandlerSpy', [
       'getContainerContent',
       'isContainer',
     ]);
+    const matDialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
 
     await TestBed.configureTestingModule({
       imports: [
@@ -31,6 +36,7 @@ describe('TreeNestedExplorerComponent', () => {
         MatDialogModule,
         MatIconModule,
         MatMenuModule,
+        NoopAnimationsModule,
       ],
       declarations: [TreeNestedExplorerComponent],
       providers: [
@@ -46,12 +52,17 @@ describe('TreeNestedExplorerComponent', () => {
             }),
           },
         },
+        {
+          provide: MatDialog,
+          useValue: matDialogSpy,
+        },
       ],
     }).compileComponents();
 
     fileHandlerServiceSpy = TestBed.inject(
       SolidFileHandlerService
     ) as jasmine.SpyObj<SolidFileHandlerService>;
+    dialogSpy = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
 
     fixture = TestBed.createComponent(TreeNestedExplorerComponent);
 
@@ -128,9 +139,25 @@ describe('TreeNestedExplorerComponent', () => {
     );
 
     const tree = await loader.getHarness(MatTreeHarness);
-    await (await tree.getNodes())[1].expand();
-    await (await tree.getNodes())[1].collapse();
+    const nodes = await tree.getNodes();
+    await nodes[1].expand();
+    expect((await tree.getNodes()).length).toBe(5);
 
+    await nodes[1].collapse();
     expect((await tree.getNodes()).length).toBe(2);
+  });
+
+  it('opens upload dialog when calling upload', async () => {
+    const node = new Node('https://example.org/test/', 'test', 1, true, false);
+
+    component.upload(node);
+
+    expect(dialogSpy.open).toHaveBeenCalledWith(FileUploadComponent, {
+      data: {
+        folder: {
+          url: 'https://example.org/test/',
+        },
+      },
+    });
   });
 });
