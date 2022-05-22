@@ -19,6 +19,10 @@ export class FileUploadComponent {
   input: ElementRef<HTMLInputElement> | undefined;
   files: File[] = [];
 
+  @ViewChild('fileDropRef', { static: false }) fileDropEl:
+    | ElementRef
+    | undefined;
+
   constructor(
     @Inject(MAT_DIALOG_DATA) private data: FileUploadData,
     private dialogRef: MatDialogRef<FileUploadComponent>,
@@ -40,11 +44,35 @@ export class FileUploadComponent {
   }
 
   handleChange(e: Event) {
-    const fileInput = e.currentTarget as HTMLInputElement;
-    this.files = Array.from(fileInput.files || []);
+    const fileInput = e as unknown as FileList;
+    this.files = Array.from(fileInput || []);
   }
 
   close(): void {
     this.dialogRef.close();
+  }
+
+  /**
+   * Remove file from list
+   * @param index of file to be removed
+   */
+  deleteFile(index: number) {
+    this.files.splice(index, 1);
+  }
+
+  /**
+   * format bytes
+   * @param bytes (File size in bytes)
+   * @param decimals (Decimals point)
+   */
+  formatBytes(bytes: number, decimals = 2) {
+    if (bytes === 0) {
+      return '0 Bytes';
+    }
+    const k = 1024;
+    const dm = decimals <= 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   }
 }

@@ -38,6 +38,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { FileUploadComponent } from './components/dialogs/file-upload/file-upload.component';
 import { FilePreviewComponent } from './components/file-preview/file-preview.component';
 import { MarkdownModule } from 'ngx-markdown';
+import { DragAndDropDirective } from './directives/drag-and-drop.directive';
 
 @NgModule({
   declarations: [
@@ -55,6 +56,7 @@ import { MarkdownModule } from 'ngx-markdown';
     LoggedInDirective,
     FileUploadComponent,
     FilePreviewComponent,
+    DragAndDropDirective,
   ],
   imports: [
     MatInputModule,
