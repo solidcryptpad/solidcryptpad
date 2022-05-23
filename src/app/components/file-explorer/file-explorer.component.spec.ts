@@ -47,7 +47,7 @@ describe('FileExplorerComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should go to welcome when clicking on title', fakeAsync(() => {
+  it('should navigate to files when clicked', fakeAsync(() => {
     fixture.nativeElement.querySelector('button').click();
     tick();
 

@@ -1,27 +1,35 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
-  MatDialog,
   MatDialogRef,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
-import { Router } from '@angular/router';
+import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 
 import { FolderCreateComponent } from './folder-create.component';
 
 describe('FolderCreateComponent', () => {
   let component: FolderCreateComponent;
   let fixture: ComponentFixture<FolderCreateComponent>;
+  let solidFileHandlerServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
 
   beforeEach(async () => {
+    const solidFileHandlerSpy = jasmine.createSpyObj(
+      'SolidFileHandlerService',
+      ['writeContainer']
+    );
+
     await TestBed.configureTestingModule({
       declarations: [FolderCreateComponent],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: {} },
-        { provide: MatDialog, useValue: {} },
-        { provide: Router, useValue: {} },
-        { provide: MatDialogRef, useValue: {} },
+        // eslint-disable-next-line
+        { provide: MatDialogRef, useValue: { close: () => {} } },
+        { provide: SolidFileHandlerService, useValue: solidFileHandlerSpy },
       ],
     }).compileComponents();
+    solidFileHandlerServiceSpy = TestBed.inject(
+      SolidFileHandlerService
+    ) as jasmine.SpyObj<SolidFileHandlerService>;
   });
 
   beforeEach(() => {
@@ -32,5 +40,10 @@ describe('FolderCreateComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('createFolder should call writeContainer', async () => {
+    await component.createFolder();
+    expect(solidFileHandlerServiceSpy.writeContainer).toHaveBeenCalled();
   });
 });

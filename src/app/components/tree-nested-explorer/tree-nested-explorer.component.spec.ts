@@ -2,25 +2,36 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatTreeHarness } from '@angular/material/tree/testing';
-import { TreeNestedExplorerComponent } from './tree-nested-explorer.component';
+import {
+  Node,
+  TreeNestedExplorerComponent,
+} from './tree-nested-explorer.component';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 import { MatTreeModule } from '@angular/material/tree';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { FileCreateComponent } from '../dialogs/file-create/file-create.component';
+import { FolderCreateComponent } from '../dialogs/folder-create/folder-create.component';
 
 describe('TreeNestedExplorerComponent', () => {
   let component: TreeNestedExplorerComponent;
   let fixture: ComponentFixture<TreeNestedExplorerComponent>;
   let fileHandlerServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
+  let dialogSpy: jasmine.SpyObj<MatDialog>;
 
   beforeEach(async () => {
     const fileHandlerSpy = jasmine.createSpyObj('SolidFileHandlerSpy', [
       'getContainerContent',
       'isContainer',
+    ]);
+
+    const dialogHandlerSpy = jasmine.createSpyObj('MatDialog', [
+      'open',
+      'afterClosed',
     ]);
 
     await TestBed.configureTestingModule({
@@ -39,6 +50,10 @@ describe('TreeNestedExplorerComponent', () => {
           useValue: fileHandlerSpy,
         },
         {
+          provide: MatDialog,
+          useValue: dialogHandlerSpy,
+        },
+        {
           provide: ActivatedRoute,
           useValue: {
             queryParams: of({
@@ -52,6 +67,8 @@ describe('TreeNestedExplorerComponent', () => {
     fileHandlerServiceSpy = TestBed.inject(
       SolidFileHandlerService
     ) as jasmine.SpyObj<SolidFileHandlerService>;
+
+    dialogSpy = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
 
     fixture = TestBed.createComponent(TreeNestedExplorerComponent);
 
@@ -134,5 +151,27 @@ describe('TreeNestedExplorerComponent', () => {
     await (await tree.getNodes())[1].collapse();
 
     expect((await tree.getNodes()).length).toBe(2);
+  });
+
+  it('create_folder opens correct dialog', async () => {
+    dialogSpy.open.and.returnValue({ afterClosed: () => of('ret') } as any);
+
+    component.create_folder(new Node('', ''));
+
+    expect(dialogSpy.open).toHaveBeenCalledOnceWith(
+      FolderCreateComponent,
+      jasmine.anything()
+    );
+  });
+
+  it('create_file opens correct dialog', async () => {
+    dialogSpy.open.and.returnValue({ afterClosed: () => of('ret') } as any);
+
+    component.create_file(new Node('', ''));
+
+    expect(dialogSpy.open).toHaveBeenCalledOnceWith(
+      FileCreateComponent,
+      jasmine.anything()
+    );
   });
 });
