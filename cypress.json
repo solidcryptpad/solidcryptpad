@@ -1,10 +1,18 @@
 {
-  "chromeWebSecurity": false,
+  "integrationFolder": "cypress/integration",
+  "supportFile": "cypress/support/index.ts",
+  "videosFolder": "cypress/videos",
+  "screenshotsFolder": "cypress/screenshots",
+  "pluginsFile": "cypress/plugins/index.ts",
+  "fixturesFolder": "cypress/fixtures",
   "baseUrl": "http://localhost:4200",
-  "cssUrl": "http://localhost:3000",
+  "chromeWebSecurity": false,
   "retries": {
     "runMode": 1,
     "openMode": 0
   },
-  "defaultCommandTimeout": 10000
+  "defaultCommandTimeout": 10000,
+  "env": {
+    "cssUrl": "http://localhost:3000"
+  }
 }
