@@ -1,6 +1,12 @@
 {
-  "chromeWebSecurity": false,
+  "integrationFolder": "cypress/integration",
+  "supportFile": "cypress/support/index.ts",
+  "videosFolder": "cypress/videos",
+  "screenshotsFolder": "cypress/screenshots",
+  "pluginsFile": "cypress/plugins/index.ts",
+  "fixturesFolder": "cypress/fixtures",
   "baseUrl": "http://localhost:4200",
+  "chromeWebSecurity": false,
   "cssUrl": "http://localhost:3000",
   "retries": {
     "runMode": 1,
