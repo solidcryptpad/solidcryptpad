@@ -12,9 +12,9 @@ describe('Welcome Page Tests', function () {
   });
 
   it('Can initiate login on welcome page', function () {
-    cy.get('#provider').type(Cypress.config().cssUrl);
+    cy.get('#provider').type(Cypress.env('cssUrl'));
     cy.contains('button', 'LOGIN').click();
-    cy.url({ timeout: 30000 }).should('include', Cypress.config().cssUrl);
+    cy.url({ timeout: 30000 }).should('include', Cypress.env('cssUrl'));
   });
 
   it('Can logout', function () {

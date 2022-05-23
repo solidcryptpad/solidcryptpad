@@ -1,8 +1,6 @@
 describe('FileExplorer menu actions', function () {
   beforeEach(function () {
-    cy.createRandomAccount()
-      .then((user) => cy.login(user).then(() => user))
-      .as('user');
+    cy.createRandomAccount().then(cy.login).as('user');
     cy.contains('Files').click();
     cy.contains('Folder URL');
   });

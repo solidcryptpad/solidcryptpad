@@ -4,11 +4,7 @@ describe('Test setup', function () {
   });
 
   it('can use login command and restore session functionality', function () {
-    cy.createRandomAccount().as('user');
-    //cy.visit('localhost:4200/')
-    cy.get('@user').then(function (user) {
-      cy.login(user);
-    });
+    cy.createRandomAccount().then(cy.login);
     cy.contains('Home').click();
     cy.contains('Welcome to your personal area.');
 

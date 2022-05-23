@@ -10,39 +10,52 @@ import * as uuid from 'uuid';
 // page load usually takes a lot of time, hence it should have a longer timeout
 const PAGE_LOAD_TIMEOUT = 30000;
 
-Cypress.Commands.add('createRandomAccount', function () {
-  const username = 'test-' + uuid.v4();
-  const password = '12345';
-  const masterPassword = 'master password';
-  const email = username + '@example.org';
-  const config = {
-    idp: Cypress.config().cssUrl + '/',
-    podUrl: Cypress.config().cssUrl + '/' + username,
-    webId: Cypress.config().cssUrl + '/' + username + '/profile/card#me',
-    username: username,
-    password: password,
-    masterPassword: masterPassword,
-    email: email,
-  };
-  const registerEndpoint = Cypress.config().cssUrl + '/idp/register/';
-  cy.request('POST', registerEndpoint, {
-    createWebId: 'on',
-    webId: '',
-    register: 'on',
-    createPod: 'on',
-    podName: username,
-    email: email,
-    password: password,
-    confirmPassword: password,
-  });
+export interface UserConfig {
+  idp: string;
+  podUrl: string;
+  webId: string;
+  username: string;
+  password: string;
+  masterPassword: string;
+  email: string;
+}
 
-  // replace default card, because it does not contain a name and pod urls
-  // which we assume to exist in the pod
-  const cardUrl = config.webId.substring(0, config.webId.lastIndexOf('#'));
-  cy.intercept(cardUrl, { fixture: 'profile-card.ttl' });
+Cypress.Commands.add(
+  'createRandomAccount',
+  function (): Cypress.Chainable<UserConfig> {
+    const username = 'test-' + uuid.v4();
+    const password = '12345';
+    const masterPassword = 'master password';
+    const email = username + '@example.org';
+    const config = {
+      idp: Cypress.env('cssUrl') + '/',
+      podUrl: Cypress.env('cssUrl') + '/' + username,
+      webId: Cypress.env('cssUrl') + '/' + username + '/profile/card#me',
+      username: username,
+      password: password,
+      masterPassword: masterPassword,
+      email: email,
+    };
+    const registerEndpoint = Cypress.env('cssUrl') + '/idp/register/';
+    cy.request('POST', registerEndpoint, {
+      createWebId: 'on',
+      webId: '',
+      register: 'on',
+      createPod: 'on',
+      podName: username,
+      email: email,
+      password: password,
+      confirmPassword: password,
+    });
 
-  return cy.wrap(config);
-});
+    // replace default card, because it does not contain a name and pod urls
+    // which we assume to exist in the pod
+    const cardUrl = config.webId.substring(0, config.webId.lastIndexOf('#'));
+    cy.intercept(cardUrl, { fixture: 'profile-card.ttl' });
+
+    return cy.wrap(config);
+  }
+);
 
 /**
  * Manually logins the user
@@ -55,7 +68,7 @@ Cypress.Commands.add('login', function (user) {
   cy.log('login', user);
   cy.visit('/');
 
-  cy.get('#provider').type(Cypress.config().cssUrl + '/');
+  cy.get('#provider').type(Cypress.env('cssUrl') + '/');
   cy.contains('LOGIN').click();
 
   cy.url({ timeout: PAGE_LOAD_TIMEOUT }).should('include', user.idp);
@@ -76,6 +89,9 @@ Cypress.Commands.add('login', function (user) {
     Cypress.config().baseUrl + '/'
   );
   cy.contains('Welcome to your personal area');
+
+  // return user for convenient chaining
+  return cy.wrap(user);
 });
 
 /**
