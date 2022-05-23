@@ -10,8 +10,8 @@ import {
   selector: '[appDragAndDrop]',
 })
 export class DragAndDropDirective {
-  @HostBinding('class.fileover') fileOver: boolean | undefined;
-  @Output() fileDropped = new EventEmitter<any>();
+  @HostBinding('class.fileover') fileOver = false;
+  @Output() fileDropped = new EventEmitter<FileList>();
 
   @HostListener('dragover', ['$event']) onDragOver(event: DragEvent) {
     event.preventDefault();
