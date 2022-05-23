@@ -2,7 +2,7 @@ import { LoggedInDirective } from './logged-in.directive';
 import { Component, DebugNode } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { SolidAuthenticationService } from '../services/authentication/solid-authentication.service';
+import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
 import { of } from 'rxjs';
 
 // #docregion test-component

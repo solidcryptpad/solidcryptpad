@@ -33,12 +33,12 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { HttpClientModule } from '@angular/common/http';
 import { FaqComponent } from './components/faq/faq.component';
 import { MatListModule } from '@angular/material/list';
-import { LoggedInDirective } from './directives/logged-in.directive';
+import { LoggedInDirective } from './directives/logged-in/logged-in.directive';
 import { MatMenuModule } from '@angular/material/menu';
 import { FileUploadComponent } from './components/dialogs/file-upload/file-upload.component';
 import { FilePreviewComponent } from './components/file-preview/file-preview.component';
 import { MarkdownModule } from 'ngx-markdown';
-import { DragAndDropDirective } from './directives/drag-and-drop.directive';
+import { DragAndDropDirective } from './directives/drag-and-drop/drag-and-drop.directive';
 
 @NgModule({
   declarations: [
