@@ -14,6 +14,7 @@ import { KeystoreService } from '../keystore/keystore.service';
 import { BaseException } from 'src/app/exceptions/base-exception';
 import { SolidClientService } from '../module-wrappers/solid-client/solid-client.service';
 import { NotFoundException } from 'src/app/exceptions/not-found-exception';
+import * as mime from 'mime';
 
 @Injectable({
   providedIn: 'root',
@@ -171,6 +172,15 @@ export class SolidFileHandlerService {
    */
   isContainer(containerURL: string): boolean {
     return this.solidClientService.isContainer(containerURL);
+  }
+
+  /**
+   * guess content type based on file extension
+   * @param url url or file name with file extension
+   * @returns
+   */
+  guessContentType(url: string): string | null {
+    return mime.getType(url);
   }
 
   /**

@@ -32,6 +32,7 @@ describe('FileUploadComponent', () => {
   beforeEach(async () => {
     const fileServiceSpy = jasmine.createSpyObj(SolidFileHandlerService, [
       'writeAndEncryptFile',
+      'guessContentType',
     ]);
     const dialogRef = jasmine.createSpyObj(MatDialogRef, ['close']);
     await TestBed.configureTestingModule({
@@ -126,16 +127,17 @@ describe('FileUploadComponent', () => {
   });
 
   it('uploadFile stores file with folder url and file name', () => {
-    const file = new File([], 'name.txt');
+    const file = new File([], 'name.md');
     const folderUrl = 'https://example.org/some/folder/';
     component['data'] = { folder: { url: folderUrl } };
+    fileServiceSpy.guessContentType.and.returnValue('text/markdown');
     fileServiceSpy.writeAndEncryptFile.and.resolveTo();
 
     component.uploadFile(file);
 
     const expectedFileUrl = folderUrl + file.name;
     expect(fileServiceSpy.writeAndEncryptFile).toHaveBeenCalledWith(
-      file,
+      file.slice(0, file.size, 'text/markdown'),
       expectedFileUrl
     );
   });

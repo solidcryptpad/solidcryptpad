@@ -38,8 +38,11 @@ export class FileUploadComponent {
 
   async uploadFile(file: File): Promise<void> {
     const url = this.data.folder.url + file.name;
+    const contentType = this.fileService.guessContentType(file.name);
+    const blob = file.slice(0, file.size, contentType || undefined);
+
     await this.fileService
-      .writeAndEncryptFile(file, url)
+      .writeAndEncryptFile(blob, url)
       .catch(throwWithContext('could not upload file'));
   }
 

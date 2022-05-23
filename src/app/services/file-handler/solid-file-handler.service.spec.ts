@@ -326,8 +326,23 @@ describe('SolidFileHandlerService', () => {
 
     expect(solidClientServiceSpy.getContainedResourceUrlAll).toHaveBeenCalled();
   });
-  //todo getcontainercontent
-  //todo check call for convertError
+
+  it('guessContentType returns text/markdown for file.md', () => {
+    expect(service.guessContentType('file.md')).toBe('text/markdown');
+  });
+
+  it('guessContentType returns image/jpeg for jpg url', () => {
+    expect(service.guessContentType('https://example.org/file/some.jpg')).toBe(
+      'image/jpeg'
+    );
+  });
+
+  it('guessContentType returns null for unknown extension', () => {
+    expect(service.guessContentType('file.notexistingextension')).toBeNull();
+  });
+
+  // TODO getcontainercontent
+  // TODO check call for convertError
 });
 
 /**
