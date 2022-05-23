@@ -6,6 +6,9 @@ import {
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
+import { MatInputModule } from '@angular/material/input';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { FormsModule } from '@angular/forms';
 
 describe('EnterMasterPasswordComponent', () => {
   let component: EnterMasterPasswordComponent;
@@ -13,7 +16,12 @@ describe('EnterMasterPasswordComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MatDialogModule],
+      imports: [
+        MatDialogModule,
+        FormsModule,
+        MatInputModule,
+        NoopAnimationsModule,
+      ],
       declarations: [EnterMasterPasswordComponent],
       providers: [
         { provide: MatDialogRef, useValue: {} },

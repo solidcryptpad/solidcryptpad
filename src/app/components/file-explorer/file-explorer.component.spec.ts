@@ -5,6 +5,12 @@ import { NotificationService } from 'src/app/services/notification/notification.
 import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-tree-nested-explorer',
+})
+class MockTreeExplorerComponent {}
 
 describe('FileExplorerComponent', () => {
   let component: FileExplorerComponent;
@@ -19,7 +25,7 @@ describe('FileExplorerComponent', () => {
     ]);
     await TestBed.configureTestingModule({
       imports: [FormsModule, RouterTestingModule],
-      declarations: [FileExplorerComponent],
+      declarations: [FileExplorerComponent, MockTreeExplorerComponent],
       providers: [
         FileExplorerComponent,
         { provide: SolidAuthenticationService, useValue: authenticationSpy },
