@@ -158,6 +158,21 @@ describe('FileUploadComponent', () => {
     expect(component.files).toEqual(newFiles);
   });
 
+  it('overwrites previous files when new files are loaded via handleChange', () => {
+    const oldFiles = [new File([], 'foo.txt'), new File([], 'bar.png')];
+    const newFiles = [new File([], 'new.txt')];
+    component.files = [...oldFiles];
+
+    const fakeEvent: Event = {
+      currentTarget: {
+        files: toFileList(newFiles),
+      },
+    } as any;
+    component.handleChange(fakeEvent);
+
+    expect(component.files).toEqual(newFiles);
+  });
+
   it('removes file when deleting with index', () => {
     const files = [new File([], 'foo.txt'), new File([], 'bar.png')];
     component.files = [...files];
@@ -165,5 +180,17 @@ describe('FileUploadComponent', () => {
     component.deleteFile(0);
 
     expect(component.files).toEqual([files[1]]);
+  });
+
+  it('formatBytes returns "0 Bytes" for 0 bytes', () => {
+    expect(component.formatBytes(0)).toBe('0 Bytes');
+  });
+
+  it('formatBytes returns "1 KB" for 1024 bytes', () => {
+    expect(component.formatBytes(1024)).toBe('1 KB');
+  });
+
+  it('formatBytes returns no more than two digits after comma', () => {
+    expect(component.formatBytes(1588)).toBe('1.55 KB');
   });
 });
