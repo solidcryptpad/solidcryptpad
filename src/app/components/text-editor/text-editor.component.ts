@@ -48,7 +48,6 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   setupBaseUrl(): void {
     this.profileService.getPodUrls().then((podUrls) => {
       this.baseUrl = podUrls[0];
-      console.debug('using base url:  ' + this.baseUrl);
       this.setupFilenameFromParams();
     });
   }
@@ -61,7 +60,6 @@ export class TextEditorComponent implements OnInit, OnDestroy {
         this.fileUrl === undefined ||
         this.fileUrl === ''
       ) {
-        console.debug('no filename given');
         this.closeEditor();
       } else {
         this.setupEditor();
@@ -75,7 +73,6 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    */
   setupEditor(): void {
     this.closeEditor();
-    console.debug('setting up editor...');
     this.ydoc = new Y.Doc();
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -165,7 +162,6 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    */
   closeEditor(): void {
     this.errorMsg = '';
-    console.debug('resting editor...');
     this.provider?.disconnect();
     this.ydoc?.destroy();
     this.editor?.destroy();

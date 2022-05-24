@@ -1,108 +1,51 @@
-import { Injectable } from '@angular/core';
-import * as authnBrowser from '@inrupt/solid-client-authn-browser';
-import { Router } from '@angular/router';
-import { RequiresLoginException } from '../../exceptions/requires-login-exception';
 import { Oidc } from '../../models/oidc';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 
-@Injectable({
-  providedIn: 'root',
-})
 /**
  * Service to handle authentication with Solid pods
  *
  * requires to call and wait for initializeLoginStatus
  * before other methods can be used
  */
-export class SolidAuthenticationService {
-  private oidcList: Oidc[] = [
-    { name: 'Solid Web', url: 'https://solidweb.org/' },
-    { name: 'Solid Community', url: 'https://solidcommunity.net/' },
-    { name: 'Inrupt', url: 'https://inrupt.net/' },
-  ];
-  // store as member to allow mocking in tests
-  private authnBrowser: typeof authnBrowser;
-
-  constructor(private router: Router) {
-    this.authnBrowser = authnBrowser;
-  }
-
-  public get oidc() {
-    return this.oidcList;
-  }
-
+export abstract class SolidAuthenticationService {
   /**
    * initialize login status including possible redirects:
    *  - handles redirect after login
    *  - handles redirect after restorePreviousSession
    *  - if previously logged in: initiates redirect to restore previous session
    */
-  async initializeLoginStatus() {
-    this.authnBrowser.onSessionRestore((url) => this.onSessionRestore(url));
-    await this.authnBrowser.handleIncomingRedirect({
-      restorePreviousSession: true,
-    });
-  }
+  abstract initializeLoginStatus(): Promise<void>;
 
-  private onSessionRestore(previousUrl: string) {
-    const url = new URL(previousUrl);
-    this.router.navigateByUrl(url.pathname + url.search + url.hash);
-  }
+  abstract isLoggedIn(): Observable<boolean>;
 
   /**
-   * Login status is never changing during session
+   * redirect to the oidc login page
+   * @param oidc url of the oidc issuer
    */
-  isLoggedIn(): Observable<boolean> {
-    return of(this.authnBrowser.getDefaultSession().info.isLoggedIn);
-  }
+  abstract goToLoginPage(oidc: string): Promise<void>;
 
-  async goToLoginPage(oidc: string) {
-    await this.authnBrowser.login({
-      oidcIssuer: oidc,
-      redirectUrl: window.location.href,
-      clientName: 'SolidCryptPad',
-    });
-  }
+  /**
+   * Make a fetch request. If logged in, authentication credentials are added
+   * @param url
+   * @param init
+   */
 
-  async authenticatedFetch(
+  abstract authenticatedFetch(
     url: string,
     init?: RequestInit
-  ): ReturnType<typeof authnBrowser.fetch> {
-    let loginStatus;
-    this.isLoggedIn().subscribe((status) => {
-      loginStatus = status;
-    });
-
-    if (loginStatus) {
-      return this.authnBrowser.fetch(url, init);
-    } else {
-      throw new RequiresLoginException('Not authenticated yet!');
-    }
-  }
+  ): Promise<Response>;
 
   /**
-   * Extracts webId from session information.
+   * Extracts webId from session information
    *
-   * @throws RequiresLoginException if called before completing login.
+   * @throws RequiresLoginException if not logged in
    */
-  async getWebId(): Promise<string> {
-    if (await this.isLoggedIn()) {
-      const webId = this.authnBrowser.getDefaultSession().info.webId;
-      return webId === undefined ? '' : webId;
-    }
-    throw new RequiresLoginException('Not authenticated yet!');
-  }
+  abstract getWebId(): Promise<string>;
 
-  logout() {
-    this.authnBrowser.onLogout(() => {
-      this.router.navigate(['/']);
+  /**
+   * Perform a client-side logout and redirect to home page
+   */
+  abstract logout(): void;
 
-      setTimeout(() => {
-        window.location.reload();
-      }, 0);
-
-      // timeout is needed due to race conditions caused by the framework
-    });
-    return this.authnBrowser.getDefaultSession().logout();
-  }
+  abstract getDefaultOidcProviders(): Oidc[];
 }

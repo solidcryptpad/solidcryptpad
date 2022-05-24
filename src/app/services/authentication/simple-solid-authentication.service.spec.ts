@@ -3,11 +3,11 @@ import { RouterTestingModule } from '@angular/router/testing';
 import * as authnBrowser from '@inrupt/solid-client-authn-browser';
 import { Session } from '@inrupt/solid-client-authn-browser';
 
-import { SolidAuthenticationService } from './solid-authentication.service';
+import { SimpleSolidAuthenticationService } from './simple-solid-authentication.service';
 import { Router } from '@angular/router';
 
-describe('SolidAuthenticationService', () => {
-  let service: SolidAuthenticationService;
+describe('SimpleSolidAuthenticationService', () => {
+  let service: SimpleSolidAuthenticationService;
   let authnBrowserSpy: jasmine.SpyObj<typeof authnBrowser>;
   let router: Router;
 
@@ -22,7 +22,11 @@ describe('SolidAuthenticationService', () => {
     TestBed.configureTestingModule({
       imports: [RouterTestingModule.withRoutes([])],
     });
-    service = TestBed.inject(SolidAuthenticationService);
+    router = TestBed.inject(Router);
+    service = TestBed.inject(
+      SimpleSolidAuthenticationService,
+      new SimpleSolidAuthenticationService(router)
+    );
     authnBrowserSpy = jasmine.createSpyObj('authnBrowserSpy', [
       'onSessionRestore',
       'handleIncomingRedirect',
@@ -33,7 +37,6 @@ describe('SolidAuthenticationService', () => {
       'onLogout',
     ]);
     service['authnBrowser'] = authnBrowserSpy;
-    router = TestBed.inject(Router);
   });
 
   it('should be created', () => {
