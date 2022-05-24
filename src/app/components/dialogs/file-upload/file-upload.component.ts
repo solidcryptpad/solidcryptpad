@@ -1,6 +1,6 @@
 import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { setErrorContext } from 'src/app/exceptions/error-options';
+import { throwWithContext } from 'src/app/exceptions/error-options';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 
 interface FileUploadData {
@@ -19,6 +19,10 @@ export class FileUploadComponent {
   input: ElementRef<HTMLInputElement> | undefined;
   files: File[] = [];
 
+  @ViewChild('fileDropRef', { static: false }) fileDropEl:
+    | ElementRef
+    | undefined;
+
   constructor(
     @Inject(MAT_DIALOG_DATA) private data: FileUploadData,
     private dialogRef: MatDialogRef<FileUploadComponent>,
@@ -34,9 +38,12 @@ export class FileUploadComponent {
 
   async uploadFile(file: File): Promise<void> {
     const url = this.data.folder.url + file.name;
+    const contentType = this.fileService.guessContentType(file.name);
+    const blob = file.slice(0, file.size, contentType || undefined);
+
     await this.fileService
-      .writeAndEncryptFile(file, url)
-      .catch(setErrorContext('could not upload file'));
+      .writeAndEncryptFile(blob, url)
+      .catch(throwWithContext('could not upload file'));
   }
 
   handleChange(e: Event) {
@@ -44,7 +51,35 @@ export class FileUploadComponent {
     this.files = Array.from(fileInput.files || []);
   }
 
+  handleDrop(files: FileList) {
+    this.files = Array.from(files);
+  }
+
   close(): void {
     this.dialogRef.close();
+  }
+
+  /**
+   * Remove file from list
+   * @param index of file to be removed
+   */
+  deleteFile(index: number) {
+    this.files.splice(index, 1);
+  }
+
+  /**
+   * format bytes
+   * @param bytes (File size in bytes)
+   * @param decimals (Decimals point)
+   */
+  formatBytes(bytes: number, decimals = 2) {
+    if (bytes === 0) {
+      return '0 Bytes';
+    }
+    const k = 1024;
+    const dm = decimals <= 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   }
 }

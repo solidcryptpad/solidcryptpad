@@ -1,14 +1,15 @@
-const {
+import {
   createDpopHeader,
   generateDpopKeyPair,
   buildAuthenticatedFetch,
-} = require("@inrupt/solid-client-authn-core");
+} from '@inrupt/solid-client-authn-core';
+import { UserConfig } from './commands';
 
 /**
  * requests tokens from CSS that can be used to make authenticated requests
  * and returns a fetch wrapper which uses these tokens
  */
-export const getAuthenticatedRequest = (user) => {
+export const getAuthenticatedRequest = (user: UserConfig) => {
   // uses https://github.com/CommunitySolidServer/CommunitySolidServer/blob/main/documentation/client-credentials.md
   return getAuthenticationToken(user).then(async ({ accessToken, dpopKey }) => {
     const authFetchWrapper = await buildAuthenticatedFetch(
@@ -22,13 +23,26 @@ export const getAuthenticatedRequest = (user) => {
 };
 
 /**
+ * creates an authenticated fetch with credentials from user
+ */
+export const getAuthenticatedFetch = (
+  user: UserConfig
+): Cypress.Chainable<typeof window['fetch']> => {
+  return getAuthenticationToken(user).then(async ({ accessToken, dpopKey }) => {
+    return buildAuthenticatedFetch(window.fetch, accessToken, {
+      dpopKey,
+    });
+  });
+};
+
+/**
  * this is used to get the valid authentication headers from buildAuthenticatedFetch
  *
  * pretends to be a normal fetch
  * this can be passed to buildAuthenticatedFetch
  * and it will resolve with { options }
  */
-const cyFetchWrapper = (url, options = {}) => {
+const cyFetchWrapper = (url: string, options = {}) => {
   // mock response
   return {
     // buildAUthenticatedFetch relies on response.ok to be true. Else it checks for unauthorized errors
@@ -47,7 +61,7 @@ const cyUnwrapFetch = (wrappedFetch) => {
     const options = parseCyRequestArgs(...cyRequestArgs);
     const pseudoResponse = await wrappedFetch(options.url, options);
     // setup options for cy.request format
-    options.method ??= "GET";
+    options.method ??= 'GET';
     options.headers = {
       ...Object.fromEntries(pseudoResponse.options.headers.entries()),
       ...options.headers,
@@ -56,13 +70,13 @@ const cyUnwrapFetch = (wrappedFetch) => {
   };
 };
 
-const getAuthenticationCredentials = (user) => {
-  const credentialsEndpoint = `${Cypress.config().cssUrl}/idp/credentials/`;
+const getAuthenticationCredentials = (user: UserConfig) => {
+  const credentialsEndpoint = `${Cypress.env('cssUrl')}/idp/credentials/`;
   return cy
-    .request("POST", credentialsEndpoint, {
+    .request('POST', credentialsEndpoint, {
       email: user.email,
       password: user.password,
-      name: "cypress-login-token",
+      name: 'cypress-login-token',
     })
     .then(async (response) => {
       const { id, secret } = response.body;
@@ -71,25 +85,25 @@ const getAuthenticationCredentials = (user) => {
     });
 };
 
-const getAuthenticationToken = (user) => {
+export const getAuthenticationToken = (user: UserConfig) => {
   return getAuthenticationCredentials(user).then(
     async ({ id, secret, dpopKey }) => {
       const authString = `${encodeURIComponent(id)}:${encodeURIComponent(
         secret
       )}`;
-      const tokenEndpoint = `${Cypress.config().cssUrl}/.oidc/token`;
+      const tokenEndpoint = `${Cypress.env('cssUrl')}/.oidc/token`;
       return cy
         .request({
-          method: "POST",
+          method: 'POST',
           url: tokenEndpoint,
           headers: {
             authorization: `Basic ${Buffer.from(authString).toString(
-              "base64"
+              'base64'
             )}`,
-            "content-type": "application/x-www-form-urlencoded",
-            dpop: await createDpopHeader(tokenEndpoint, "POST", dpopKey),
+            'content-type': 'application/x-www-form-urlencoded',
+            dpop: await createDpopHeader(tokenEndpoint, 'POST', dpopKey),
           },
-          body: "grant_type=client_credentials&scope=webid",
+          body: 'grant_type=client_credentials&scope=webid',
         })
         .then((response) => {
           const { access_token: accessToken } = response.body;
@@ -117,12 +131,12 @@ const parseCyRequestArgs = (...cyRequestArgs) => {
   cy.log(cyRequestArgs);
   switch (cyRequestArgs.length) {
     case 1:
-      if (typeof cyRequestArgs[0] === "string") options.url = cyRequestArgs[0];
+      if (typeof cyRequestArgs[0] === 'string') options.url = cyRequestArgs[0];
       else options = cyRequestArgs[0];
       break;
 
     case 2:
-      if (cyRequestArgs[0].startsWith("http")) {
+      if (cyRequestArgs[0].startsWith('http')) {
         options.url = cyRequestArgs[0];
         options.body = cyRequestArgs[1];
       } else {
@@ -138,7 +152,7 @@ const parseCyRequestArgs = (...cyRequestArgs) => {
       break;
     default:
       throw new Error(
-        "Tried to parse invalid cy.request arguments: " +
+        'Tried to parse invalid cy.request arguments: ' +
           JSON.stringify(cyRequestArgs)
       );
   }

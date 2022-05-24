@@ -14,7 +14,7 @@ import { MatToolbar } from '@angular/material/toolbar';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatIcon } from '@angular/material/icon';
 import { By } from '@angular/platform-browser';
-import { MockLoggedInDirective } from 'src/app/directives/logged-in.directive.mock';
+import { MockLoggedInDirective } from 'src/app/directives/logged-in/logged-in.directive.mock';
 import {
   MatSlideToggle,
   MatSlideToggleChange,
@@ -121,7 +121,7 @@ describe('NavbarComponent', () => {
     getLinkByText('Files').click();
     tick();
 
-    expect(router.url).toBe('/files?url=');
+    expect(router.url).toBe('/files');
   }));
 
   it('should redirect to home when logging out', () => {

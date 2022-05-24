@@ -16,17 +16,25 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { FileCreateComponent } from '../dialogs/file-create/file-create.component';
 import { FolderCreateComponent } from '../dialogs/folder-create/folder-create.component';
+import { FileUploadComponent } from '../dialogs/file-upload/file-upload.component';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { ProfileService } from 'src/app/services/profile/profile.service';
 
 describe('TreeNestedExplorerComponent', () => {
   let component: TreeNestedExplorerComponent;
   let fixture: ComponentFixture<TreeNestedExplorerComponent>;
   let fileHandlerServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
+  let profileServiceSpy: jasmine.SpyObj<ProfileService>;
   let dialogSpy: jasmine.SpyObj<MatDialog>;
 
   beforeEach(async () => {
     const fileHandlerSpy = jasmine.createSpyObj('SolidFileHandlerSpy', [
       'getContainerContent',
       'isContainer',
+    ]);
+    const matDialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
+    const profileServiceSpyObj = jasmine.createSpyObj('ProfileServiceSpy', [
+      'getPodUrls',
     ]);
 
     const dialogHandlerSpy = jasmine.createSpyObj('MatDialog', [
@@ -42,6 +50,7 @@ describe('TreeNestedExplorerComponent', () => {
         MatDialogModule,
         MatIconModule,
         MatMenuModule,
+        NoopAnimationsModule,
       ],
       declarations: [TreeNestedExplorerComponent],
       providers: [
@@ -54,6 +63,10 @@ describe('TreeNestedExplorerComponent', () => {
           useValue: dialogHandlerSpy,
         },
         {
+          provide: ProfileService,
+          useValue: profileServiceSpyObj,
+        },
+        {
           provide: ActivatedRoute,
           useValue: {
             queryParams: of({
@@ -61,12 +74,21 @@ describe('TreeNestedExplorerComponent', () => {
             }),
           },
         },
+        {
+          provide: MatDialog,
+          useValue: matDialogSpy,
+        },
       ],
     }).compileComponents();
 
     fileHandlerServiceSpy = TestBed.inject(
       SolidFileHandlerService
     ) as jasmine.SpyObj<SolidFileHandlerService>;
+    dialogSpy = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
+    // eslint-disable-next-line unused-imports/no-unused-vars
+    profileServiceSpy = TestBed.inject(
+      ProfileService
+    ) as jasmine.SpyObj<ProfileService>;
 
     dialogSpy = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
 
@@ -147,9 +169,11 @@ describe('TreeNestedExplorerComponent', () => {
     );
 
     const tree = await loader.getHarness(MatTreeHarness);
-    await (await tree.getNodes())[1].expand();
-    await (await tree.getNodes())[1].collapse();
+    const nodes = await tree.getNodes();
+    await nodes[1].expand();
+    expect((await tree.getNodes()).length).toBe(5);
 
+    await nodes[1].collapse();
     expect((await tree.getNodes()).length).toBe(2);
   });
 
@@ -173,5 +197,18 @@ describe('TreeNestedExplorerComponent', () => {
       FileCreateComponent,
       jasmine.anything()
     );
+  });
+  it('opens upload dialog when calling upload', async () => {
+    const node = new Node('https://example.org/test/', 'test', 1, true, false);
+
+    component.upload(node);
+
+    expect(dialogSpy.open).toHaveBeenCalledWith(FileUploadComponent, {
+      data: {
+        folder: {
+          url: 'https://example.org/test/',
+        },
+      },
+    });
   });
 });

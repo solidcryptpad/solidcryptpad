@@ -5,7 +5,7 @@ import {
   TemplateRef,
   ViewContainerRef,
 } from '@angular/core';
-import { SolidAuthenticationService } from '../services/authentication/solid-authentication.service';
+import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
 
 @Directive({
   selector: '[appLoggedIn]',

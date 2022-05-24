@@ -1,7 +1,6 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
-import { ProfileService } from 'src/app/services/profile/profile.service';
 import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
 
 @Component({
@@ -10,23 +9,20 @@ import { SolidAuthenticationService } from '../../services/authentication/solid-
   styleUrls: ['./navbar.component.scss'],
 })
 export class NavbarComponent implements OnInit {
-  podUrl = '';
-
-  constructor(
-    private solidAuthenticationService: SolidAuthenticationService,
-    private profileService: ProfileService
-  ) {
-    profileService.getPodUrls().then((pods) => (this.podUrl = pods[0]));
-  }
+  constructor(private solidAuthenticationService: SolidAuthenticationService) {}
   @Output() darkModeToggleEvent: EventEmitter<boolean> =
     new EventEmitter<boolean>();
 
   toggleControl = new FormControl(false);
 
   ngOnInit(): void {
-    // necessary for proper initialization, could be improved
+    const darkModeEnabled =
+      window.localStorage.getItem('darkMode') === 'darkMode';
+
+    this.toggleControl.setValue(darkModeEnabled);
+
     this.toggleControl.valueChanges.subscribe(() =>
-      this.darkModeToggleEvent.emit(false)
+      this.darkModeToggleEvent.emit(darkModeEnabled)
     );
   }
 

@@ -11,7 +11,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 export class AppComponent implements OnInit {
   link = '';
 
-  @HostBinding('class') className = '';
+  @HostBinding('class') className = window.localStorage.getItem('darkMode');
 
   constructor(
     private solidFileHandler: SolidFileHandlerService,
@@ -21,6 +21,7 @@ export class AppComponent implements OnInit {
 
   toggleDarkMode(darkModeOff: boolean) {
     this.className = darkModeOff ? '' : 'darkMode';
+    window.localStorage.setItem('darkMode', this.className);
   }
 
   ngOnInit(): void {

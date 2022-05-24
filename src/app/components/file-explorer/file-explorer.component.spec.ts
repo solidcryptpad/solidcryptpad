@@ -10,6 +10,12 @@ import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute, Router, Routes } from '@angular/router';
 import { of } from 'rxjs';
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-tree-nested-explorer',
+})
+class MockTreeExplorerComponent {}
 
 describe('FileExplorerComponent', () => {
   let component: FileExplorerComponent;
@@ -21,7 +27,7 @@ describe('FileExplorerComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [FormsModule, RouterTestingModule.withRoutes(routes)],
-      declarations: [FileExplorerComponent],
+      declarations: [FileExplorerComponent, MockTreeExplorerComponent],
       providers: [
         FileExplorerComponent,
         {

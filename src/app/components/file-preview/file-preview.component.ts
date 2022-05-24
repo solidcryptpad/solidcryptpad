@@ -28,7 +28,7 @@ export class FilePreviewComponent {
 
   setupFilenameFromParams(): void {
     this.route.queryParams.subscribe((params) => {
-      this.fileUrl = params['file'];
+      this.fileUrl = params['url'];
       if (
         this.fileUrl === null ||
         this.fileUrl === undefined ||
@@ -47,10 +47,13 @@ export class FilePreviewComponent {
     this.fileService.readAndDecryptFile(this.fileUrl).then(
       (blob) => {
         this.fileType = blob.type;
+        console.log('Preview for File with ContentType: ' + this.fileType);
         if (this.fileType.includes('text')) {
           this.getTextFileContent(blob);
         } else if (this.fileType.includes('image')) {
           this.getImageUrlFromBlob(blob);
+        } else {
+          this.errorMsg = 'No Preview for ContentType: ' + this.fileType;
         }
       },
       (reason) => {

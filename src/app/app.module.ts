@@ -12,7 +12,6 @@ import { MatTreeModule } from '@angular/material/tree';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { HomeComponent } from './components/home/home.component';
-import { SolidAuthenticationService } from './services/authentication/solid-authentication.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FileExplorerComponent } from './components/file-explorer/file-explorer.component';
 import { KeystoreComponent } from './components/keystore/keystore.component';
@@ -33,13 +32,20 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { HttpClientModule } from '@angular/common/http';
 import { FaqComponent } from './components/faq/faq.component';
 import { MatListModule } from '@angular/material/list';
-import { LoggedInDirective } from './directives/logged-in.directive';
+import { LoggedInDirective } from './directives/logged-in/logged-in.directive';
 import { MatMenuModule } from '@angular/material/menu';
 import { FolderCreateComponent } from './components/dialogs/folder-create/folder-create.component';
 import { FileCreateComponent } from './components/dialogs/file-create/file-create.component';
 import { FileUploadComponent } from './components/dialogs/file-upload/file-upload.component';
 import { FilePreviewComponent } from './components/file-preview/file-preview.component';
 import { MarkdownModule } from 'ngx-markdown';
+import { DragAndDropDirective } from './directives/drag-and-drop/drag-and-drop.directive';
+import {
+  MockSolidAuthenticationService,
+  shouldMockAuthenticationService,
+} from './services/authentication/solid-authentication.service.mock';
+import { SolidAuthenticationService } from './services/authentication/solid-authentication.service';
+import { SimpleSolidAuthenticationService } from './services/authentication/simple-solid-authentication.service';
 
 @NgModule({
   declarations: [
@@ -59,6 +65,7 @@ import { MarkdownModule } from 'ngx-markdown';
     FileUploadComponent,
     FolderCreateComponent,
     FileCreateComponent,
+    DragAndDropDirective,
   ],
   imports: [
     MatInputModule,
@@ -90,7 +97,12 @@ import { MarkdownModule } from 'ngx-markdown';
     MarkdownModule.forRoot(),
   ],
   providers: [
-    SolidAuthenticationService,
+    {
+      provide: SolidAuthenticationService,
+      useClass: shouldMockAuthenticationService()
+        ? MockSolidAuthenticationService
+        : SimpleSolidAuthenticationService,
+    },
     {
       provide: APP_INITIALIZER,
       useFactory: (service: SolidAuthenticationService) => () =>

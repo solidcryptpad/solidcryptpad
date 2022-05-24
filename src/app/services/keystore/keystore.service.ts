@@ -3,9 +3,11 @@ import * as cryptoJS from 'crypto-js';
 import { ProfileService } from '../profile/profile.service';
 import { overwriteFile, getFile } from '@inrupt/solid-client';
 import { MatDialog } from '@angular/material/dialog';
-import { fetch } from '@inrupt/solid-client-authn-browser';
 import { firstValueFrom } from 'rxjs';
 import { EnterMasterPasswordComponent } from 'src/app/components/enter-master-password/enter-master-password.component';
+import { WrongMasterPasswordException } from 'src/app/exceptions/wrong-master-password-exception';
+import { KeyNotFoundException } from 'src/app/exceptions/key-not-found-exception';
+import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
 
 @Injectable({
   providedIn: 'root',
@@ -13,6 +15,7 @@ import { EnterMasterPasswordComponent } from 'src/app/components/enter-master-pa
 export class KeystoreService {
   constructor(
     private profileService: ProfileService,
+    private authService: SolidAuthenticationService,
     private dialog: MatDialog
   ) {}
 
@@ -89,13 +92,14 @@ export class KeystoreService {
     let keystore: KeyEntry[];
     keystore = [];
     const podUrls = await this.profileService.getPodUrls();
+    let encryptedKeystore;
     try {
-      const encryptedKeystore = await getFile(`${podUrls[0]}private/Keystore`, {
-        fetch: fetch,
+      encryptedKeystore = await getFile(`${podUrls[0]}private/Keystore`, {
+        fetch: this.authService.authenticatedFetch.bind(this.authService),
       });
       keystore = await this.decryptKeystore(await encryptedKeystore.text());
-    } catch (error: any) {
-      console.log('No Keystore found'); // TODO: Exception-Handling
+    } catch (error) {
+      console.log('No keystore found'); //TODO: Replace with set-master-password-component
     }
 
     localStorage.setItem('keystore', JSON.stringify(keystore));
@@ -124,7 +128,7 @@ export class KeystoreService {
 
     await overwriteFile(`${podUrls[0]}private/Keystore`, keyStoreBlob, {
       contentType: keyStoreBlob.type,
-      fetch: fetch,
+      fetch: this.authService.authenticatedFetch.bind(this.authService),
     });
   }
 
@@ -147,13 +151,15 @@ export class KeystoreService {
     encryptedKeystore: string
   ): Promise<KeyEntry[]> {
     const masterPassword = await this.getMasterPassword();
-
-    return JSON.parse(
-      // TODO: Exception-Handling
-      cryptoJS.AES.decrypt(encryptedKeystore, masterPassword).toString(
-        cryptoJS.enc.Utf8
-      )
-    );
+    try {
+      return JSON.parse(
+        cryptoJS.AES.decrypt(encryptedKeystore, masterPassword).toString(
+          cryptoJS.enc.Utf8
+        )
+      );
+    } catch (error) {
+      throw new WrongMasterPasswordException('Wrong master password');
+    }
   }
 
   /**
@@ -194,8 +200,7 @@ export class KeystoreService {
   async decryptFile(file: Blob, fileURL: string): Promise<Blob> {
     const key = await this.getKey(fileURL);
     if (!key) {
-      console.log('Key not found'); // TODO: Exception-Handling
-      return new Blob(['ERROR']); // TODO: Exception-Handling
+      throw new KeyNotFoundException('Decryption key not found');
     }
     const decryptedFileContent = cryptoJS.AES.decrypt(
       await file.text(),

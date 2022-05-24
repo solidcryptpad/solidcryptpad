@@ -1,19 +1,12 @@
-import { FlatTreeControl } from '@angular/cdk/tree';
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
-import { MatDialog } from '@angular/material/dialog';
-import { FileUploadComponent } from '../dialogs/file-upload/file-upload.component';
-import { FolderCreateComponent } from '../dialogs/folder-create/folder-create.component';
-import { FileCreateComponent } from '../dialogs/file-create/file-create.component';
-import { BehaviorSubject, map, merge, Observable } from 'rxjs';
 import {
-  CollectionViewer,
   DataSource,
+  CollectionViewer,
   SelectionChange,
 } from '@angular/cdk/collections';
+import { FlatTreeControl } from '@angular/cdk/tree';
+import { BehaviorSubject, Observable, merge, map } from 'rxjs';
 import { throwWithContext } from 'src/app/exceptions/error-options';
-import { ProfileService } from 'src/app/services/profile/profile.service';
+import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 
 /**
  * represents an element in the tree
@@ -22,9 +15,9 @@ export class Node {
   constructor(
     public link: string, //link to the folder in a pod
     public shortName: string, // name displayed in the frontend
-    public level: number = 1, // how deep is it from root
-    public expandable: boolean = true, // is it a folder and therefor can it be opened
-    public isLoading: boolean = false // is that object currently busy loading data
+    public level: number, // how deep is it from root
+    public expandable: boolean, // is it a folder and therefor can it be opened
+    public isLoading = false // is that object currently busy loading data
   ) {}
 }
 
@@ -104,7 +97,7 @@ export class FolderDataSource implements DataSource<Node> {
 
   private createNode(url: string, level = 1): Node {
     const isContainer = this.solidFileHandlerService.isContainer(url);
-    return new Node(url, this.prepareName(url), level, isContainer);
+    return new Node(url, this.toDisplayName(url), level, isContainer);
   }
 
   /**
@@ -138,107 +131,20 @@ export class FolderDataSource implements DataSource<Node> {
       });
   }
 
-  // is required for the interface but eslint does not like empty functions
-  // eslint-disable-next-line
+  // eslint-disable-next-line @typescript-eslint/no-empty-function, unused-imports/no-unused-vars
   disconnect(collectionViewer: CollectionViewer): void {}
 
   /**
    * cuts down the url to the part that should in the end be displayed in the folder structure
-   * @param name full url of the node
+   * @param url full url of the node
    * @returns the name to display
    */
-  private prepareName(name: string): string {
-    if (name.endsWith('/')) {
-      name = name.substring(0, name.length - 1);
+  private toDisplayName(url: string): string {
+    if (url.endsWith('/')) {
+      url = url.substring(0, url.length - 1);
     }
 
-    name = name.substring(name.lastIndexOf('/') + 1);
-    return name;
-  }
-}
-
-@Component({
-  selector: 'app-tree-nested-explorer',
-  templateUrl: './tree-nested-explorer.component.html',
-  styleUrls: ['./tree-nested-explorer.component.scss'],
-})
-export class TreeNestedExplorerComponent implements OnInit {
-  rootPath: string | null = null;
-  treeControl!: FlatTreeControl<Node>;
-  dataSource!: FolderDataSource;
-
-  constructor(
-    private solidFileHandlerService: SolidFileHandlerService,
-    private profileService: ProfileService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private dialog: MatDialog
-  ) {}
-
-  ngOnInit(): void {
-    this.route.queryParams.subscribe(async (params) => {
-      const rootPath =
-        params['url'] ??
-        (await this.profileService.getPodUrls().then((urls) => urls[0]));
-      this.rootPath = rootPath;
-      this.treeControl = new FlatTreeControl<Node>(
-        this.getLevel,
-        this.isExpandable
-      );
-      this.dataSource = new FolderDataSource(
-        this.treeControl,
-        this.solidFileHandlerService,
-        this.rootPath
-      );
-      await this.dataSource.init();
-    });
-  }
-
-  getLevel(node: Node): number {
-    return node.level;
-  }
-
-  isExpandable(node: Node): boolean {
-    return node.expandable;
-  }
-
-  hasChild(_: number, nodeData: Node) {
-    return nodeData.expandable;
-  }
-
-  open(node: Node) {
-    if (node.expandable) {
-      this.router.navigate(['files'], { queryParams: { url: node.link } });
-    } else {
-      this.router.navigate(['preview'], { queryParams: { url: node.link } });
-    }
-  }
-
-  upload(node: Node) {
-    this.dialog.open(FileUploadComponent, {
-      data: {
-        folder: {
-          url: node.link,
-        },
-      },
-    });
-  }
-
-  create_folder(node: Node) {
-    const dialogRef = this.dialog.open(FolderCreateComponent, {
-      data: node,
-    });
-    dialogRef.afterClosed().subscribe((result) => {
-      console.log('folder created', result);
-    });
-  }
-
-  create_file(node: Node) {
-    const dialogRef = this.dialog.open(FileCreateComponent, {
-      data: node,
-    });
-    dialogRef.afterClosed().subscribe((result) => {
-      console.log('file created', result);
-    });
+    url = url.substring(url.lastIndexOf('/') + 1);
+    return url;
   }
 }

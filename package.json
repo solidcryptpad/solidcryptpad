@@ -15,11 +15,13 @@
     "license-checker": "license-checker --summary --onlyAllow 'Apache-2.0;BSD-2-Clause;BSD-3-Clause;0BSD;BSD*;CC0-1.0;CC-BY-3.0;CC-BY-4.0;ISC;MIT;Unlicense'",
     "prepare": "husky install",
     "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
     "precss": "node delete_css_storage.js",
     "css": "community-solid-server -p 3000 -c ./custom-css-config/file-no-setup.json -f ./community-solid-server",
     "start-wait": "npm run start-wait:frontend && npm run start-wait:css",
     "start-wait:frontend": "npm start & wait-on -t 300000 http://localhost:4200",
-    "start-wait:css": "npm run css & wait-on -t 300000 http://localhost:3000"
+    "start-wait:css": "npm run css & wait-on -t 300000 http://localhost:3000",
+    "e2e": "ng e2e"
   },
   "lint-staged": {
     "*.ts": "eslint --cache --fix",
@@ -43,6 +45,7 @@
     "@inrupt/vocab-common-rdf": "1.0.3",
     "@types/crypto-js": "^4.1.1",
     "crypto-js": "^4.1.1",
+    "mime": "^3.0.0",
     "ngx-editor": "^12.2.2",
     "ngx-markdown": "^13.1.0",
     "ngx-toastr": "^14.2.4",
@@ -62,8 +65,10 @@
     "@angular-eslint/template-parser": "13.1.0",
     "@angular/cli": "~13.3.0",
     "@angular/compiler-cli": "~13.3.0",
+    "@cypress/schematic": "^1.7.0",
     "@solid/community-server": "^4.0.1",
     "@types/jasmine": "~3.10.0",
+    "@types/mime": "^2.0.3",
     "@types/node": "^12.11.1",
     "@types/prosemirror-schema-basic": "^1.0.2",
     "@types/prosemirror-schema-list": "^1.0.3",

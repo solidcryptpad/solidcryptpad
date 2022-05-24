@@ -1,5 +1,9 @@
 <div class="box">
-  <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+  <mat-tree
+    *ngIf="dataSource"
+    [dataSource]="dataSource"
+    [treeControl]="treeControl"
+  >
     <!-- NODE FOR FILES -->
     <mat-tree-node
       id="{{ node.shortName }}Node"
