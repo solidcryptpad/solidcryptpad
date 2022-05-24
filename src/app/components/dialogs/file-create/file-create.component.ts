@@ -2,7 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { FolderCreateComponent } from '../folder-create/folder-create.component';
-import { Node } from '../../tree-nested-explorer/tree-nested-explorer.component';
+import { Node } from '../../tree-nested-explorer/folder-data-source.class';
 
 @Component({
   selector: 'app-file-create',

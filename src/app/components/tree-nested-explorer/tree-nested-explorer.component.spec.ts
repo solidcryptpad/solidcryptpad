@@ -2,10 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatTreeHarness } from '@angular/material/tree/testing';
-import {
-  Node,
-  TreeNestedExplorerComponent,
-} from './tree-nested-explorer.component';
+import { TreeNestedExplorerComponent } from './tree-nested-explorer.component';
+import { Node } from './folder-data-source.class';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 import { MatTreeModule } from '@angular/material/tree';
 import { ActivatedRoute } from '@angular/router';
@@ -180,7 +178,7 @@ describe('TreeNestedExplorerComponent', () => {
   it('create_folder opens correct dialog', async () => {
     dialogSpy.open.and.returnValue({ afterClosed: () => of('ret') } as any);
 
-    component.create_folder(new Node('', ''));
+    component.create_folder(new Node('', '', 0, true));
 
     expect(dialogSpy.open).toHaveBeenCalledOnceWith(
       FolderCreateComponent,
@@ -191,7 +189,7 @@ describe('TreeNestedExplorerComponent', () => {
   it('create_file opens correct dialog', async () => {
     dialogSpy.open.and.returnValue({ afterClosed: () => of('ret') } as any);
 
-    component.create_file(new Node('', ''));
+    component.create_file(new Node('', '', 0, true));
 
     expect(dialogSpy.open).toHaveBeenCalledOnceWith(
       FileCreateComponent,

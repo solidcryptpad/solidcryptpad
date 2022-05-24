@@ -1,7 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
-import { Node } from '../../tree-nested-explorer/tree-nested-explorer.component';
+import { Node } from '../../tree-nested-explorer/folder-data-source.class';
 
 @Component({
   selector: 'app-folder-create',

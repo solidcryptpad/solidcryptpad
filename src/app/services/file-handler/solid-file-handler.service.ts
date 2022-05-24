@@ -55,8 +55,12 @@ export class SolidFileHandlerService {
    * @throws PermissionException if the given url cannot be written to
    * @throws UnknownException on all errors that are not explicitly caught
    * @throws NotFoundException if the given file was not found
+   * @throws NotACryptpadUrlException if the url does not point into a solidcryptpad folder
    */
   async readAndDecryptFile(fileURL: string): Promise<Blob> {
+    //if(!fileURL.includes("/solidcryptpad/")){
+    //  throw new NotACryptpadUrlException("file is not in a valid directory");
+    //}
     const file = await this.readFile(fileURL);
     return await this.keystoreService.decryptFile(file, fileURL);
   }
@@ -114,6 +118,9 @@ export class SolidFileHandlerService {
     if (this.isContainer(fileURL)) {
       fileURL = fileURL + '' + fileName;
     }
+    //if(!fileURL.includes("/solidcryptpad/")){
+    //  throw new NotACryptpadUrlException("file is not in a valid directory");
+    //}
     const encryptedFile = await this.keystoreService.encryptFile(file, fileURL);
 
     return await this.writeFile(encryptedFile, fileURL, fileName);
