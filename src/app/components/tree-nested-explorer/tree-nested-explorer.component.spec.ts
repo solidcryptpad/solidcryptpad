@@ -14,11 +14,13 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Node } from './folder-data-source.class';
 import { FileUploadComponent } from '../dialogs/file-upload/file-upload.component';
+import { ProfileService } from 'src/app/services/profile/profile.service';
 
 describe('TreeNestedExplorerComponent', () => {
   let component: TreeNestedExplorerComponent;
   let fixture: ComponentFixture<TreeNestedExplorerComponent>;
   let fileHandlerServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
+  let profileServiceSpy: jasmine.SpyObj<ProfileService>;
   let dialogSpy: jasmine.SpyObj<MatDialog>;
 
   beforeEach(async () => {
@@ -27,6 +29,9 @@ describe('TreeNestedExplorerComponent', () => {
       'isContainer',
     ]);
     const matDialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
+    const profileServiceSpyObj = jasmine.createSpyObj('ProfileServiceSpy', [
+      'getPodUrls',
+    ]);
 
     await TestBed.configureTestingModule({
       imports: [
@@ -43,6 +48,10 @@ describe('TreeNestedExplorerComponent', () => {
         {
           provide: SolidFileHandlerService,
           useValue: fileHandlerSpy,
+        },
+        {
+          provide: ProfileService,
+          useValue: profileServiceSpyObj,
         },
         {
           provide: ActivatedRoute,
@@ -63,6 +72,10 @@ describe('TreeNestedExplorerComponent', () => {
       SolidFileHandlerService
     ) as jasmine.SpyObj<SolidFileHandlerService>;
     dialogSpy = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
+    // eslint-disable-next-line unused-imports/no-unused-vars
+    profileServiceSpy = TestBed.inject(
+      ProfileService
+    ) as jasmine.SpyObj<ProfileService>;
 
     fixture = TestBed.createComponent(TreeNestedExplorerComponent);
 

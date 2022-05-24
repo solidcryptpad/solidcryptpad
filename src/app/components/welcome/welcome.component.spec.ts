@@ -25,13 +25,11 @@ describe('WelcomeComponent', () => {
   let authenticationServiceSpy: jasmine.SpyObj<SolidAuthenticationService>;
 
   beforeEach(async () => {
-    const authenticationSpy = jasmine.createSpyObj(
-      'SolidAuthenticationSpy',
-      ['goToLoginPage', 'isLoggedIn'],
-      {
-        oidc: [{ name: 'Solid Web', url: 'https://solidweb.org/' }],
-      }
-    );
+    const authenticationSpy = jasmine.createSpyObj('SolidAuthenticationSpy', [
+      'goToLoginPage',
+      'isLoggedIn',
+      'getDefaultOidcProviders',
+    ]);
     const notificationSpy = jasmine.createSpyObj('NotificationSpy', ['error']);
 
     await TestBed.configureTestingModule({
@@ -71,6 +69,9 @@ describe('WelcomeComponent', () => {
     );
 
     authenticationServiceSpy.isLoggedIn.and.returnValue(of(false));
+    authenticationServiceSpy.getDefaultOidcProviders.and.returnValue([
+      { name: 'Solid Web', url: 'https://solidweb.org/' },
+    ]);
   });
 
   beforeEach(() => {

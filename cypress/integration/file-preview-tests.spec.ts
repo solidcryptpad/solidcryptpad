@@ -1,6 +1,6 @@
 describe('File-Preview Test', function () {
   beforeEach(function () {
-    cy.createRandomAccount().then(cy.login).as('user');
+    cy.createRandomAccount().then(cy.loginMocked).as('user');
   });
 
   it('can upload text file to folder and show preview', function () {
@@ -68,28 +68,34 @@ describe('File-Preview Test', function () {
     cy.contains('test');
   });
 
-  it('Open ExampleFile in Editor and show it in Preview', function () {
+  it.only('Open ExampleFile in Editor and show it in Preview', function () {
+    const fileName = 'ExampleFile1.txt';
+    const fileContent = 'some file content';
+    const fileUrl = this.user.podUrl + '/private/cryptopad/' + fileName;
+    cy.intercept('PUT', fileUrl).as('savedExample');
+
     cy.contains('Editor').click();
-    let fileName = 'ExampleFile1.txt';
-    let fileContent = 'some file content';
+
     cy.contains(fileName).click();
     cy.get('ngx-editor').type(fileContent);
-    cy.contains('Save and close file').click();
+    cy.contains('Master Password', { timeout: 30000 });
     cy.enterMasterPassword(this.user);
-    cy.wait(1000);
-    fileName = 'ExampleFile1.txt';
-    fileContent = 'some file content';
-    cy.contains(fileName).click();
-    cy.get('ngx-editor').type(fileContent);
+    // wait for all savings so far
+    cy.wait('@savedExample');
+    cy.wait('@savedExample');
+
+    // close and wait for the final saving
     cy.contains('Save and close file').click();
-    cy.wait(1000);
+    cy.wait('@savedExample');
+    cy.url().should('not.include', 'Example');
+
     cy.contains('Files').click();
-    cy.contains('Folder URL');
     cy.contains('private')
       .closest('[data-cy=tree-node]')
       .find('[data-cy=folder-menu]')
       .click();
     cy.contains('Open Folder').click();
+
     cy.contains('cryptopad')
       .closest('[data-cy=tree-node]')
       .find('[data-cy=folder-menu]')

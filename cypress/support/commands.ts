@@ -4,7 +4,10 @@
 // https://on.cypress.io/custom-commands
 // ***********************************************
 
-import { getAuthenticatedRequest } from './css-authentication';
+import {
+  getAuthenticatedFetch,
+  getAuthenticatedRequest,
+} from './css-authentication';
 import * as uuid from 'uuid';
 
 // page load usually takes a lot of time, hence it should have a longer timeout
@@ -57,11 +60,7 @@ Cypress.Commands.add(
   }
 );
 
-/**
- * Manually logins the user
- * Assumes it is previously not logged in
- */
-Cypress.Commands.add('login', function (user) {
+Cypress.Commands.add('loginViaUI', function (user) {
   const typeFastConfig = {
     delay: 0,
   };
@@ -94,22 +93,26 @@ Cypress.Commands.add('login', function (user) {
   return cy.wrap(user);
 });
 
-/**
- * Requests new tokens for user and makes an authenticated cy.request with it
- *
- * @param {object} user
- * @param {any[]} args cy.request args
- */
+Cypress.Commands.add('loginMocked', function (user) {
+  getAuthenticatedFetch(user).then((authFetch) => {
+    cy.on('window:before:load', (win) => {
+      win.cypress = {
+        authenticationMock: {
+          use: true,
+          fetch: authFetch,
+          webId: user.webId,
+        },
+      };
+    });
+  });
+  cy.visit('/');
+  return cy.wrap(user);
+});
+
 Cypress.Commands.add('authenticatedRequest', (user, ...args) => {
   return getAuthenticatedRequest(user).then((request) => request(...args));
 });
 
-/**
- * create a folder
- *
- * @param {object} user the user who has permissions to create this folder
- * @param {string} url the url of the new folder
- */
 Cypress.Commands.add('givenFolder', (user, url) => {
   if (!url.endsWith('/')) url += '/';
   // Solid allows PUT-ting containser, if the url ends with /
@@ -122,12 +125,6 @@ Cypress.Commands.add('givenFolder', (user, url) => {
   });
 });
 
-/**
- * @param {object} user the user who has permissions to create this file
- * @param {string} url the url of the new file
- * @param {string|blob} content content of the new file
- * @param {object} options
- */
 Cypress.Commands.add('givenFile', (user, url, content, options = {}) => {
   const contentType =
     options.contentType ??
@@ -142,9 +139,6 @@ Cypress.Commands.add('givenFile', (user, url, content, options = {}) => {
   });
 });
 
-/**
- * fills out and submits a master password dialog
- */
 Cypress.Commands.add('enterMasterPassword', (user) => {
   /* when directly using cy.get(input...).type(masterPassword)
     it sometimes failed, I guess because the typing wasn't yet processed by the input

@@ -24,6 +24,7 @@ describe('SolidFileHandlerService', () => {
 
   beforeEach(() => {
     const authenticationSpy = jasmine.createSpyObj('SolidAuthenticationSpy', [
+      'authenticatedFetch',
       'readAndDecryptFile',
       'writeAndEncryptFile',
     ]);
