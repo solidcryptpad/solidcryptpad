@@ -31,7 +31,7 @@ export abstract class SolidAuthenticationService {
    */
 
   abstract authenticatedFetch(
-    url: string,
+    url: RequestInfo,
     init?: RequestInit
   ): Promise<Response>;
 

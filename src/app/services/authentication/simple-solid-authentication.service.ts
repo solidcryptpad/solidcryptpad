@@ -53,7 +53,7 @@ export class SimpleSolidAuthenticationService extends SolidAuthenticationService
   }
 
   override async authenticatedFetch(
-    url: string,
+    url: RequestInfo,
     init?: RequestInit
   ): ReturnType<typeof authnBrowser.fetch> {
     let loginStatus;

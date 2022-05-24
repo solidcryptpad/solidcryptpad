@@ -3,11 +3,11 @@ import * as cryptoJS from 'crypto-js';
 import { ProfileService } from '../profile/profile.service';
 import { overwriteFile, getFile } from '@inrupt/solid-client';
 import { MatDialog } from '@angular/material/dialog';
-import { fetch } from '@inrupt/solid-client-authn-browser';
 import { firstValueFrom } from 'rxjs';
 import { EnterMasterPasswordComponent } from 'src/app/components/enter-master-password/enter-master-password.component';
 import { WrongMasterPasswordException } from 'src/app/exceptions/wrong-master-password-exception';
 import { KeyNotFoundException } from 'src/app/exceptions/key-not-found-exception';
+import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
 
 @Injectable({
   providedIn: 'root',
@@ -15,6 +15,7 @@ import { KeyNotFoundException } from 'src/app/exceptions/key-not-found-exception
 export class KeystoreService {
   constructor(
     private profileService: ProfileService,
+    private authService: SolidAuthenticationService,
     private dialog: MatDialog
   ) {}
 
@@ -94,7 +95,7 @@ export class KeystoreService {
     let encryptedKeystore;
     try {
       encryptedKeystore = await getFile(`${podUrls[0]}private/Keystore`, {
-        fetch: fetch,
+        fetch: this.authService.authenticatedFetch,
       });
       keystore = await this.decryptKeystore(await encryptedKeystore.text());
     } catch (error) {
@@ -127,7 +128,7 @@ export class KeystoreService {
 
     await overwriteFile(`${podUrls[0]}private/Keystore`, keyStoreBlob, {
       contentType: keyStoreBlob.type,
-      fetch: fetch,
+      fetch: this.authService.authenticatedFetch,
     });
   }
 

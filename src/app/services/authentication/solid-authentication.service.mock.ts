@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import * as authnBrowser from '@inrupt/solid-client-authn-browser';
 import { Router } from '@angular/router';
 import { Oidc } from '../../models/oidc';
 import { Observable, of } from 'rxjs';
@@ -95,9 +94,9 @@ export class MockSolidAuthenticationService extends SolidAuthenticationService {
   }
 
   override async authenticatedFetch(
-    url: string,
+    url: RequestInfo,
     init?: RequestInit
-  ): ReturnType<typeof authnBrowser.fetch> {
+  ): Promise<Response> {
     if (!this.authFetch)
       throw new UnknownException(
         'Tried to use mocked authenticatedFetch before initialitzed'
