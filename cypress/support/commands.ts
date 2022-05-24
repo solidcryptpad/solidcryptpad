@@ -4,7 +4,10 @@
 // https://on.cypress.io/custom-commands
 // ***********************************************
 
-import { getAuthenticatedRequest } from './css-authentication';
+import {
+  getAuthenticatedRequest,
+  getAuthenticationToken,
+} from './css-authentication';
 import * as uuid from 'uuid';
 
 // page load usually takes a lot of time, hence it should have a longer timeout
@@ -92,6 +95,42 @@ Cypress.Commands.add('login', function (user) {
 
   // return user for convenient chaining
   return cy.wrap(user);
+});
+
+interface CypressWindowTransfer {
+  authenticationMock:
+    | {
+        use: false;
+      }
+    | {
+        use: true;
+        credentials: {
+          accessToken: string;
+          dpopKey: any;
+        };
+        webId: string;
+      };
+}
+
+declare global {
+  interface Window {
+    cypress?: CypressWindowTransfer;
+  }
+}
+
+Cypress.Commands.add('mockLogin', function (user) {
+  getAuthenticationToken(user).then(({ dpopKey, accessToken }) => {
+    cy.on('window:before:load', (win) => {
+      win.cypress = {
+        authenticationMock: {
+          use: true,
+          credentials: { dpopKey, accessToken },
+          webId: user.webId,
+        },
+      };
+    });
+  });
+  cy.visit('/');
 });
 
 /**

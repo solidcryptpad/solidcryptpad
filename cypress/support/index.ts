@@ -23,6 +23,7 @@ declare global {
     interface Chainable {
       createRandomAccount(): Chainable<UserConfig>;
       login(user: UserConfig): Chainable<UserConfig>;
+      mockLogin(user: UserConfig): Chainable<UserConfig>;
       givenFolder(user: UserConfig, url: string): Chainable<void>;
       givenFile(
         user: UserConfig,

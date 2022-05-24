@@ -13,4 +13,9 @@ describe('Test setup', function () {
     cy.location('pathname').should('equals', '/home');
     cy.contains('Hello test-username');
   });
+
+  it('can use cy.mockLogin to use logged in features', function () {
+    cy.createRandomAccount().then(cy.mockLogin);
+    cy.contains('Hello test-username');
+  });
 });

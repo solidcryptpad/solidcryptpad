@@ -5,15 +5,32 @@ import { Oidc } from '../../models/oidc';
 import { Observable, of } from 'rxjs';
 import { NotImplementedException } from 'src/app/exceptions/not-implemented-exception';
 import { SolidAuthenticationService } from './solid-authentication.service';
+import { buildAuthenticatedFetch } from '@inrupt/solid-client-authn-core';
+import { UnknownException } from 'src/app/exceptions/unknown-exception';
+
+interface CypressWindowTransfer {
+  authenticationMock:
+    | {
+        use: false;
+      }
+    | {
+        use: true;
+        credentials: {
+          accessToken: string;
+          dpopKey: any;
+        };
+        webId: string;
+      };
+}
 
 declare global {
   interface Window {
-    useMockAuthenticationService?: boolean;
+    cypress?: CypressWindowTransfer;
   }
 }
 
 export function shouldMockAuthenticationService() {
-  return window.useMockAuthenticationService;
+  return window.cypress?.authenticationMock.use;
 }
 
 @Injectable()
@@ -30,11 +47,11 @@ export class MockSolidAuthenticationService extends SolidAuthenticationService {
     { name: 'Inrupt', url: 'https://inrupt.net/' },
   ];
   // store as member to allow mocking in tests
-  private authnBrowser: typeof authnBrowser;
+  private authFetch: typeof fetch | undefined;
+  private webId: string | undefined;
 
   constructor(private router: Router) {
     super();
-    this.authnBrowser = authnBrowser;
   }
 
   override getDefaultOidcProviders(): Oidc[] {
@@ -50,7 +67,18 @@ export class MockSolidAuthenticationService extends SolidAuthenticationService {
    *  - if previously logged in: initiates redirect to restore previous session
    */
   override async initializeLoginStatus() {
-    console.log('initializing mock authentication service');
+    if (
+      !window.cypress?.authenticationMock.use ||
+      !window.cypress.authenticationMock.credentials
+    ) {
+      throw new UnknownException('could not find mock login credentials');
+    }
+    const { accessToken, dpopKey } =
+      window.cypress.authenticationMock.credentials;
+    this.authFetch = await buildAuthenticatedFetch(window.fetch, accessToken, {
+      dpopKey,
+    });
+    this.webId = window.cypress.authenticationMock.webId;
   }
 
   /**
@@ -70,8 +98,11 @@ export class MockSolidAuthenticationService extends SolidAuthenticationService {
     url: string,
     init?: RequestInit
   ): ReturnType<typeof authnBrowser.fetch> {
-    console.log('authenticatedFetch');
-    return this.authnBrowser.fetch(url, init);
+    if (!this.authFetch)
+      throw new UnknownException(
+        'Tried to use mocked authenticatedFetch before initialitzed'
+      );
+    return this.authFetch(url, init);
   }
 
   /**
@@ -80,9 +111,9 @@ export class MockSolidAuthenticationService extends SolidAuthenticationService {
    * @throws RequiresLoginException if called before completing login.
    */
   override async getWebId(): Promise<string> {
-    throw new NotImplementedException(
-      'getWebId is not implemented for mock authentication service'
-    );
+    if (!this.webId)
+      throw new UnknownException('Tried to use getWebId before initialitzed');
+    return this.webId;
   }
 
   override logout() {

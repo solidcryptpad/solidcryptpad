@@ -3,12 +3,13 @@ import {
   generateDpopKeyPair,
   buildAuthenticatedFetch,
 } from '@inrupt/solid-client-authn-core';
+import { UserConfig } from './commands';
 
 /**
  * requests tokens from CSS that can be used to make authenticated requests
  * and returns a fetch wrapper which uses these tokens
  */
-export const getAuthenticatedRequest = (user) => {
+export const getAuthenticatedRequest = (user: UserConfig) => {
   // uses https://github.com/CommunitySolidServer/CommunitySolidServer/blob/main/documentation/client-credentials.md
   return getAuthenticationToken(user).then(async ({ accessToken, dpopKey }) => {
     const authFetchWrapper = await buildAuthenticatedFetch(
@@ -28,7 +29,7 @@ export const getAuthenticatedRequest = (user) => {
  * this can be passed to buildAuthenticatedFetch
  * and it will resolve with { options }
  */
-const cyFetchWrapper = (url, options = {}) => {
+const cyFetchWrapper = (url: string, options = {}) => {
   // mock response
   return {
     // buildAUthenticatedFetch relies on response.ok to be true. Else it checks for unauthorized errors
@@ -56,7 +57,7 @@ const cyUnwrapFetch = (wrappedFetch) => {
   };
 };
 
-const getAuthenticationCredentials = (user) => {
+const getAuthenticationCredentials = (user: UserConfig) => {
   const credentialsEndpoint = `${Cypress.env('cssUrl')}/idp/credentials/`;
   return cy
     .request('POST', credentialsEndpoint, {
@@ -71,7 +72,7 @@ const getAuthenticationCredentials = (user) => {
     });
 };
 
-const getAuthenticationToken = (user) => {
+export const getAuthenticationToken = (user: UserConfig) => {
   return getAuthenticationCredentials(user).then(
     async ({ id, secret, dpopKey }) => {
       const authString = `${encodeURIComponent(id)}:${encodeURIComponent(
