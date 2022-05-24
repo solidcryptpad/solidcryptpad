@@ -121,7 +121,7 @@ describe('SolidFileHandlerService', () => {
   });
 
   it('readAndDecryptFile calls decryptFile with returned file', async () => {
-    const url = 'https://real.url.com';
+    const url = 'https://real.url.com/solidcryptpad/test';
     const file = mockFileFrom(url);
     const decryptedFile = new Blob(['decrypted File']);
 
@@ -179,7 +179,7 @@ describe('SolidFileHandlerService', () => {
   });
 
   it('writeAndEncryptFile calls writeFile and encryptFile', async () => {
-    const url = 'https://real.url.com';
+    const url = 'https://real.url.com/solidcryptpad/test';
     const file = mockFileFrom(url);
     const encryptedFile = new Blob(['encryptedFile File']);
 
@@ -342,8 +342,7 @@ describe('SolidFileHandlerService', () => {
     expect(service.guessContentType('file.notexistingextension')).toBeNull();
   });
 
-  // TODO getcontainercontent
-  // TODO check call for convertError
+  // TODO containerExists
 });
 
 /**

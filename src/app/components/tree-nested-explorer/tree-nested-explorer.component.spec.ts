@@ -17,6 +17,7 @@ import { FolderCreateComponent } from '../dialogs/folder-create/folder-create.co
 import { FileUploadComponent } from '../dialogs/file-upload/file-upload.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ProfileService } from 'src/app/services/profile/profile.service';
+import { NotificationService } from 'src/app/services/notification/notification.service';
 
 describe('TreeNestedExplorerComponent', () => {
   let component: TreeNestedExplorerComponent;
@@ -24,8 +25,12 @@ describe('TreeNestedExplorerComponent', () => {
   let fileHandlerServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
   let profileServiceSpy: jasmine.SpyObj<ProfileService>;
   let dialogSpy: jasmine.SpyObj<MatDialog>;
+  let notificationSpy: jasmine.SpyObj<NotificationService>;
 
   beforeEach(async () => {
+    const notificationServiceSpy = jasmine.createSpyObj('NotificationService', [
+      'error',
+    ]);
     const fileHandlerSpy = jasmine.createSpyObj('SolidFileHandlerSpy', [
       'getContainerContent',
       'isContainer',
@@ -68,7 +73,7 @@ describe('TreeNestedExplorerComponent', () => {
           provide: ActivatedRoute,
           useValue: {
             queryParams: of({
-              url: 'example.url.com/',
+              url: 'example.url.com/solidcryptpad/',
             }),
           },
         },
@@ -76,9 +81,14 @@ describe('TreeNestedExplorerComponent', () => {
           provide: MatDialog,
           useValue: matDialogSpy,
         },
+        { provide: NotificationService, useValue: notificationServiceSpy },
       ],
     }).compileComponents();
 
+    // eslint-disable-next-line unused-imports/no-unused-vars
+    notificationSpy = TestBed.inject(
+      NotificationService
+    ) as jasmine.SpyObj<NotificationService>;
     fileHandlerServiceSpy = TestBed.inject(
       SolidFileHandlerService
     ) as jasmine.SpyObj<SolidFileHandlerService>;
@@ -101,7 +111,10 @@ describe('TreeNestedExplorerComponent', () => {
 
   it('tree loads root components correctly', async () => {
     fileHandlerServiceSpy.getContainerContent.and.returnValue(
-      Promise.resolve(['example.url.com/test0', 'example.url.com/test1/'])
+      Promise.resolve([
+        'example.url.com/solidcryptpad/test0/',
+        'example.url.com/solidcryptpad/test1/',
+      ])
     );
     fileHandlerServiceSpy.isContainer.and.returnValue(false);
 
@@ -109,7 +122,7 @@ describe('TreeNestedExplorerComponent', () => {
     const loader = TestbedHarnessEnvironment.loader(fixture);
 
     expect(fileHandlerServiceSpy.getContainerContent).toHaveBeenCalledWith(
-      'example.url.com/'
+      'example.url.com/solidcryptpad/'
     );
 
     const tree = await loader.getHarness(MatTreeHarness);
@@ -120,7 +133,10 @@ describe('TreeNestedExplorerComponent', () => {
 
   it('tree loads elements correctly when opening directory', async () => {
     fileHandlerServiceSpy.getContainerContent.and.returnValue(
-      Promise.resolve(['example.url.com/root0', 'example.url.com/root1/'])
+      Promise.resolve([
+        'example.url.com/solidcryptpad/root0',
+        'example.url.com/solidcryptpad/root1/',
+      ])
     );
 
     // for some reason if this is set to true the elements are not added
@@ -133,9 +149,9 @@ describe('TreeNestedExplorerComponent', () => {
 
     fileHandlerServiceSpy.getContainerContent.and.returnValue(
       Promise.resolve([
-        'example.url.com/root1/test0',
-        'example.url.com/root1/test1',
-        'example.url.com/root1/test2',
+        'example.url.com/solidcryptpad/root1/test0',
+        'example.url.com/solidcryptpad/root1/test1',
+        'example.url.com/solidcryptpad/root1/test2',
       ])
     );
 
@@ -149,7 +165,10 @@ describe('TreeNestedExplorerComponent', () => {
 
   it('tree closes elements correctly', async () => {
     fileHandlerServiceSpy.getContainerContent.and.returnValue(
-      Promise.resolve(['example.url.com/root0', 'example.url.com/root1/'])
+      Promise.resolve([
+        'example.url.com/solidcryptpad/root0',
+        'example.url.com/solidcryptpad/root1/',
+      ])
     );
     fileHandlerServiceSpy.isContainer.and.returnValue(true);
 
@@ -160,9 +179,9 @@ describe('TreeNestedExplorerComponent', () => {
 
     fileHandlerServiceSpy.getContainerContent.and.returnValue(
       Promise.resolve([
-        'example.url.com/root1/test0',
-        'example.url.com/root1/test1',
-        'example.url.com/root1/test2',
+        'example.url.com/solidcryptpad/root1/test0',
+        'example.url.com/solidcryptpad/root1/test1',
+        'example.url.com/solidcryptpad/root1/test2',
       ])
     );
 
@@ -197,14 +216,20 @@ describe('TreeNestedExplorerComponent', () => {
     );
   });
   it('opens upload dialog when calling upload', async () => {
-    const node = new Node('https://example.org/test/', 'test', 1, true, false);
+    const node = new Node(
+      'https://example.org/solidcryptpad/test/',
+      'test',
+      1,
+      true,
+      false
+    );
 
     component.upload(node);
 
     expect(dialogSpy.open).toHaveBeenCalledWith(FileUploadComponent, {
       data: {
         folder: {
-          url: 'https://example.org/test/',
+          url: 'https://example.org/solidcryptpad/test/',
         },
       },
     });

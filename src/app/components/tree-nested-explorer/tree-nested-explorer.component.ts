@@ -8,6 +8,8 @@ import { FolderCreateComponent } from '../dialogs/folder-create/folder-create.co
 import { FileCreateComponent } from '../dialogs/file-create/file-create.component';
 import { ProfileService } from 'src/app/services/profile/profile.service';
 import { FolderDataSource, Node } from './folder-data-source.class';
+import { NotificationService } from 'src/app/services/notification/notification.service';
+import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
 
 /**
  * represents an element in the tree
@@ -27,14 +29,33 @@ export class TreeNestedExplorerComponent implements OnInit {
     private profileService: ProfileService,
     private route: ActivatedRoute,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private notification: NotificationService
   ) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(async (params) => {
+      if (
+        params['url'] != undefined &&
+        !params['url'].includes('/solidcryptpad/')
+      ) {
+        throw new NotACryptpadUrlException(
+          'the given url is not a solidcryptpad url'
+        );
+      }
+
       const rootPath =
-        params['url'] ??
-        (await this.profileService.getPodUrls().then((urls) => urls[0]));
+        (params['url'] ??
+          (await this.profileService.getPodUrls().then((urls) => urls[0]))) +
+        'public/solidcryptpad/';
+      if (!(await this.solidFileHandlerService.containerExists(rootPath))) {
+        await this.solidFileHandlerService.writeContainer(rootPath);
+        this.notification.info({
+          title: 'Created',
+          message: 'a solidcryptpad folder was created for you',
+        });
+      }
+
       this.rootPath = rootPath;
       this.treeControl = new FlatTreeControl<Node>(
         this.getLevel,
