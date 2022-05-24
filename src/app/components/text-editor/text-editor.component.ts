@@ -111,11 +111,11 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   /**
    * saves the current file that is open in editor
    */
-  saveFile(): void {
-    console.debug('saving file to file url: ' + this.fileUrl);
+  async saveFile(): Promise<void> {
+    const url = this.fileUrl;
     const data = this.html;
     const blob = new Blob([data], { type: 'text/plain' });
-    this.fileService.writeAndEncryptFile(blob, this.fileUrl);
+    await this.fileService.writeAndEncryptFile(blob, url);
   }
 
   /**
@@ -147,10 +147,10 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   /**
    * closes the current file with saving it
    */
-  closeFile(saveFile: boolean): void {
+  async closeFile(saveFile: boolean): Promise<void> {
     this.readyForSave = false;
     if (saveFile) {
-      this.saveFile();
+      await this.saveFile();
     }
     this.closeEditor();
     this.html = '';
