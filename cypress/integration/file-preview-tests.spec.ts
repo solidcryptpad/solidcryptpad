@@ -1,6 +1,6 @@
 describe('File-Preview Test', function () {
   beforeEach(function () {
-    cy.createRandomAccount().then(cy.login).as('user');
+    cy.createRandomAccount().then(cy.loginMocked).as('user');
   });
 
   it('can upload text file to folder and show preview', function () {
@@ -74,8 +74,8 @@ describe('File-Preview Test', function () {
     let fileContent = 'some file content';
     cy.contains(fileName).click();
     cy.get('ngx-editor').type(fileContent);
-    cy.contains('Save and close file').click();
     cy.enterMasterPassword(this.user);
+    cy.contains('Save and close file').click();
     cy.wait(1000);
     fileName = 'ExampleFile1.txt';
     fileContent = 'some file content';

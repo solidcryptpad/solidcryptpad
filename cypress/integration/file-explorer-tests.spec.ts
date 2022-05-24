@@ -1,6 +1,6 @@
 describe('File-Explorer Test', function () {
   beforeEach(function () {
-    cy.createRandomAccount().then(cy.login).as('user');
+    cy.createRandomAccount().then(cy.loginMocked).as('user');
   });
 
   it('Open podUrl and show standard files, folders and open-Button', function () {

@@ -39,7 +39,7 @@ export class SolidFileHandlerService {
   async readFile(fileURL: string): Promise<Blob> {
     try {
       return await this.solidClientService.getFile(fileURL, {
-        fetch: this.authService.authenticatedFetch,
+        fetch: this.authService.authenticatedFetch.bind(this.authService),
       });
     } catch (error: any) {
       this.convertError(error);
@@ -86,7 +86,7 @@ export class SolidFileHandlerService {
     try {
       return await this.solidClientService.overwriteFile(fileURL, file, {
         contentType: file.type || 'text/plain', //TODO standard content type?
-        fetch: this.authService.authenticatedFetch,
+        fetch: this.authService.authenticatedFetch.bind(this.authService),
       });
     } catch (error: any) {
       this.convertError(error);
@@ -150,7 +150,7 @@ export class SolidFileHandlerService {
   ): Promise<SolidDataset & WithServerResourceInfo> {
     try {
       return await this.solidClientService.getSolidDataset(containerURL, {
-        fetch: this.authService.authenticatedFetch,
+        fetch: this.authService.authenticatedFetch.bind(this.authService),
       });
     } catch (error: any) {
       this.convertError(error);
@@ -193,6 +193,7 @@ export class SolidFileHandlerService {
       throw error;
     }
     if (error instanceof TypeError) {
+      console.error(error);
       throw new InvalidUrlException('the given url is not valid', {
         cause: error,
       });

@@ -1,10 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
 import { Oidc } from '../../models/oidc';
 import { Observable, of } from 'rxjs';
 import { NotImplementedException } from 'src/app/exceptions/not-implemented-exception';
 import { SolidAuthenticationService } from './solid-authentication.service';
-import { buildAuthenticatedFetch } from '@inrupt/solid-client-authn-core';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
 
 interface CypressWindowTransfer {
@@ -14,10 +12,7 @@ interface CypressWindowTransfer {
       }
     | {
         use: true;
-        credentials: {
-          accessToken: string;
-          dpopKey: any;
-        };
+        fetch: typeof window['fetch'];
         webId: string;
       };
 }
@@ -49,8 +44,9 @@ export class MockSolidAuthenticationService extends SolidAuthenticationService {
   private authFetch: typeof fetch | undefined;
   private webId: string | undefined;
 
-  constructor(private router: Router) {
+  constructor() {
     super();
+    console.log('using mocked authentication service');
   }
 
   override getDefaultOidcProviders(): Oidc[] {
@@ -66,18 +62,16 @@ export class MockSolidAuthenticationService extends SolidAuthenticationService {
    *  - if previously logged in: initiates redirect to restore previous session
    */
   override async initializeLoginStatus() {
+    console.log('initializing mock authentication service');
     if (
       !window.cypress?.authenticationMock.use ||
-      !window.cypress.authenticationMock.credentials
+      !window.cypress.authenticationMock.fetch
     ) {
       throw new UnknownException('could not find mock login credentials');
     }
-    const { accessToken, dpopKey } =
-      window.cypress.authenticationMock.credentials;
-    this.authFetch = await buildAuthenticatedFetch(window.fetch, accessToken, {
-      dpopKey,
-    });
+    this.authFetch = window.cypress.authenticationMock.fetch;
     this.webId = window.cypress.authenticationMock.webId;
+    console.log('mock authentication service initialized for ' + this.webId);
   }
 
   /**

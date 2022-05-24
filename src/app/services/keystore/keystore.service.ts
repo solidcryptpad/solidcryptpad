@@ -95,7 +95,7 @@ export class KeystoreService {
     let encryptedKeystore;
     try {
       encryptedKeystore = await getFile(`${podUrls[0]}private/Keystore`, {
-        fetch: this.authService.authenticatedFetch,
+        fetch: this.authService.authenticatedFetch.bind(this.authService),
       });
       keystore = await this.decryptKeystore(await encryptedKeystore.text());
     } catch (error) {
@@ -128,7 +128,7 @@ export class KeystoreService {
 
     await overwriteFile(`${podUrls[0]}private/Keystore`, keyStoreBlob, {
       contentType: keyStoreBlob.type,
-      fetch: this.authService.authenticatedFetch,
+      fetch: this.authService.authenticatedFetch.bind(this.authService),
     });
   }
 
