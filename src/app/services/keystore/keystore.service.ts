@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import * as cryptoJS from 'crypto-js';
 import { ProfileService } from '../profile/profile.service';
-import { overwriteFile, getFile } from '@inrupt/solid-client';
+import { overwriteFile, getFile, FetchError } from '@inrupt/solid-client';
 import { MatDialog } from '@angular/material/dialog';
 import { fetch } from '@inrupt/solid-client-authn-browser';
 import { firstValueFrom } from 'rxjs';
 import { EnterMasterPasswordComponent } from 'src/app/components/enter-master-password/enter-master-password.component';
 import { WrongMasterPasswordException } from 'src/app/exceptions/wrong-master-password-exception';
 import { KeyNotFoundException } from 'src/app/exceptions/key-not-found-exception';
+import { SetMasterPasswordComponent } from 'src/app/components/set-master-password/set-master-password.component';
 
 @Injectable({
   providedIn: 'root',
@@ -18,21 +19,39 @@ export class KeystoreService {
     private dialog: MatDialog
   ) {}
 
-  declare masterPasswordHash: string;
+  /**
+   * Localstorage keys.
+   */
+  private readonly masterPasswordHashKey: string = 'masterPasswordHash';
+  private readonly keystoreKey: string = 'keystore';
+
   /**
    * Sets the masterpassword .
    */
   async setMasterPassword(pwd: string) {
-    this.masterPasswordHash = cryptoJS
-      .SHA256(pwd + '1205sOlIDCryptPADsalt1502')
-      .toString();
+    if (pwd) {
+      localStorage.setItem(
+        this.masterPasswordHashKey,
+        cryptoJS.SHA256(pwd + '1205sOlIDCryptPADsalt1502').toString()
+      );
+    }
   }
 
   async getMasterPassword(): Promise<string> {
-    if (!this.masterPasswordHash) {
+    if (!localStorage.getItem(this.masterPasswordHashKey)) {
       this.setMasterPassword(await this.openMasterPasswordDialog());
     }
-    return this.masterPasswordHash;
+    const masterPasswordHash = localStorage.getItem(this.masterPasswordHashKey);
+
+    if (!masterPasswordHash) {
+      throw new WrongMasterPasswordException('Master password not set');
+    }
+
+    return masterPasswordHash;
+  }
+
+  checkMasterPasswordNotSet(): boolean {
+    return !localStorage.getItem(this.masterPasswordHashKey);
   }
 
   /**
@@ -75,8 +94,8 @@ export class KeystoreService {
    */
   getLocalKeystore(): KeyEntry[] {
     let keystore = [];
-    if (localStorage.getItem('keystore')) {
-      const keystoreString = localStorage.getItem('keystore');
+    if (localStorage.getItem(this.keystoreKey)) {
+      const keystoreString = localStorage.getItem(this.keystoreKey);
       if (keystoreString) {
         keystore = JSON.parse(keystoreString);
       }
@@ -91,17 +110,26 @@ export class KeystoreService {
     let keystore: KeyEntry[];
     keystore = [];
     const podUrls = await this.profileService.getPodUrls();
-    let encryptedKeystore;
     try {
-      encryptedKeystore = await getFile(`${podUrls[0]}private/Keystore`, {
+      const encryptedKeystore = await getFile(`${podUrls[0]}private/Keystore`, {
         fetch: fetch,
       });
       keystore = await this.decryptKeystore(await encryptedKeystore.text());
     } catch (error) {
-      console.log('No keystore found'); //TODO: Replace with set-master-password-component
+      if (error instanceof FetchError && error.statusCode == 404) {
+        if (this.checkMasterPasswordNotSet()) {
+          const newMasterPassword = await this.openSetMasterPasswordDialog();
+          console.log('masterkey: ' + newMasterPassword);
+          if (newMasterPassword) {
+            this.setMasterPassword(newMasterPassword);
+          }
+        }
+      } else {
+        throw error;
+      }
     }
 
-    localStorage.setItem('keystore', JSON.stringify(keystore));
+    localStorage.setItem(this.keystoreKey, JSON.stringify(keystore));
     return keystore;
   }
 
@@ -111,7 +139,7 @@ export class KeystoreService {
   async storeKey(fileID: string, key: string) {
     const keystore = await this.loadKeystore();
     keystore.push({ ID: fileID, KEY: key });
-    localStorage.setItem('keystore', JSON.stringify(keystore));
+    localStorage.setItem(this.keystoreKey, JSON.stringify(keystore));
     await this.writeKeystoreToPod();
   }
 
@@ -222,6 +250,12 @@ export class KeystoreService {
 
   async openMasterPasswordDialog(): Promise<string> {
     const dialogRef = this.dialog.open(EnterMasterPasswordComponent, {});
+
+    return await firstValueFrom(dialogRef.afterClosed());
+  }
+
+  async openSetMasterPasswordDialog(): Promise<string> {
+    const dialogRef = this.dialog.open(SetMasterPasswordComponent, {});
 
     return await firstValueFrom(dialogRef.afterClosed());
   }

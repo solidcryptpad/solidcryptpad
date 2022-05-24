@@ -39,6 +39,7 @@ import { FileUploadComponent } from './components/dialogs/file-upload/file-uploa
 import { FilePreviewComponent } from './components/file-preview/file-preview.component';
 import { MarkdownModule } from 'ngx-markdown';
 import { DragAndDropDirective } from './directives/drag-and-drop/drag-and-drop.directive';
+import { SetMasterPasswordComponent } from './components/set-master-password/set-master-password.component';
 
 @NgModule({
   declarations: [
@@ -57,6 +58,7 @@ import { DragAndDropDirective } from './directives/drag-and-drop/drag-and-drop.d
     FileUploadComponent,
     FilePreviewComponent,
     DragAndDropDirective,
+    SetMasterPasswordComponent,
   ],
   imports: [
     MatInputModule,
