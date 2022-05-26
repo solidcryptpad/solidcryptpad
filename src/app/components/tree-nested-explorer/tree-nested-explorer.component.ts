@@ -4,9 +4,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 import { MatDialog } from '@angular/material/dialog';
 import { FileUploadComponent } from '../dialogs/file-upload/file-upload.component';
-import { FolderDataSource, Node } from './folder-data-source.class';
+import { FolderCreateComponent } from '../dialogs/folder-create/folder-create.component';
+import { FileCreateComponent } from '../dialogs/file-create/file-create.component';
 import { ProfileService } from 'src/app/services/profile/profile.service';
+import { FolderDataSource, Node } from './folder-data-source.class';
 
+/**
+ * represents an element in the tree
+ */
 @Component({
   selector: 'app-tree-nested-explorer',
   templateUrl: './tree-nested-explorer.component.html',
@@ -71,6 +76,24 @@ export class TreeNestedExplorerComponent implements OnInit {
           url: node.link,
         },
       },
+    });
+  }
+
+  create_folder(node: Node) {
+    const dialogRef = this.dialog.open(FolderCreateComponent, {
+      data: node,
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('folder created', result);
+    });
+  }
+
+  create_file(node: Node) {
+    const dialogRef = this.dialog.open(FileCreateComponent, {
+      data: node,
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('file created', result);
     });
   }
 }

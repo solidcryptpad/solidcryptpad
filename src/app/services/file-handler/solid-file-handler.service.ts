@@ -5,7 +5,6 @@ import {
   UrlString,
   WithServerResourceInfo,
 } from '@inrupt/solid-client';
-import { fetch } from '@inrupt/solid-client-authn-browser';
 import { AlreadyExistsException } from 'src/app/exceptions/already-exists-exception';
 import { InvalidUrlException } from 'src/app/exceptions/invalid-url-exception';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
@@ -15,6 +14,7 @@ import { BaseException } from 'src/app/exceptions/base-exception';
 import { SolidClientService } from '../module-wrappers/solid-client/solid-client.service';
 import { NotFoundException } from 'src/app/exceptions/not-found-exception';
 import * as mime from 'mime';
+import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
 
 @Injectable({
   providedIn: 'root',
@@ -22,7 +22,8 @@ import * as mime from 'mime';
 export class SolidFileHandlerService {
   constructor(
     private keystoreService: KeystoreService,
-    private solidClientService: SolidClientService
+    private solidClientService: SolidClientService,
+    private authService: SolidAuthenticationService
   ) {}
 
   /**
@@ -38,7 +39,7 @@ export class SolidFileHandlerService {
   async readFile(fileURL: string): Promise<Blob> {
     try {
       return await this.solidClientService.getFile(fileURL, {
-        fetch: fetch,
+        fetch: this.authService.authenticatedFetch.bind(this.authService),
       });
     } catch (error: any) {
       this.convertError(error);
@@ -54,8 +55,12 @@ export class SolidFileHandlerService {
    * @throws PermissionException if the given url cannot be written to
    * @throws UnknownException on all errors that are not explicitly caught
    * @throws NotFoundException if the given file was not found
+   * @throws NotACryptpadUrlException if the url does not point into a solidcryptpad folder
    */
   async readAndDecryptFile(fileURL: string): Promise<Blob> {
+    //if(!fileURL.includes("/solidcryptpad/")){
+    //  throw new NotACryptpadUrlException("file is not in a valid directory");
+    //}
     const file = await this.readFile(fileURL);
     return await this.keystoreService.decryptFile(file, fileURL);
   }
@@ -85,7 +90,7 @@ export class SolidFileHandlerService {
     try {
       return await this.solidClientService.overwriteFile(fileURL, file, {
         contentType: file.type || 'text/plain', //TODO standard content type?
-        fetch: fetch,
+        fetch: this.authService.authenticatedFetch.bind(this.authService),
       });
     } catch (error: any) {
       this.convertError(error);
@@ -113,6 +118,9 @@ export class SolidFileHandlerService {
     if (this.isContainer(fileURL)) {
       fileURL = fileURL + '' + fileName;
     }
+    //if(!fileURL.includes("/solidcryptpad/")){
+    //  throw new NotACryptpadUrlException("file is not in a valid directory");
+    //}
     const encryptedFile = await this.keystoreService.encryptFile(file, fileURL);
 
     return await this.writeFile(encryptedFile, fileURL, fileName);
@@ -149,7 +157,7 @@ export class SolidFileHandlerService {
   ): Promise<SolidDataset & WithServerResourceInfo> {
     try {
       return await this.solidClientService.getSolidDataset(containerURL, {
-        fetch: fetch,
+        fetch: this.authService.authenticatedFetch.bind(this.authService),
       });
     } catch (error: any) {
       this.convertError(error);
@@ -192,6 +200,7 @@ export class SolidFileHandlerService {
       throw error;
     }
     if (error instanceof TypeError) {
+      console.error(error);
       throw new InvalidUrlException('the given url is not valid', {
         cause: error,
       });

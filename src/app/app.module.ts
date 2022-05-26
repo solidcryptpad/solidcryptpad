@@ -12,7 +12,6 @@ import { MatTreeModule } from '@angular/material/tree';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { HomeComponent } from './components/home/home.component';
-import { SolidAuthenticationService } from './services/authentication/solid-authentication.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FileExplorerComponent } from './components/file-explorer/file-explorer.component';
 import { KeystoreComponent } from './components/keystore/keystore.component';
@@ -35,11 +34,19 @@ import { FaqComponent } from './components/faq/faq.component';
 import { MatListModule } from '@angular/material/list';
 import { LoggedInDirective } from './directives/logged-in/logged-in.directive';
 import { MatMenuModule } from '@angular/material/menu';
+import { FolderCreateComponent } from './components/dialogs/folder-create/folder-create.component';
+import { FileCreateComponent } from './components/dialogs/file-create/file-create.component';
 import { FileUploadComponent } from './components/dialogs/file-upload/file-upload.component';
 import { FilePreviewComponent } from './components/file-preview/file-preview.component';
 import { MarkdownModule } from 'ngx-markdown';
 import { DragAndDropDirective } from './directives/drag-and-drop/drag-and-drop.directive';
 import { SetMasterPasswordComponent } from './components/set-master-password/set-master-password.component';
+import {
+  MockSolidAuthenticationService,
+  shouldMockAuthenticationService,
+} from './services/authentication/solid-authentication.service.mock';
+import { SolidAuthenticationService } from './services/authentication/solid-authentication.service';
+import { SimpleSolidAuthenticationService } from './services/authentication/simple-solid-authentication.service';
 
 @NgModule({
   declarations: [
@@ -55,8 +62,10 @@ import { SetMasterPasswordComponent } from './components/set-master-password/set
     TreeNestedExplorerComponent,
     FaqComponent,
     LoggedInDirective,
-    FileUploadComponent,
     FilePreviewComponent,
+    FileUploadComponent,
+    FolderCreateComponent,
+    FileCreateComponent,
     DragAndDropDirective,
     SetMasterPasswordComponent,
   ],
@@ -90,7 +99,12 @@ import { SetMasterPasswordComponent } from './components/set-master-password/set
     MarkdownModule.forRoot(),
   ],
   providers: [
-    SolidAuthenticationService,
+    {
+      provide: SolidAuthenticationService,
+      useClass: shouldMockAuthenticationService()
+        ? MockSolidAuthenticationService
+        : SimpleSolidAuthenticationService,
+    },
     {
       provide: APP_INITIALIZER,
       useFactory: (service: SolidAuthenticationService) => () =>

@@ -17,7 +17,7 @@ export class WelcomeComponent implements OnInit {
     private notificationService: NotificationService,
     private router: Router
   ) {
-    this.oidc = solidAuthenticationService.oidc;
+    this.oidc = solidAuthenticationService.getDefaultOidcProviders();
   }
 
   oidc: Oidc[];
