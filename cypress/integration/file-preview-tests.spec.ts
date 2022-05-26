@@ -68,7 +68,7 @@ describe('File-Preview Test', function () {
     cy.contains('test');
   });
 
-  it.only('Open ExampleFile in Editor and show it in Preview', function () {
+  it('Open ExampleFile in Editor and show it in Preview', function () {
     const fileName = 'ExampleFile1.txt';
     const fileContent = 'some file content';
     const fileUrl = this.user.podUrl + '/private/cryptopad/' + fileName;
