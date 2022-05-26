@@ -144,13 +144,24 @@ Cypress.Commands.add('enterMasterPassword', (user) => {
     it sometimes failed, I guess because the typing wasn't yet processed by the input
     Therefore this tries to make the input process the typing
     and ensures it's processed completely before continuing */
-  cy.get('input[data-cy=master-password-input]').click({ multiple: true });
+  cy.get('input[data-cy=master-password-input]').click();
   cy.wait(1000);
   cy.get('input[data-cy=master-password-input]').type(user.masterPassword);
   cy.get('input[data-cy=master-password-input]').should(
     'have.value',
     user.masterPassword
   );
+  if (cy.get('input[data-cy=master-password-input-confirm]')) {
+    cy.get('input[data-cy=master-password-input-confirm]').click();
+    cy.wait(1000);
+    cy.get('input[data-cy=master-password-input-confirm]').type(
+      user.masterPassword
+    );
+    cy.get('input[data-cy=master-password-input-confirm]').should(
+      'have.value',
+      user.masterPassword
+    );
+  }
 
   cy.contains('Ok').click();
 });
