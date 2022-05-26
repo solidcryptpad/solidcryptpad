@@ -262,7 +262,8 @@ describe('SolidFileHandlerService', () => {
     await service.writeContainer(url);
 
     expect(solidClientServiceSpy.createContainerAt).toHaveBeenCalledWith(
-      url + '/'
+      url + '/',
+      jasmine.anything()
     );
   });
 

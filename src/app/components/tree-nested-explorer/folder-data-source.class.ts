@@ -35,17 +35,9 @@ export class FolderDataSource implements DataSource<Node> {
   ) {}
 
   public async init() {
+    console.log(this.root);
     if (this.root != null) {
-      const content = await this.solidFileHandlerService.getContainerContent(
-        this.root
-      );
-
-      const data: Node[] = [];
-      content.forEach((element) => {
-        this.createNode(element);
-        data.push(this.createNode(element));
-        this.dataChange.next(data);
-      });
+      this.dataChange.next([this.createNode(this.root)]);
     }
   }
 

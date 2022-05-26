@@ -30,7 +30,7 @@ describe('FileExplorer menu actions', function () {
   });
 
   it('can upload files using drag and drop', function () {
-    cy.contains('profile')
+    cy.contains('solidcryptpad')
       .closest('[data-cy=tree-node]')
       .find('[data-cy=folder-menu]')
       .as('profile-menu');
