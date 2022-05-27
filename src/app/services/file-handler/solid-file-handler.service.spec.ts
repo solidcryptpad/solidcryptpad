@@ -15,6 +15,7 @@ import { KeystoreService } from '../keystore/keystore.service';
 import { AlreadyExistsException } from 'src/app/exceptions/already-exists-exception';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
 import { BaseException } from 'src/app/exceptions/base-exception';
+import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
 
 describe('SolidFileHandlerService', () => {
   let service: SolidFileHandlerService;
@@ -197,6 +198,23 @@ describe('SolidFileHandlerService', () => {
     );
   });
 
+  it('writeAndEncryptFile throws exception on url without solidcryptpad', async () => {
+    const url = 'https://real.url.com/test';
+    const file = mockFileFrom(url);
+
+    await expectAsync(
+      service.writeAndEncryptFile(file, url)
+    ).toBeRejectedWithError(NotACryptpadUrlException);
+  });
+
+  it('readAndDecryptFile throws exception on url without solidcryptpad', async () => {
+    const url = 'https://real.url.com/test';
+
+    await expectAsync(service.readAndDecryptFile(url)).toBeRejectedWithError(
+      NotACryptpadUrlException
+    );
+  });
+
   it('convertError converts 404 to NotFoundException', () => {
     const url = 'https://real.url.com';
 
@@ -343,7 +361,12 @@ describe('SolidFileHandlerService', () => {
     expect(service.guessContentType('file.notexistingextension')).toBeNull();
   });
 
-  // TODO containerExists
+  it('containerExists calls getContainer', async () => {
+    spyOn(service, 'getContainer');
+
+    service.containerExists('');
+    expect(service.getContainer).toHaveBeenCalled();
+  });
 });
 
 /**
