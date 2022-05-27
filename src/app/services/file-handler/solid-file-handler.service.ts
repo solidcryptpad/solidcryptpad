@@ -15,16 +15,22 @@ import { SolidClientService } from '../module-wrappers/solid-client/solid-client
 import { NotFoundException } from 'src/app/exceptions/not-found-exception';
 import * as mime from 'mime';
 import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
+import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
+import { throwWithContext } from 'src/app/exceptions/error-options';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SolidFileHandlerService {
+  private solidDirectoryName: string;
+
   constructor(
     private keystoreService: KeystoreService,
     private solidClientService: SolidClientService,
     private authService: SolidAuthenticationService
-  ) {}
+  ) {
+    this.solidDirectoryName = 'solidcryptpad';
+  }
 
   /**
    * reads a file saved at the url
@@ -58,9 +64,9 @@ export class SolidFileHandlerService {
    * @throws NotACryptpadUrlException if the url does not point into a solidcryptpad folder
    */
   async readAndDecryptFile(fileURL: string): Promise<Blob> {
-    //if(!fileURL.includes("/solidcryptpad/")){
-    //  throw new NotACryptpadUrlException("file is not in a valid directory");
-    //}
+    if (!this.isCryptoDirectory(fileURL)) {
+      throw new NotACryptpadUrlException('file is not in a valid directory');
+    }
     const file = await this.readFile(fileURL);
     return await this.keystoreService.decryptFile(file, fileURL);
   }
@@ -118,9 +124,9 @@ export class SolidFileHandlerService {
     if (this.isContainer(fileURL)) {
       fileURL = fileURL + '' + fileName;
     }
-    //if(!fileURL.includes("/solidcryptpad/")){
-    //  throw new NotACryptpadUrlException("file is not in a valid directory");
-    //}
+    if (!this.isCryptoDirectory(fileURL)) {
+      throw new NotACryptpadUrlException('file is not in a valid directory');
+    }
     const encryptedFile = await this.keystoreService.encryptFile(file, fileURL);
 
     return await this.writeFile(encryptedFile, fileURL, fileName);
@@ -146,12 +152,19 @@ export class SolidFileHandlerService {
     }
 
     try {
-      return await this.solidClientService.createContainerAt(containerURL);
+      return await this.solidClientService.createContainerAt(containerURL, {
+        fetch: this.authService.authenticatedFetch.bind(this.authService),
+      });
     } catch (error: any) {
       this.convertError(error);
     }
   }
 
+  /**
+   * gets a container from the url
+   * @param containerURL the url to the container
+   * @returns the container
+   */
   async getContainer(
     containerURL: string
   ): Promise<SolidDataset & WithServerResourceInfo> {
@@ -164,6 +177,28 @@ export class SolidFileHandlerService {
     }
   }
 
+  /**
+   * checks if a container exists
+   * @param containerURL the container to check
+   * @returns true or false depending on if it exists
+   */
+  async containerExists(containerURL: string): Promise<boolean> {
+    try {
+      await this.getContainer(containerURL);
+    } catch (error: any) {
+      if (error instanceof NotFoundException) {
+        return false;
+      }
+      throw error;
+    }
+    return true;
+  }
+
+  /**
+   * gets a list of files that are contained in the folder
+   * @param containerURL the link to the folder
+   * @returns a list of urls of the objects in the directory
+   */
   async getContainerContent(containerURL: string): Promise<UrlString[]> {
     try {
       const container = await this.getContainer(containerURL);
@@ -189,6 +224,35 @@ export class SolidFileHandlerService {
    */
   guessContentType(url: string): string | null {
     return mime.getType(url);
+  }
+
+  /**
+   * checks if the directory is a valid cryptodirectory
+   * @param url the url to check
+   * @returns if it contains the wanted directoryname
+   */
+  isCryptoDirectory(url: string): boolean {
+    return url.includes('/' + this.solidDirectoryName + '/');
+  }
+
+  /**
+   * creates a solidcryptopaddirectory in the given folder
+   * @param url url to create the directory in
+   * @returns the newly created directory
+   */
+  async createCryptoDirctory(url: string): Promise<string> {
+    if (!this.isContainer(url)) {
+      url = url + '/';
+    }
+
+    url = url + this.solidDirectoryName + '/';
+    try {
+      await this.writeContainer(url);
+    } catch (error: any) {
+      throwWithContext("Couldn't create error directory")(error);
+    }
+
+    return url;
   }
 
   /**

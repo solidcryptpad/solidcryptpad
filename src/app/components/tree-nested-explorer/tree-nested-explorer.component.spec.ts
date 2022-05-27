@@ -17,6 +17,7 @@ import { FolderCreateComponent } from '../dialogs/folder-create/folder-create.co
 import { FileUploadComponent } from '../dialogs/file-upload/file-upload.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ProfileService } from 'src/app/services/profile/profile.service';
+import { NotificationService } from 'src/app/services/notification/notification.service';
 
 describe('TreeNestedExplorerComponent', () => {
   let component: TreeNestedExplorerComponent;
@@ -24,8 +25,12 @@ describe('TreeNestedExplorerComponent', () => {
   let fileHandlerServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
   let profileServiceSpy: jasmine.SpyObj<ProfileService>;
   let dialogSpy: jasmine.SpyObj<MatDialog>;
+  let notificationSpy: jasmine.SpyObj<NotificationService>;
 
   beforeEach(async () => {
+    const notificationServiceSpy = jasmine.createSpyObj('NotificationService', [
+      'error',
+    ]);
     const fileHandlerSpy = jasmine.createSpyObj('SolidFileHandlerSpy', [
       'getContainerContent',
       'isContainer',
@@ -68,7 +73,7 @@ describe('TreeNestedExplorerComponent', () => {
           provide: ActivatedRoute,
           useValue: {
             queryParams: of({
-              url: 'example.url.com/',
+              url: 'example.url.com/solidcryptpad/',
             }),
           },
         },
@@ -76,9 +81,14 @@ describe('TreeNestedExplorerComponent', () => {
           provide: MatDialog,
           useValue: matDialogSpy,
         },
+        { provide: NotificationService, useValue: notificationServiceSpy },
       ],
     }).compileComponents();
 
+    // eslint-disable-next-line unused-imports/no-unused-vars
+    notificationSpy = TestBed.inject(
+      NotificationService
+    ) as jasmine.SpyObj<NotificationService>;
     fileHandlerServiceSpy = TestBed.inject(
       SolidFileHandlerService
     ) as jasmine.SpyObj<SolidFileHandlerService>;
@@ -99,28 +109,24 @@ describe('TreeNestedExplorerComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('tree loads root components correctly', async () => {
-    fileHandlerServiceSpy.getContainerContent.and.returnValue(
-      Promise.resolve(['example.url.com/test0', 'example.url.com/test1/'])
-    );
-    fileHandlerServiceSpy.isContainer.and.returnValue(false);
+  it('tree displays root element correctly', async () => {
+    fileHandlerServiceSpy.isContainer.and.returnValue(true);
 
     fixture.detectChanges();
     const loader = TestbedHarnessEnvironment.loader(fixture);
 
-    expect(fileHandlerServiceSpy.getContainerContent).toHaveBeenCalledWith(
-      'example.url.com/'
-    );
-
     const tree = await loader.getHarness(MatTreeHarness);
 
     const root_nodes = await tree.getNodes();
-    expect(root_nodes.length).toBe(2);
+    expect(root_nodes.length).toBe(1);
   });
 
   it('tree loads elements correctly when opening directory', async () => {
     fileHandlerServiceSpy.getContainerContent.and.returnValue(
-      Promise.resolve(['example.url.com/root0', 'example.url.com/root1/'])
+      Promise.resolve([
+        'example.url.com/solidcryptpad/root0',
+        'example.url.com/solidcryptpad/root1/',
+      ])
     );
 
     // for some reason if this is set to true the elements are not added
@@ -129,50 +135,40 @@ describe('TreeNestedExplorerComponent', () => {
     fixture.detectChanges();
     const loader = TestbedHarnessEnvironment.loader(fixture);
 
-    // add two elements
-
-    fileHandlerServiceSpy.getContainerContent.and.returnValue(
-      Promise.resolve([
-        'example.url.com/root1/test0',
-        'example.url.com/root1/test1',
-        'example.url.com/root1/test2',
-      ])
-    );
-
     const tree = await loader.getHarness(MatTreeHarness);
     const nodes = await tree.getNodes();
-    expect(nodes.length).toEqual(2);
-    await nodes[1].expand();
+    expect(nodes.length).toEqual(1);
+    await nodes[0].expand();
 
-    expect((await tree.getNodes()).length).toBe(5);
+    expect((await tree.getNodes()).length).toBe(3);
   });
 
   it('tree closes elements correctly', async () => {
     fileHandlerServiceSpy.getContainerContent.and.returnValue(
-      Promise.resolve(['example.url.com/root0', 'example.url.com/root1/'])
+      Promise.resolve([
+        'example.url.com/solidcryptpad/root0',
+        'example.url.com/solidcryptpad/root1/',
+      ])
     );
+
+    // for some reason if this is set to true the elements are not added
     fileHandlerServiceSpy.isContainer.and.returnValue(true);
 
     fixture.detectChanges();
     const loader = TestbedHarnessEnvironment.loader(fixture);
 
-    // add two elements
-
-    fileHandlerServiceSpy.getContainerContent.and.returnValue(
-      Promise.resolve([
-        'example.url.com/root1/test0',
-        'example.url.com/root1/test1',
-        'example.url.com/root1/test2',
-      ])
-    );
-
     const tree = await loader.getHarness(MatTreeHarness);
-    const nodes = await tree.getNodes();
-    await nodes[1].expand();
-    expect((await tree.getNodes()).length).toBe(5);
+    let nodes = await tree.getNodes();
+    expect(nodes.length).toEqual(1);
+    await nodes[0].expand();
 
-    await nodes[1].collapse();
-    expect((await tree.getNodes()).length).toBe(2);
+    nodes = await tree.getNodes();
+    expect(nodes.length).toBe(3);
+
+    await nodes[0].collapse();
+
+    nodes = await tree.getNodes();
+    expect(nodes.length).toBe(1);
   });
 
   it('create_folder opens correct dialog', async () => {
@@ -197,14 +193,20 @@ describe('TreeNestedExplorerComponent', () => {
     );
   });
   it('opens upload dialog when calling upload', async () => {
-    const node = new Node('https://example.org/test/', 'test', 1, true, false);
+    const node = new Node(
+      'https://example.org/solidcryptpad/test/',
+      'test',
+      1,
+      true,
+      false
+    );
 
     component.upload(node);
 
     expect(dialogSpy.open).toHaveBeenCalledWith(FileUploadComponent, {
       data: {
         folder: {
-          url: 'https://example.org/test/',
+          url: 'https://example.org/solidcryptpad/test/',
         },
       },
     });

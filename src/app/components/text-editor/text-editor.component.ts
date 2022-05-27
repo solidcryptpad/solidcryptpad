@@ -173,7 +173,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    * @returns string with the example directory addes to the beginning
    */
   getExampleUrl(filename: string): string {
-    return this.baseUrl + 'private/cryptopad/' + filename;
+    return this.baseUrl + 'solidcryptpad/' + filename;
   }
 
   /**
