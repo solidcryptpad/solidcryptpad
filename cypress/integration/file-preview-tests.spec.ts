@@ -77,9 +77,9 @@ describe('File-Preview Test', function () {
     cy.contains('Editor').click();
 
     cy.contains(fileName).click();
-
     cy.contains('Master Password', { timeout: 30000 });
     cy.enterMasterPassword(this.user);
+
     cy.get('ngx-editor').type(fileContent);
 
     // wait for all savings so far

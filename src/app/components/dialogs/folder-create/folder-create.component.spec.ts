@@ -1,8 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import {
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 
 import { FolderCreateComponent } from './folder-create.component';

@@ -151,6 +151,17 @@ Cypress.Commands.add('enterMasterPassword', (user) => {
     'have.value',
     user.masterPassword
   );
+  if (cy.get('input[data-cy=master-password-input-confirm]')) {
+    cy.get('input[data-cy=master-password-input-confirm]').click();
+    cy.wait(1000);
+    cy.get('input[data-cy=master-password-input-confirm]').type(
+      user.masterPassword
+    );
+    cy.get('input[data-cy=master-password-input-confirm]').should(
+      'have.value',
+      user.masterPassword
+    );
+  }
 
   cy.contains('Ok').click();
 });

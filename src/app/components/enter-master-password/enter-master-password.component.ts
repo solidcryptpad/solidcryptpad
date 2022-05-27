@@ -1,5 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { UserActionAbortedException } from 'src/app/exceptions/user-action-aborted-exception';
 
 @Component({
   selector: 'app-enter-master-password',
@@ -14,5 +15,6 @@ export class EnterMasterPasswordComponent {
 
   onNoClick(): void {
     this.dialogRef.close();
+    throw new UserActionAbortedException('Decryption aborted');
   }
 }
