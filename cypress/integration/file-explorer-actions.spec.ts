@@ -6,11 +6,13 @@ describe('FileExplorer menu actions', function () {
   });
 
   it('can upload files to folder', function () {
-    cy.contains('profile')
+    cy.contains('solidcryptpad')
       .closest('[data-cy=tree-node]')
       .find('[data-cy=folder-menu]')
-      .as('profile-menu');
-    cy.get('@profile-menu').click();
+      .as('solidcryptpad-menu');
+
+    cy.get('@solidcryptpad-menu').click();
+
     cy.contains('Upload Files').click();
 
     const fileName = 'file.txt';
@@ -24,13 +26,13 @@ describe('FileExplorer menu actions', function () {
     // wait until dialog closed
     cy.contains('File Upload').should('not.exist');
 
-    cy.get('@profile-menu').click();
-    cy.contains('Open Folder').click();
+    cy.get('#solidcryptpad_expand').click();
+
     cy.contains(fileName);
   });
 
   it('can upload files using drag and drop', function () {
-    cy.contains('profile')
+    cy.contains('solidcryptpad')
       .closest('[data-cy=tree-node]')
       .find('[data-cy=folder-menu]')
       .as('profile-menu');
@@ -49,8 +51,7 @@ describe('FileExplorer menu actions', function () {
     // wait until dialog closed
     cy.contains('File Upload').should('not.exist');
 
-    cy.get('@profile-menu').click();
-    cy.contains('Open Folder').click();
+    cy.get('#solidcryptpad_expand').click();
     cy.contains(fileName);
   });
 });

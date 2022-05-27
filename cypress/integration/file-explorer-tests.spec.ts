@@ -3,18 +3,20 @@ describe('File-Explorer Test', function () {
     cy.createRandomAccount().then(cy.loginMocked).as('user');
   });
 
-  it('Open podUrl and show standard files, folders and open-Button', function () {
+  it('Open podUrl and show root folder', function () {
     cy.contains('Files').click();
 
-    cy.contains('open');
-    cy.contains('profile');
-    cy.contains('README');
+    cy.contains('solidcryptpad');
   });
 
   it('Open PodUrl and show new folder', function () {
     const folderUrl = 'test-folder';
-    cy.givenFolder(this.user, this.user.podUrl + '/' + folderUrl + '/');
+    cy.givenFolder(
+      this.user,
+      this.user.podUrl + '/solidcryptpad/' + folderUrl + '/'
+    );
     cy.contains('Files').click();
+    cy.get('#solidcryptpad_expand').click();
 
     cy.contains(folderUrl);
   });
@@ -22,8 +24,13 @@ describe('File-Explorer Test', function () {
   it('Open PodUrl and show new File', function () {
     const fileUrl = 'file.txt';
     const fileContent = 'some random text content';
-    cy.givenFile(this.user, this.user.podUrl + '/' + fileUrl, fileContent);
+    cy.givenFile(
+      this.user,
+      this.user.podUrl + '/solidcryptpad/' + fileUrl,
+      fileContent
+    );
     cy.contains('Files').click();
+    cy.get('#solidcryptpad_expand').click();
 
     cy.contains(fileUrl);
   });
@@ -33,17 +40,15 @@ describe('File-Explorer Test', function () {
     const nestedFolderName = 'nested';
     cy.givenFolder(
       this.user,
-      this.user.podUrl + '/' + nestedFolderName + '/' + folderName
+      this.user.podUrl + '/solidcryptpad/' + nestedFolderName + '/' + folderName
     );
     cy.contains('Files').click();
+    cy.get('#solidcryptpad_expand').click();
 
     cy.contains(nestedFolderName);
 
-    cy.contains('nested')
-      .closest('[data-cy=tree-node]')
-      .find('[data-cy=folder-menu]')
-      .click();
-    cy.contains('Open Folder').click();
+    cy.get('#nested_expand').click();
+
     cy.contains(folderName);
   });
 
@@ -52,9 +57,10 @@ describe('File-Explorer Test', function () {
     const folderName = 'TestFolder';
     cy.givenFile(
       this.user,
-      this.user.podUrl + '/' + folderName + '/' + fileName
+      this.user.podUrl + '/solidcryptpad/' + folderName + '/' + fileName
     );
     cy.contains('Files').click();
+    cy.get('#solidcryptpad_expand').click();
 
     cy.contains(folderName);
 

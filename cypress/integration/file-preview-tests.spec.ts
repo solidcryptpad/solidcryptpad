@@ -6,11 +6,11 @@ describe('File-Preview Test', function () {
   it('can upload text file to folder and show preview', function () {
     cy.contains('Files').click();
     cy.contains('Folder URL');
-    cy.contains('profile')
+    cy.contains('solidcryptpad')
       .closest('[data-cy=tree-node]')
       .find('[data-cy=folder-menu]')
-      .as('profile-menu');
-    cy.get('@profile-menu').click();
+      .as('solidcryptpad-menu');
+    cy.get('@solidcryptpad-menu').click();
     cy.contains('Upload Files').click();
     const fileName = 'test.txt';
     const fileContent = 'some file content';
@@ -18,13 +18,13 @@ describe('File-Preview Test', function () {
       contents: Cypress.Buffer.from(fileContent),
       fileName,
     });
+
     cy.contains(fileName);
     cy.get('.mat-dialog-actions').contains('button', 'Upload').click();
     cy.enterMasterPassword(this.user);
     // wait until dialog closed
     cy.contains('File Upload').should('not.exist');
-    cy.get('@profile-menu').click();
-    cy.contains('Open Folder').click();
+    cy.get('#solidcryptpad_expand').click();
     cy.contains(fileName);
     cy.get('[id="' + fileName + 'Node"] button:last').click();
     cy.contains('Preview from ');
@@ -37,11 +37,11 @@ describe('File-Preview Test', function () {
     cy.contains('Files').click();
     cy.contains('Folder URL');
 
-    cy.contains('profile')
+    cy.contains('solidcryptpad')
       .closest('[data-cy=tree-node]')
       .find('[data-cy=folder-menu]')
-      .as('profile-menu');
-    cy.get('@profile-menu').click();
+      .as('solidcryptpad-menu');
+    cy.get('@solidcryptpad-menu').click();
     cy.contains('Upload Files').click();
 
     const fileName = 'mdTest.md';
@@ -56,8 +56,8 @@ describe('File-Preview Test', function () {
     // wait until dialog closed
     cy.contains('File Upload').should('not.exist');
 
-    cy.get('@profile-menu').click();
-    cy.contains('Open Folder').click();
+    cy.get('#solidcryptpad_expand').click();
+
     cy.contains(fileName);
     cy.get('[id="' + fileName + 'Node"] button:last').click();
     cy.contains('Preview from ');
@@ -71,15 +71,17 @@ describe('File-Preview Test', function () {
   it('Open ExampleFile in Editor and show it in Preview', function () {
     const fileName = 'ExampleFile1.txt';
     const fileContent = 'some file content';
-    const fileUrl = this.user.podUrl + '/private/cryptopad/' + fileName;
+    const fileUrl = this.user.podUrl + '/solidcryptpad/' + fileName;
     cy.intercept('PUT', fileUrl).as('savedExample');
 
     cy.contains('Editor').click();
 
     cy.contains(fileName).click();
-    cy.get('ngx-editor').type(fileContent);
+
     cy.contains('Master Password', { timeout: 30000 });
     cy.enterMasterPassword(this.user);
+    cy.get('ngx-editor').type(fileContent);
+
     // wait for all savings so far
     cy.wait('@savedExample');
     cy.wait('@savedExample');
@@ -90,17 +92,8 @@ describe('File-Preview Test', function () {
     cy.url().should('not.include', 'Example');
 
     cy.contains('Files').click();
-    cy.contains('private')
-      .closest('[data-cy=tree-node]')
-      .find('[data-cy=folder-menu]')
-      .click();
-    cy.contains('Open Folder').click();
+    cy.get('#solidcryptpad_expand').click();
 
-    cy.contains('cryptopad')
-      .closest('[data-cy=tree-node]')
-      .find('[data-cy=folder-menu]')
-      .click();
-    cy.contains('Open Folder').click();
     cy.contains(fileName);
     cy.get('[id="' + fileName + 'Node"] button:last').click();
     cy.contains('Preview from ');

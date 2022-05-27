@@ -8,6 +8,8 @@ import { FolderCreateComponent } from '../dialogs/folder-create/folder-create.co
 import { FileCreateComponent } from '../dialogs/file-create/file-create.component';
 import { ProfileService } from 'src/app/services/profile/profile.service';
 import { FolderDataSource, Node } from './folder-data-source.class';
+import { NotificationService } from 'src/app/services/notification/notification.service';
+import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
 
 /**
  * represents an element in the tree
@@ -27,15 +29,54 @@ export class TreeNestedExplorerComponent implements OnInit {
     private profileService: ProfileService,
     private route: ActivatedRoute,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private notification: NotificationService
   ) {}
 
   ngOnInit(): void {
+    // this exists in case of no path is given, todo: remove but without the tests fail
+    this.treeControl = new FlatTreeControl<Node>(
+      this.getLevel,
+      this.isExpandable
+    );
+    this.dataSource = new FolderDataSource(
+      this.treeControl,
+      this.solidFileHandlerService,
+      ''
+    );
+    this.dataSource.init();
+
     this.route.queryParams.subscribe(async (params) => {
-      const rootPath =
-        params['url'] ??
-        (await this.profileService.getPodUrls().then((urls) => urls[0]));
-      this.rootPath = rootPath;
+      // check if url is valid
+      if (
+        params['url'] != undefined &&
+        !this.solidFileHandlerService.isCryptoDirectory(params['url'])
+      ) {
+        throw new NotACryptpadUrlException(
+          'the given url is not a solidcryptpad url'
+        );
+      }
+
+      // get rootPath
+      this.rootPath =
+        (params['url'] ??
+          (await this.profileService.getPodUrls().then((urls) => urls[0])) +
+            'solidcryptpad/') + ''; //todo make dependent on value in solidfilehandler
+
+      // create solidcryptpad folder if not exists
+      if (
+        !this.solidFileHandlerService.isCryptoDirectory(this.rootPath) &&
+        !(await this.solidFileHandlerService.containerExists(this.rootPath))
+      ) {
+        this.rootPath = await this.solidFileHandlerService.createCryptoDirctory(
+          this.rootPath
+        );
+        this.notification.info({
+          title: 'Created',
+          message: 'a solidcryptpad folder was created for you',
+        });
+      }
+
       this.treeControl = new FlatTreeControl<Node>(
         this.getLevel,
         this.isExpandable
