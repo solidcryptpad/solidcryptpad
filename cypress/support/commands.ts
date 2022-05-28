@@ -140,6 +140,8 @@ Cypress.Commands.add('givenFile', (user, url, content, options = {}) => {
   });
 });
 
+const MASTER_PASSWORD_KEY = 'masterPasswordHash';
+
 Cypress.Commands.add('enterMasterPassword', (user) => {
   /* when directly using cy.get(input...).type(masterPassword)
     it sometimes failed, I guess because the typing wasn't yet processed by the input
@@ -167,12 +169,15 @@ Cypress.Commands.add('enterMasterPassword', (user) => {
   });
 
   cy.contains('Ok').click();
+  cy.window()
+    .its('localStorage')
+    .should('satisfy', (ls) => ls.getItem(MASTER_PASSWORD_KEY) !== null);
 });
 
 Cypress.Commands.add('storeMasterPassword', (user) => {
   cy.window().then((win) => {
     win.localStorage.setItem(
-      'masterPasswordHash',
+      MASTER_PASSWORD_KEY,
       hashMasterPassword(user.masterPassword)
     );
   });
