@@ -1,6 +1,9 @@
 describe('FileExplorer menu actions', function () {
   beforeEach(function () {
-    cy.createRandomAccount().then(cy.loginMocked).as('user');
+    cy.createRandomAccount()
+      .then(cy.loginMocked)
+      .then(cy.storeMasterPassword)
+      .as('user');
     cy.contains('Files').click();
     cy.contains('Folder URL');
   });
@@ -22,7 +25,7 @@ describe('FileExplorer menu actions', function () {
     });
     cy.contains('file.txt');
     cy.get('.mat-dialog-actions').contains('button', 'Upload').click();
-    cy.enterMasterPassword(this.user);
+
     // wait until dialog closed
     cy.contains('File Upload').should('not.exist');
 
@@ -47,7 +50,6 @@ describe('FileExplorer menu actions', function () {
     });
     cy.contains('file.txt');
     cy.get('.mat-dialog-actions').contains('button', 'Upload').click();
-    cy.enterMasterPassword(this.user);
     // wait until dialog closed
     cy.contains('File Upload').should('not.exist');
 

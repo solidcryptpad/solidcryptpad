@@ -9,6 +9,7 @@ import {
   getAuthenticatedRequest,
 } from './css-authentication';
 import * as uuid from 'uuid';
+import * as cryptoJS from 'crypto-js';
 
 // page load usually takes a lot of time, hence it should have a longer timeout
 const PAGE_LOAD_TIMEOUT = 30000;
@@ -167,3 +168,18 @@ Cypress.Commands.add('enterMasterPassword', (user) => {
 
   cy.contains('Ok').click();
 });
+
+Cypress.Commands.add('storeMasterPassword', (user) => {
+  cy.window().then((win) => {
+    win.localStorage.setItem(
+      'masterPasswordHash',
+      hashMasterPassword(user.masterPassword)
+    );
+  });
+  return cy.wrap(user);
+});
+
+function hashMasterPassword(masterPassword: string): string {
+  const salt = '1205sOlIDCryptPADsalt1502';
+  return cryptoJS.SHA256(masterPassword + salt).toString();
+}

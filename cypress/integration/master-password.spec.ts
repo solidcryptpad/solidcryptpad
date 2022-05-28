@@ -40,6 +40,12 @@ describe('MasterPassword', () => {
     cy.get('input[data-cy=master-password-input-confirm]').should('not.exist');
     cy.enterMasterPassword(this.user);
   });
+
+  it("does not prompt for master password when it's stored with cy.storeMasterPassword", function () {
+    cy.storeMasterPassword(this.user);
+    triggerMasterPasswordPrompt(this.user);
+    cy.wait('@savedKeystore');
+  });
 });
 
 function triggerMasterPasswordPrompt(user: UserConfig) {

@@ -1,6 +1,9 @@
 describe('File-Preview Test', function () {
   beforeEach(function () {
-    cy.createRandomAccount().then(cy.loginMocked).as('user');
+    cy.createRandomAccount()
+      .then(cy.loginMocked)
+      .then(cy.storeMasterPassword)
+      .as('user');
   });
 
   it('can upload text file to folder and show preview', function () {
@@ -21,7 +24,6 @@ describe('File-Preview Test', function () {
 
     cy.contains(fileName);
     cy.get('.mat-dialog-actions').contains('button', 'Upload').click();
-    cy.enterMasterPassword(this.user);
     // wait until dialog closed
     cy.contains('File Upload').should('not.exist');
     cy.get('#solidcryptpad_expand').click();
@@ -52,7 +54,6 @@ describe('File-Preview Test', function () {
     });
     cy.contains(fileName);
     cy.get('.mat-dialog-actions').contains('button', 'Upload').click();
-    cy.enterMasterPassword(this.user);
     // wait until dialog closed
     cy.contains('File Upload').should('not.exist');
 
@@ -77,8 +78,6 @@ describe('File-Preview Test', function () {
     cy.contains('Editor').click();
 
     cy.contains(fileName).click();
-    cy.contains('Master Password', { timeout: 30000 });
-    cy.enterMasterPassword(this.user);
 
     cy.get('ngx-editor').type(fileContent);
 

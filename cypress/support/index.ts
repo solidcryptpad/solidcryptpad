@@ -37,6 +37,11 @@ declare global {
       loginMocked(user: UserConfig): Chainable<UserConfig>;
 
       /**
+       * Store the master password hash, to fake having it entered already
+       */
+      storeMasterPassword(user: UserConfig): Chainable<UserConfig>;
+
+      /**
        * Create a folder at given url using user credentials
        */
       givenFolder(user: UserConfig, url: string): Chainable<void>;
