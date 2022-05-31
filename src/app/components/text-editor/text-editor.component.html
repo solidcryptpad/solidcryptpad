@@ -24,6 +24,14 @@
       >
         Save and close file
       </button>
+      <button
+        mat-raised-button
+        type="button"
+        class="editor-button"
+        (click)="shareFile()"
+      >
+        Share
+      </button>
       <mat-slide-toggle class="editor-button" [(ngModel)]="autoSave"
         >Auto-Save</mat-slide-toggle
       >

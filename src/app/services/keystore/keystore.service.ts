@@ -239,6 +239,18 @@ export class KeystoreService {
   }
 
   /**
+   * Decrypts a file by using the provided key
+   */
+  async decryptFileWithKey(file: Blob, key: string): Promise<Blob> {
+    const decryptedFileContent = cryptoJS.AES.decrypt(
+      await file.text(),
+      key
+    ).toString(cryptoJS.enc.Utf8); //TODO: Exception-Handling
+
+    return this.dataURLtoBlob(decryptedFileContent);
+  }
+
+  /**
    * Generates a new Key.
    */
   generateNewKey(): string {

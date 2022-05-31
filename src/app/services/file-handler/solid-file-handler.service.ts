@@ -71,6 +71,14 @@ export class SolidFileHandlerService {
     return await this.keystoreService.decryptFile(file, fileURL);
   }
 
+  async readAndDecryptFileWithKey(fileURL: string, key: string): Promise<Blob> {
+    if (!this.isCryptoDirectory(fileURL)) {
+      throw new NotACryptpadUrlException('file is not in a valid directory');
+    }
+    const file = await this.readFile(fileURL);
+    return await this.keystoreService.decryptFileWithKey(file, key);
+  }
+
   /**
    * writes a file to an url
    * if the given link is a directory the fileName is appended
