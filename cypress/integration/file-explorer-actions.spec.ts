@@ -28,9 +28,9 @@ describe('FileExplorer menu actions', function () {
 
     // wait until dialog closed
     cy.contains('File Upload').should('not.exist');
-
+    // reload folder
     cy.get('#solidcryptpad_expand').click();
-
+    cy.get('#solidcryptpad_expand').click();
     cy.contains(fileName);
   });
 
@@ -50,9 +50,11 @@ describe('FileExplorer menu actions', function () {
     });
     cy.contains('file.txt');
     cy.get('.mat-dialog-actions').contains('button', 'Upload').click();
+
     // wait until dialog closed
     cy.contains('File Upload').should('not.exist');
-
+    // reload folder
+    cy.get('#solidcryptpad_expand').click();
     cy.get('#solidcryptpad_expand').click();
     cy.contains(fileName);
   });

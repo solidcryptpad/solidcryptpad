@@ -5,7 +5,6 @@ describe('File-Explorer Test', function () {
 
   it('Open podUrl and show root folder', function () {
     cy.contains('Files').click();
-
     cy.contains('solidcryptpad');
   });
 
@@ -24,6 +23,13 @@ describe('File-Explorer Test', function () {
       .should('eq', 201);
   });
 
+  it('automatically shows contents of the root folder', function () {
+    cy.givenFile(this.user, `${this.user.podUrl}/solidcryptpad/file.txt`);
+
+    cy.contains('Files').click();
+    cy.contains('file.txt');
+  });
+
   it('Open PodUrl and show new folder', function () {
     const folderUrl = 'test-folder';
     cy.givenFolder(
@@ -31,7 +37,6 @@ describe('File-Explorer Test', function () {
       this.user.podUrl + '/solidcryptpad/' + folderUrl + '/'
     );
     cy.contains('Files').click();
-    cy.get('#solidcryptpad_expand').click();
 
     cy.contains(folderUrl);
   });
@@ -45,8 +50,6 @@ describe('File-Explorer Test', function () {
       fileContent
     );
     cy.contains('Files').click();
-    cy.get('#solidcryptpad_expand').click();
-
     cy.contains(fileUrl);
   });
 
@@ -58,12 +61,9 @@ describe('File-Explorer Test', function () {
       this.user.podUrl + '/solidcryptpad/' + nestedFolderName + '/' + folderName
     );
     cy.contains('Files').click();
-    cy.get('#solidcryptpad_expand').click();
-
     cy.contains(nestedFolderName);
 
     cy.get('#nested_expand').click();
-
     cy.contains(folderName);
   });
 
@@ -75,8 +75,6 @@ describe('File-Explorer Test', function () {
       this.user.podUrl + '/solidcryptpad/' + folderName + '/' + fileName
     );
     cy.contains('Files').click();
-    cy.get('#solidcryptpad_expand').click();
-
     cy.contains(folderName);
 
     cy.get('[id=TestFolderNode] button:first').click();

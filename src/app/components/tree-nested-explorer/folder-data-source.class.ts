@@ -31,25 +31,22 @@ export class FolderDataSource implements DataSource<Node> {
   constructor(
     private treeControl: FlatTreeControl<Node>,
     private solidFileHandlerService: SolidFileHandlerService,
-    private root: string | null
+    private root: string
   ) {}
-
-  public async init() {
-    console.log(this.root);
-    if (this.root != null) {
-      this.dataChange.next([this.createNode(this.root)]);
-    }
-  }
 
   /**
    * registers the event handler that takes care of opening and closing folders
    */
   connect(collectionViewer: CollectionViewer): Observable<Node[]> {
     this.treeControl.expansionModel.changed.subscribe((event) => {
-      //this is correct that way, if the event is not supposed to open/close anything event will hold an empty list in added or removed, therefor the foreach won't do anything
+      // if the event is not supposed to open/close anything, event will hold an empty list in event.added or event.removed
       this.openFolder(event);
       this.closeFolder(event);
     });
+
+    const rootNode = this.createNode(this.root);
+    this.dataChange.next([rootNode]);
+    this.treeControl.expand(rootNode);
 
     return merge(collectionViewer.viewChange, this.dataChange).pipe(
       map(() => this.data)
@@ -61,30 +58,30 @@ export class FolderDataSource implements DataSource<Node> {
    * @param event the change that occured in the tree
    */
   private async openFolder(event: SelectionChange<Node>): Promise<void> {
-    event.added.forEach(async (node) => {
+    for (const node of event.added) {
+      node.isLoading = true;
       try {
-        const index = this.data.indexOf(node);
-        node.isLoading = true;
-        const children = await this.solidFileHandlerService.getContainerContent(
-          node.link
-        );
-
-        const newChildren: Node[] = [];
-        children.forEach(async (child) => {
-          newChildren.push(this.createNode(child, node.level + 1));
-        });
-
-        this.data.splice(index + 1, 0, ...newChildren);
-        node.isLoading = false;
-        this.dataChange.next(this.data);
+        await this.openNode(node);
       } catch (error) {
-        throwWithContext('Error while loading Foldercontent')(error as Error);
+        throwWithContext(`could not open ${node.link}`)(error as Error);
       } finally {
-        // make sure the loading animation stops at the end even if some error occured
         node.isLoading = false;
-        this.dataChange.next(this.data);
       }
-    });
+    }
+    this.dataChange.next(this.data);
+  }
+
+  private async openNode(node: Node): Promise<void> {
+    const childUrls = await this.solidFileHandlerService.getContainerContent(
+      node.link
+    );
+    const childNodes = childUrls.map((childUrl) =>
+      this.createNode(childUrl, node.level + 1)
+    );
+
+    const index = this.data.indexOf(node);
+    this.data.splice(index + 1, 0, ...childNodes);
+    this.dataChange.next(this.data);
   }
 
   private createNode(url: string, level = 1): Node {
