@@ -94,19 +94,27 @@ export class TreeNestedExplorerComponent implements OnInit {
   }
 
   upload(node: Node) {
-    this.dialog.open(FileUploadComponent, {
-      data: {
-        folder: {
-          url: node.link,
+    this.dialog
+      .open(FileUploadComponent, {
+        data: {
+          folder: { url: node.link },
         },
-      },
-    });
+      })
+      .afterClosed()
+      .subscribe(() => {
+        this.dataSource.reloadNode(node);
+      });
   }
 
   createFolder(node: Node) {
-    this.dialog.open(FolderCreateComponent, {
-      data: node,
-    });
+    this.dialog
+      .open(FolderCreateComponent, {
+        data: node,
+      })
+      .afterClosed()
+      .subscribe(() => {
+        this.dataSource.reloadNode(node);
+      });
   }
 
   createFile(node: Node) {

@@ -169,7 +169,7 @@ describe('TreeNestedExplorerComponent', () => {
   });
 
   it('create_folder opens correct dialog', async () => {
-    dialogSpy.open.and.returnValue({ afterClosed: () => of('ret') } as any);
+    dialogSpy.open.and.returnValue({ afterClosed: () => of() } as any);
 
     component.createFolder(new Node('', '', 0, true));
 
@@ -190,6 +190,8 @@ describe('TreeNestedExplorerComponent', () => {
     );
   });
   it('opens upload dialog when calling upload', async () => {
+    dialogSpy.open.and.returnValue({ afterClosed: () => of('ret') } as any);
+
     const node = new Node(
       'https://example.org/solidcryptpad/test/',
       'test',
