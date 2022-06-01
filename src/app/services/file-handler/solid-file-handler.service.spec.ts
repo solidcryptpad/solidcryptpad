@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 
 import { SolidFileHandlerService } from './solid-file-handler.service';
 import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
@@ -366,6 +366,55 @@ describe('SolidFileHandlerService', () => {
 
     service.containerExists('');
     expect(service.getContainer).toHaveBeenCalled();
+  });
+
+  it('ensureContainerExists creates container for non-existing container', fakeAsync(() => {
+    spyOn(service, 'containerExists').and.resolveTo(false);
+    spyOn(service, 'writeContainer').and.resolveTo();
+
+    let created = undefined;
+    service
+      .ensureContainerExists('https://example.org/test/folder/')
+      .then((res) => (created = res));
+    tick();
+
+    expect(created).toBeTrue();
+    expect(service.writeContainer).toHaveBeenCalledWith(
+      'https://example.org/test/folder/'
+    );
+  }));
+
+  it('ensureContainerExists does not create container, if it already exists', fakeAsync(() => {
+    spyOn(service, 'containerExists').and.resolveTo(true);
+    spyOn(service, 'writeContainer').and.resolveTo();
+
+    let created = undefined;
+    service
+      .ensureContainerExists('https://example.org/test/folder/')
+      .then((res) => (created = res));
+    tick();
+
+    expect(created).toBeFalse();
+    expect(service.writeContainer).not.toHaveBeenCalled();
+  }));
+
+  it('isCryptoDirectory returns false for non-crypto-directory', () => {
+    const result = service.isCryptoDirectory('https://example.org/test/foo/');
+    expect(result).toBeFalse();
+  });
+
+  it('isCryptoDirectory returns true for crypto-directory', () => {
+    const result = service.isCryptoDirectory(
+      'https://example.org/solidcryptpad/foo/'
+    );
+    expect(result).toBeTrue();
+  });
+
+  it('getDefaultCryptoDirectoryUrl append default crypto directory to baseUrl', () => {
+    const cryptoDirectoryUrl = service.getDefaultCryptoDirectoryUrl(
+      'https://example.org/test/'
+    );
+    expect(cryptoDirectoryUrl).toBe('https://example.org/test/solidcryptpad/');
   });
 });
 
