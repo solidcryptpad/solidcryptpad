@@ -65,11 +65,11 @@ export class TreeNestedExplorerComponent implements OnInit {
 
       // create solidcryptpad folder if not exists
       if (
-        !this.solidFileHandlerService.isCryptoDirectory(this.rootPath) &&
         !(await this.solidFileHandlerService.containerExists(this.rootPath))
       ) {
         this.rootPath = await this.solidFileHandlerService.createCryptoDirctory(
-          this.rootPath
+          // workaround, because it createCryptoDirectory already appends /solidcryptpad
+          this.rootPath.substring(0, this.rootPath.indexOf('/solidcryptpad'))
         );
         this.notification.info({
           title: 'Created',

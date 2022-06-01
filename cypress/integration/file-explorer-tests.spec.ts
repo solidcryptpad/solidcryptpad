@@ -9,6 +9,21 @@ describe('File-Explorer Test', function () {
     cy.contains('solidcryptpad');
   });
 
+  it('creates /solidcryptpad folder if root is not given and /solidcryptpad does not exist', function () {
+    const solidcryptpadUrl = `${this.user.podUrl}/solidcryptpad/`;
+    cy.intercept('GET', solidcryptpadUrl).as('getSolidcryptpadFolder');
+    cy.intercept('PUT', solidcryptpadUrl).as('putSolidcryptpadFolder');
+
+    // checks if it does exist and creates it
+    cy.contains('Files').click();
+    cy.wait('@getSolidcryptpadFolder')
+      .its('response.statusCode')
+      .should('eq', 404);
+    cy.wait('@putSolidcryptpadFolder')
+      .its('response.statusCode')
+      .should('eq', 201);
+  });
+
   it('Open PodUrl and show new folder', function () {
     const folderUrl = 'test-folder';
     cy.givenFolder(
