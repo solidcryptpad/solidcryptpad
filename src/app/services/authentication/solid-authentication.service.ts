@@ -29,7 +29,6 @@ export abstract class SolidAuthenticationService {
    * @param url
    * @param init
    */
-
   abstract authenticatedFetch(
     url: RequestInfo,
     init?: RequestInit

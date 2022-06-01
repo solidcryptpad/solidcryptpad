@@ -75,15 +75,7 @@ describe('SimpleSolidAuthenticationService', () => {
     );
   });
 
-  it('authenticatedFetch throws if not logged in', () => {
-    mockLoginStatus(false);
-    return expectAsync(
-      service.authenticatedFetch('https://example.org')
-    ).toBeRejectedWithError();
-  });
-
-  it('authenticatedFetch forwards to authnBrowser fetch if logged in', async () => {
-    mockLoginStatus(true);
+  it('authenticatedFetch forwards to authnBrowser fetch', async () => {
     await service.authenticatedFetch('https://example.test', {
       method: 'POST',
     });
