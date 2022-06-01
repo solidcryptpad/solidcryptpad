@@ -56,16 +56,7 @@ export class SimpleSolidAuthenticationService extends SolidAuthenticationService
     url: RequestInfo,
     init?: RequestInit
   ): ReturnType<typeof authnBrowser.fetch> {
-    let loginStatus;
-    this.isLoggedIn().subscribe((status) => {
-      loginStatus = status;
-    });
-
-    if (loginStatus) {
-      return this.authnBrowser.fetch(url, init);
-    } else {
-      throw new RequiresLoginException('Not authenticated yet!');
-    }
+    return this.authnBrowser.fetch(url, init);
   }
 
   override async getWebId(): Promise<string> {
