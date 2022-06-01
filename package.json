@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "test:ci:unit": "ng test --no-watch --no-progress --browsers=ChromeHeadlessCI --code-coverage",
+    "test:ci:unit": "ng test --no-watch --no-progress --browsers=ChromiumHeadlessCI --code-coverage",
     "test:ci:e2e": "npm run start-wait && cypress run",
     "lint": "ng lint",
     "prettier": "prettier -c **.{js,ts,json,html,css,scss,md}",

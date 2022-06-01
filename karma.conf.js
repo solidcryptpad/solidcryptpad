@@ -35,10 +35,10 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: ["Chrome"],
+    browsers: ["Chromium"],
     customLaunchers: {
-      ChromeHeadlessCI: {
-        base: "ChromeHeadless",
+      ChromiumHeadlessCI: {
+        base: "ChromiumHeadless",
         flags: ["--no-sandbox"],
       },
     },
