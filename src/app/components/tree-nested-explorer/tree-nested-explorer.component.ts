@@ -34,18 +34,6 @@ export class TreeNestedExplorerComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // this exists in case of no path is given, todo: remove but without the tests fail
-    this.treeControl = new FlatTreeControl<Node>(
-      this.getLevel,
-      this.isExpandable
-    );
-    this.dataSource = new FolderDataSource(
-      this.treeControl,
-      this.solidFileHandlerService,
-      ''
-    );
-    this.dataSource.init();
-
     this.route.queryParams.subscribe(async (params) => {
       let rootPath: string | undefined = params['url'];
       // check if url is valid
@@ -82,7 +70,6 @@ export class TreeNestedExplorerComponent implements OnInit {
         this.solidFileHandlerService,
         this.rootPath
       );
-      await this.dataSource.init();
     });
   }
 
@@ -116,21 +103,15 @@ export class TreeNestedExplorerComponent implements OnInit {
     });
   }
 
-  create_folder(node: Node) {
-    const dialogRef = this.dialog.open(FolderCreateComponent, {
+  createFolder(node: Node) {
+    this.dialog.open(FolderCreateComponent, {
       data: node,
-    });
-    dialogRef.afterClosed().subscribe((result) => {
-      console.log('folder created', result);
     });
   }
 
-  create_file(node: Node) {
-    const dialogRef = this.dialog.open(FileCreateComponent, {
+  createFile(node: Node) {
+    this.dialog.open(FileCreateComponent, {
       data: node,
-    });
-    dialogRef.afterClosed().subscribe((result) => {
-      console.log('file created', result);
     });
   }
 }
