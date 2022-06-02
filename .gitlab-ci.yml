@@ -40,8 +40,6 @@ test:
   stage: test
   before_script:
     - *install_cached_node_modules
-  variables:
-    CHROME_BIN: /usr/bin/chromium
   script:
     - npm run test:ci:unit
   coverage: /Lines.*?(\d+(?:\.\d+)?)%/

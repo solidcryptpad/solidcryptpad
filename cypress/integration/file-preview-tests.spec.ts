@@ -26,6 +26,8 @@ describe('File-Preview Test', function () {
     cy.get('.mat-dialog-actions').contains('button', 'Upload').click();
     // wait until dialog closed
     cy.contains('File Upload').should('not.exist');
+    // reload folder
+    cy.get('#solidcryptpad_expand').click();
     cy.get('#solidcryptpad_expand').click();
     cy.contains(fileName);
     cy.get('[id="' + fileName + 'Node"] button:last').click();
@@ -57,6 +59,8 @@ describe('File-Preview Test', function () {
     // wait until dialog closed
     cy.contains('File Upload').should('not.exist');
 
+    // reload folder
+    cy.get('#solidcryptpad_expand').click();
     cy.get('#solidcryptpad_expand').click();
 
     cy.contains(fileName);

@@ -34,6 +34,7 @@ describe('TreeNestedExplorerComponent', () => {
     const fileHandlerSpy = jasmine.createSpyObj('SolidFileHandlerSpy', [
       'getContainerContent',
       'isContainer',
+      'isCryptoDirectory',
     ]);
     const matDialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
     const profileServiceSpyObj = jasmine.createSpyObj('ProfileServiceSpy', [
@@ -100,6 +101,9 @@ describe('TreeNestedExplorerComponent', () => {
 
     dialogSpy = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
 
+    // onInit calls this with the url param specified above, which is a crypto directory
+    fileHandlerServiceSpy.isCryptoDirectory.and.returnValue(true);
+
     fixture = TestBed.createComponent(TreeNestedExplorerComponent);
 
     component = fixture.componentInstance;
@@ -122,11 +126,9 @@ describe('TreeNestedExplorerComponent', () => {
   });
 
   it('tree loads elements correctly when opening directory', async () => {
-    fileHandlerServiceSpy.getContainerContent.and.returnValue(
-      Promise.resolve([
-        'example.url.com/solidcryptpad/root0',
-        'example.url.com/solidcryptpad/root1/',
-      ])
+    fileHandlerServiceSpy.getContainerContent.and.returnValues(
+      Promise.resolve(['example.url.com/solidcryptpad/root1/']),
+      Promise.resolve(['example.url.com/solidcryptpad/root1/child.file'])
     );
 
     // for some reason if this is set to true the elements are not added
@@ -137,8 +139,8 @@ describe('TreeNestedExplorerComponent', () => {
 
     const tree = await loader.getHarness(MatTreeHarness);
     const nodes = await tree.getNodes();
-    expect(nodes.length).toEqual(1);
-    await nodes[0].expand();
+    expect(nodes.length).toEqual(2);
+    await nodes[1].expand();
 
     expect((await tree.getNodes()).length).toBe(3);
   });
@@ -154,15 +156,10 @@ describe('TreeNestedExplorerComponent', () => {
     // for some reason if this is set to true the elements are not added
     fileHandlerServiceSpy.isContainer.and.returnValue(true);
 
-    fixture.detectChanges();
     const loader = TestbedHarnessEnvironment.loader(fixture);
 
     const tree = await loader.getHarness(MatTreeHarness);
     let nodes = await tree.getNodes();
-    expect(nodes.length).toEqual(1);
-    await nodes[0].expand();
-
-    nodes = await tree.getNodes();
     expect(nodes.length).toBe(3);
 
     await nodes[0].collapse();
@@ -172,9 +169,9 @@ describe('TreeNestedExplorerComponent', () => {
   });
 
   it('create_folder opens correct dialog', async () => {
-    dialogSpy.open.and.returnValue({ afterClosed: () => of('ret') } as any);
+    dialogSpy.open.and.returnValue({ afterClosed: () => of() } as any);
 
-    component.create_folder(new Node('', '', 0, true));
+    component.createFolder(new Node('', '', 0, true));
 
     expect(dialogSpy.open).toHaveBeenCalledOnceWith(
       FolderCreateComponent,
@@ -185,7 +182,7 @@ describe('TreeNestedExplorerComponent', () => {
   it('create_file opens correct dialog', async () => {
     dialogSpy.open.and.returnValue({ afterClosed: () => of('ret') } as any);
 
-    component.create_file(new Node('', '', 0, true));
+    component.createFile(new Node('', '', 0, true));
 
     expect(dialogSpy.open).toHaveBeenCalledOnceWith(
       FileCreateComponent,
@@ -193,6 +190,8 @@ describe('TreeNestedExplorerComponent', () => {
     );
   });
   it('opens upload dialog when calling upload', async () => {
+    dialogSpy.open.and.returnValue({ afterClosed: () => of('ret') } as any);
+
     const node = new Node(
       'https://example.org/solidcryptpad/test/',
       'test',

@@ -22,15 +22,13 @@ import { throwWithContext } from 'src/app/exceptions/error-options';
   providedIn: 'root',
 })
 export class SolidFileHandlerService {
-  private solidDirectoryName: string;
+  private readonly cryptoDirectoryName = 'solidcryptpad';
 
   constructor(
     private keystoreService: KeystoreService,
     private solidClientService: SolidClientService,
     private authService: SolidAuthenticationService
-  ) {
-    this.solidDirectoryName = 'solidcryptpad';
-  }
+  ) {}
 
   /**
    * reads a file saved at the url
@@ -203,6 +201,20 @@ export class SolidFileHandlerService {
   }
 
   /**
+   * creates the container if it does not exist
+   * @returns true if the folder has been created
+   */
+  async ensureContainerExists(containerUrl: string): Promise<boolean> {
+    if (!(await this.containerExists(containerUrl))) {
+      await this.writeContainer(containerUrl).catch(
+        throwWithContext(`Could not create directory ${containerUrl}`)
+      );
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * gets a list of files that are contained in the folder
    * @param containerURL the link to the folder
    * @returns a list of urls of the objects in the directory
@@ -240,27 +252,15 @@ export class SolidFileHandlerService {
    * @returns if it contains the wanted directoryname
    */
   isCryptoDirectory(url: string): boolean {
-    return url.includes('/' + this.solidDirectoryName + '/');
+    return url.includes('/' + this.cryptoDirectoryName + '/');
   }
 
   /**
-   * creates a solidcryptopaddirectory in the given folder
-   * @param url url to create the directory in
-   * @returns the newly created directory
+   * @param baseUrl url to which the crypto directory path should be added. Must end with /
+   * @returns url of the crypto directory
    */
-  async createCryptoDirctory(url: string): Promise<string> {
-    if (!this.isContainer(url)) {
-      url = url + '/';
-    }
-
-    url = url + this.solidDirectoryName + '/';
-    try {
-      await this.writeContainer(url);
-    } catch (error: any) {
-      throwWithContext("Couldn't create error directory")(error);
-    }
-
-    return url;
+  getDefaultCryptoDirectoryUrl(baseUrl: string): string {
+    return `${baseUrl}${this.cryptoDirectoryName}/`;
   }
 
   /**
