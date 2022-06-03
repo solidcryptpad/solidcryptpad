@@ -16,6 +16,7 @@ import { AlreadyExistsException } from 'src/app/exceptions/already-exists-except
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
 import { BaseException } from 'src/app/exceptions/base-exception';
 import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
+import { FolderNotEmptyException } from 'src/app/exceptions/folder-not-empty-exception';
 
 describe('SolidFileHandlerService', () => {
   let service: SolidFileHandlerService;
@@ -36,6 +37,8 @@ describe('SolidFileHandlerService', () => {
       'createContainerAt',
       'getSolidDataset',
       'getContainedResourceUrlAll',
+      'deleteContainer',
+      'deleteFile',
     ]);
     const keyStoreSpy = jasmine.createSpyObj('KeystoreService', [
       'decryptFile',
@@ -415,6 +418,54 @@ describe('SolidFileHandlerService', () => {
       'https://example.org/test/'
     );
     expect(cryptoDirectoryUrl).toBe('https://example.org/test/solidcryptpad/');
+  });
+
+  it('deleteFolder calls deleteContainer', async () => {
+    const url = 'https://real.url.com';
+    await service.deleteFolder(url);
+    expect(solidClientServiceSpy.deleteContainer).toHaveBeenCalled();
+  });
+
+  it('deleteFolder returns FolderNotEmptyException on 409', async () => {
+    const url = 'https://real.url.com';
+
+    solidClientServiceSpy.deleteContainer.and.throwError(
+      createFetchMock(url, 409)
+    );
+
+    await expectAsync(service.deleteFolder(url)).toBeRejectedWithError(
+      FolderNotEmptyException
+    );
+  });
+
+  it('deleteFolder calls convertError', async () => {
+    const url = 'https://real.url.com';
+
+    solidClientServiceSpy.deleteContainer.and.throwError(new Error());
+
+    spyOn(service, 'convertError');
+
+    await service.deleteFolder(url);
+
+    expect(service.convertError).toHaveBeenCalled();
+  });
+
+  it('deleteFile calls deleteFile', async () => {
+    const url = 'https://real.url.com';
+    await service.deleteFile(url);
+    expect(solidClientServiceSpy.deleteFile).toHaveBeenCalled();
+  });
+
+  it('deleteFile calls convertError', async () => {
+    const url = 'https://real.url.com';
+
+    solidClientServiceSpy.deleteFile.and.throwError(new Error());
+
+    spyOn(service, 'convertError');
+
+    await service.deleteFile(url);
+
+    expect(service.convertError).toHaveBeenCalled();
   });
 });
 
