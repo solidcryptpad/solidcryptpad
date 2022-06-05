@@ -9,6 +9,7 @@ import { WrongMasterPasswordException } from 'src/app/exceptions/wrong-master-pa
 import { KeyNotFoundException } from 'src/app/exceptions/key-not-found-exception';
 import { SetMasterPasswordComponent } from 'src/app/components/set-master-password/set-master-password.component';
 import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
+import { UserLocalStorage } from '../user-local-storage/user-local-storage.service';
 
 @Injectable({
   providedIn: 'root',
@@ -17,7 +18,8 @@ export class KeystoreService {
   constructor(
     private profileService: ProfileService,
     private authService: SolidAuthenticationService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private userLocalStorage: UserLocalStorage
   ) {}
 
   /**
@@ -31,7 +33,7 @@ export class KeystoreService {
    */
   async setMasterPassword(pwd: string) {
     if (pwd) {
-      localStorage.setItem(
+      this.userLocalStorage.setItem(
         this.masterPasswordHashKey,
         cryptoJS.SHA256(pwd + '1205sOlIDCryptPADsalt1502').toString()
       );
@@ -39,10 +41,12 @@ export class KeystoreService {
   }
 
   async getMasterPassword(): Promise<string> {
-    if (!localStorage.getItem(this.masterPasswordHashKey)) {
+    if (!this.userLocalStorage.getItem(this.masterPasswordHashKey)) {
       this.setMasterPassword(await this.openMasterPasswordDialog());
     }
-    const masterPasswordHash = localStorage.getItem(this.masterPasswordHashKey);
+    const masterPasswordHash = this.userLocalStorage.getItem(
+      this.masterPasswordHashKey
+    );
 
     if (!masterPasswordHash) {
       throw new WrongMasterPasswordException('Master password not set');
@@ -52,7 +56,7 @@ export class KeystoreService {
   }
 
   checkMasterPasswordNotSet(): boolean {
-    return !localStorage.getItem(this.masterPasswordHashKey);
+    return !this.userLocalStorage.getItem(this.masterPasswordHashKey);
   }
 
   /**
@@ -95,8 +99,8 @@ export class KeystoreService {
    */
   getLocalKeystore(): KeyEntry[] {
     let keystore = [];
-    if (localStorage.getItem(this.keystoreKey)) {
-      const keystoreString = localStorage.getItem(this.keystoreKey);
+    if (this.userLocalStorage.getItem(this.keystoreKey)) {
+      const keystoreString = this.userLocalStorage.getItem(this.keystoreKey);
       if (keystoreString) {
         keystore = JSON.parse(keystoreString);
       }
@@ -130,7 +134,7 @@ export class KeystoreService {
       }
     }
 
-    localStorage.setItem(this.keystoreKey, JSON.stringify(keystore));
+    this.userLocalStorage.setItem(this.keystoreKey, JSON.stringify(keystore));
     return keystore;
   }
 
@@ -140,7 +144,7 @@ export class KeystoreService {
   async storeKey(fileID: string, key: string) {
     const keystore = await this.loadKeystore();
     keystore.push({ ID: fileID, KEY: key });
-    localStorage.setItem(this.keystoreKey, JSON.stringify(keystore));
+    this.userLocalStorage.setItem(this.keystoreKey, JSON.stringify(keystore));
     await this.writeKeystoreToPod();
   }
 

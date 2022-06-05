@@ -6,6 +6,7 @@ import { Oidc } from '../../models/oidc';
 import { Observable, of } from 'rxjs';
 import { SolidAuthenticationService } from './solid-authentication.service';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
+import { UserLocalStorage } from '../user-local-storage/user-local-storage.service';
 
 @Injectable()
 export class SimpleSolidAuthenticationService extends SolidAuthenticationService {
@@ -17,7 +18,10 @@ export class SimpleSolidAuthenticationService extends SolidAuthenticationService
   // store as member to allow mocking in tests
   private authnBrowser: typeof authnBrowser;
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private userLocalStorage: UserLocalStorage
+  ) {
     super();
     this.authnBrowser = authnBrowser;
   }
@@ -81,8 +85,9 @@ export class SimpleSolidAuthenticationService extends SolidAuthenticationService
 
       // timeout is needed due to race conditions caused by the framework
     });
-    window.localStorage.removeItem('masterPasswordHash');
-    window.localStorage.removeItem('keystore');
+
+    this.userLocalStorage.clear();
+
     return this.authnBrowser.getDefaultSession().logout();
   }
 }
