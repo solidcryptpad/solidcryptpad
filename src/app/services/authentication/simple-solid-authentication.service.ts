@@ -81,6 +81,8 @@ export class SimpleSolidAuthenticationService extends SolidAuthenticationService
 
       // timeout is needed due to race conditions caused by the framework
     });
+    window.localStorage.removeItem('masterPasswordHash');
+    window.localStorage.removeItem('keystore');
     return this.authnBrowser.getDefaultSession().logout();
   }
 }
