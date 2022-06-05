@@ -4,17 +4,20 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class UserLocalStorage implements Storage {
-  private keys: string[] = [];
   private static readonly USER_KEYS_KEY: string = 'USER_STORAGE_KEYS';
 
-  constructor() {
+  private get keys(): string[] {
     const keys = localStorage.getItem(UserLocalStorage.USER_KEYS_KEY);
 
     if (keys == null) {
-      this.keys = [];
+      return [];
     } else {
-      this.keys = JSON.parse(keys);
+      return JSON.parse(keys);
     }
+  }
+
+  private set keys(keys: string[]) {
+    localStorage.setItem(UserLocalStorage.USER_KEYS_KEY, JSON.stringify(keys));
   }
 
   get length(): number {
@@ -22,10 +25,11 @@ export class UserLocalStorage implements Storage {
   }
 
   clear(): void {
-    for (const i of this.keys) {
+    const keys = this.keys;
+    for (const i of keys) {
       localStorage.removeItem(i);
-      this.keys = [];
     }
+    this.keys = [];
     localStorage.removeItem(UserLocalStorage.USER_KEYS_KEY);
   }
 
@@ -45,24 +49,20 @@ export class UserLocalStorage implements Storage {
   removeItem(key: string): void {
     if (!this.keys.includes(key)) return;
 
-    this.keys = this.keys.filter((value) => {
+    const keys = this.keys;
+    this.keys = keys.filter((value) => {
       return value != key;
     });
-    localStorage.setItem(
-      UserLocalStorage.USER_KEYS_KEY,
-      JSON.stringify(this.keys)
-    );
 
     localStorage.removeItem(key);
   }
 
   setItem(key: string, value: string): void {
     if (!this.keys.includes(key)) {
-      this.keys.push(key);
-      localStorage.setItem(
-        UserLocalStorage.USER_KEYS_KEY,
-        JSON.stringify(this.keys)
-      );
+      const keys = this.keys;
+      keys.push(key);
+
+      this.keys = keys;
     }
 
     localStorage.setItem(key, value);
