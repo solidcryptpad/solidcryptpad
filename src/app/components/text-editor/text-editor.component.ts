@@ -16,7 +16,7 @@ import { YXmlFragment } from 'yjs/dist/src/types/YXmlFragment';
 import { fromEvent, debounceTime } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotFoundException } from '../../exceptions/not-found-exception';
-import { LinkShareService } from 'src/app/services/link-share.service';
+import { LinkShareService } from 'src/app/services/link-share/link-share.service';
 
 @Component({
   selector: 'app-text-editor',

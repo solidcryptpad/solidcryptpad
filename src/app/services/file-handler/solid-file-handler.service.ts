@@ -200,6 +200,19 @@ export class SolidFileHandlerService {
     return true;
   }
 
+  async fileExists(fileURL: string): Promise<boolean> {
+    try {
+      await this.readFile(fileURL);
+    } catch (error: any) {
+      if (error instanceof NotFoundException) {
+        return false;
+      }
+      throw error;
+    }
+
+    return true;
+  }
+
   /**
    * creates the container if it does not exist
    * @returns true if the folder has been created

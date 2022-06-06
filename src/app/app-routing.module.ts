@@ -9,6 +9,7 @@ import { FileExplorerComponent } from './components/file-explorer/file-explorer.
 import { KeystoreComponent } from './components/keystore/keystore.component';
 import { FaqComponent } from './components/faq/faq.component';
 import { FilePreviewComponent } from './components/file-preview/file-preview.component';
+import { ShareComponent } from './components/share/share.component';
 
 const routes: Routes = [
   { path: '', component: WelcomeComponent },
@@ -32,6 +33,10 @@ const routes: Routes = [
     path: 'editor',
     component: TextEditorComponent,
     canActivate: [AuthenticatedGuard],
+  },
+  {
+    path: 'share',
+    component: ShareComponent,
   },
   {
     path: 'faq',

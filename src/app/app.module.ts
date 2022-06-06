@@ -47,6 +47,8 @@ import {
 } from './services/authentication/solid-authentication.service.mock';
 import { SolidAuthenticationService } from './services/authentication/solid-authentication.service';
 import { SimpleSolidAuthenticationService } from './services/authentication/simple-solid-authentication.service';
+import { LinkShareComponent } from './components/dialogs/link-share/link-share.component';
+import { ShareComponent } from './components/share/share.component';
 
 @NgModule({
   declarations: [
@@ -68,6 +70,8 @@ import { SimpleSolidAuthenticationService } from './services/authentication/simp
     FileCreateComponent,
     DragAndDropDirective,
     SetMasterPasswordComponent,
+    LinkShareComponent,
+    ShareComponent,
   ],
   imports: [
     MatInputModule,
