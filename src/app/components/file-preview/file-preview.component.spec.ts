@@ -1,6 +1,8 @@
 import {
   ComponentFixture,
+  fakeAsync,
   TestBed,
+  tick,
 } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
@@ -96,47 +98,48 @@ describe('FilePreviewComponent', () => {
     );
   });
 
-  /*
-    it('loadDecryptedFile loads text file and call getTextFileContent', fakeAsync(() => {
-      fileHandlerServiceSpy.readAndDecryptFile.and.returnValue(Promise.resolve(
-        new Blob(["text blabal"], {type: 'text/plain'})
-      ));
-      spyOn(component, 'getTextFileContent');
-      component.loadDecryptedFile()
-      //fixture.detectChanges();
-      expect(component.fileType).toBe("text/plain")
-      expect(component.getTextFileContent).toHaveBeenlled();
+  it('loadDecryptedFile loads text file and call getTextFileContent', fakeAsync(() => {
+    fileHandlerServiceSpy.readAndDecryptFile.and.returnValue(
+      Promise.resolve(new Blob(['text blabal'], { type: 'text/plain' }))
+    );
+    spyOn(component, 'getTextFileContent');
+    component.loadDecryptedFile();
+    tick();
 
-    }));
-  /*
+    expect(component.fileType).toBe('text/plain');
+    expect(component.getTextFileContent).toHaveBeenCalled();
+  }));
 
-    it('loadDecryptedFile loads image and call getImageUrlFromBlob', () => {
-      fileHandlerServiceSpy.readAndDecryptFile.and.returnValue(Promise.resolve(
-        new Blob(["text blabal"], {type: 'image/png'})
-      ));
-      spyOn(component, 'getImageUrlFromBlob');
-      component.loadDecryptedFile()
-      expect(component.fileType).toBe("image/png")
-      expect(component.getImageUrlFromBlob).toHaveBeenCalled();
-    });
+  it('loadDecryptedFile loads image and call getImageUrlFromBlob', fakeAsync(() => {
+    fileHandlerServiceSpy.readAndDecryptFile.and.returnValue(
+      Promise.resolve(new Blob(['text blabal'], { type: 'image/png' }))
+    );
+    spyOn(component, 'getImageUrlFromBlob');
+    component.loadDecryptedFile();
+    tick();
 
-    it('getTextFileContent set textFileContent ', () => {
-      const content = "text blabal";
-      const blob = new Blob([content], {type: 'text/plain'});
-      component.getTextFileContent(blob)
-      expect(component.textFileContent).toBe(content)
-    });
+    expect(component.fileType).toBe('image/png');
+    expect(component.getImageUrlFromBlob).toHaveBeenCalled();
+  }));
 
-    it('loadDecryptedFile loads file and set errorMsg', () => {
-      const contentType = 'ggg/plain'
-      fileHandlerServiceSpy.readAndDecryptFile.and.returnValue(
-        Promise.resolve(
-          new Blob(["text blabal albgh"], {type: contentType})
-        )
-      );
-      component.loadDecryptedFile();
-      console.log(component.errorMsg)
-      expect(component.errorMsg).toBe('No Preview for ContentType: ' + contentType);
-    });
-    //*/
+  it('getTextFileContent set textFileContent ', async () => {
+    const content = 'text blabal';
+    const blob = new Blob([content], { type: 'text/plain' });
+    await component.getTextFileContent(blob);
+
+    expect(component.textFileContent).toBe(content);
+  });
+
+  it('loadDecryptedFile loads file and set errorMsg', fakeAsync(() => {
+    const contentType = 'ggg/plain';
+    fileHandlerServiceSpy.readAndDecryptFile.and.returnValue(
+      Promise.resolve(new Blob(['text blabal albgh'], { type: contentType }))
+    );
+    component.loadDecryptedFile();
+    tick();
+
+    expect(component.errorMsg).toBe(
+      'No Preview for ContentType: ' + contentType
+    );
+  }));
 });

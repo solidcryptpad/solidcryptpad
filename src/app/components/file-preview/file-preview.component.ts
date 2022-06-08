@@ -72,7 +72,6 @@ export class FilePreviewComponent implements OnInit {
     readFile.then(
       (blob) => {
         this.fileType = blob.type;
-        console.log('Preview for File with ContentType: ' + this.fileType);
         if (this.fileType.includes('text')) {
           this.getTextFileContent(blob);
         } else if (this.fileType.includes('image')) {
@@ -92,10 +91,8 @@ export class FilePreviewComponent implements OnInit {
    * Get Text File Content from Blob
    * @param blob
    */
-  getTextFileContent(blob: Blob): void {
-    blob.text().then((text) => {
-      this.textFileContent = text;
-    });
+  async getTextFileContent(blob: Blob): Promise<void> {
+    this.textFileContent = await blob.text();
   }
 
   /**
