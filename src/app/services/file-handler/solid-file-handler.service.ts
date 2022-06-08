@@ -17,6 +17,8 @@ import * as mime from 'mime';
 import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
 import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
 import { throwWithContext } from 'src/app/exceptions/error-options';
+import { FolderNotEmptyException } from 'src/app/exceptions/folder-not-empty-exception';
+import { SolidPodException } from 'src/app/exceptions/solid-pod-exception';
 
 @Injectable({
   providedIn: 'root',
@@ -277,6 +279,36 @@ export class SolidFileHandlerService {
   }
 
   /**
+   * deletes the folder at the url
+   * @param url url of folder to delete
+   */
+  async deleteFolder(url: string): Promise<void> {
+    try {
+      await this.solidClientService.deleteContainer(url, {
+        fetch: this.authService.authenticatedFetch.bind(this.authService),
+      });
+    } catch (error: any) {
+      //is checked here because message doesn't make sense for most cases
+      if (error instanceof FetchError && error.statusCode == 409) {
+        throw new FolderNotEmptyException(
+          'folder has to be empty to be deleted'
+        );
+      }
+      this.convertError(error);
+    }
+  }
+
+  async deleteFile(url: string): Promise<void> {
+    try {
+      await this.solidClientService.deleteFile(url, {
+        fetch: this.authService.authenticatedFetch.bind(this.authService),
+      });
+    } catch (error: any) {
+      this.convertError(error);
+    }
+  }
+
+  /**
    * converts any given error
    * @param error the error to convert
    */
@@ -307,7 +339,11 @@ export class SolidFileHandlerService {
             'A file or folder of that name already exists and cannot be overwritten',
             { cause: error }
           );
-
+        case 500:
+          throw new SolidPodException(
+            'your solid provider returned an error, this might not be our fault',
+            { cause: error }
+          );
         default:
           break;
       }

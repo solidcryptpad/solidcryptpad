@@ -26,11 +26,9 @@ describe('File-Preview Test', function () {
     cy.get('.mat-dialog-actions').contains('button', 'Upload').click();
     // wait until dialog closed
     cy.contains('File Upload').should('not.exist');
-    // reload folder
-    cy.get('#solidcryptpad_expand').click();
-    cy.get('#solidcryptpad_expand').click();
+
     cy.contains(fileName);
-    cy.get('[id="' + fileName + 'Node"] button:last').click();
+    cy.get('[data-cy="open-node"]').click();
     cy.contains('Preview from ');
     cy.contains(fileName);
     cy.contains('open in Editor');
@@ -59,12 +57,8 @@ describe('File-Preview Test', function () {
     // wait until dialog closed
     cy.contains('File Upload').should('not.exist');
 
-    // reload folder
-    cy.get('#solidcryptpad_expand').click();
-    cy.get('#solidcryptpad_expand').click();
-
     cy.contains(fileName);
-    cy.get('[id="' + fileName + 'Node"] button:last').click();
+    cy.get('[data-cy="open-node"]').click();
     cy.contains('Preview from ');
     cy.contains(fileName);
     cy.contains('open in Editor');
@@ -98,7 +92,7 @@ describe('File-Preview Test', function () {
     cy.get('#solidcryptpad_expand').click();
 
     cy.contains(fileName);
-    cy.get('[id="' + fileName + 'Node"] button:last').click();
+    cy.get('[data-cy="open-node"]').click();
     cy.contains('Preview from ');
     cy.contains(fileName);
     cy.contains('open in Editor');

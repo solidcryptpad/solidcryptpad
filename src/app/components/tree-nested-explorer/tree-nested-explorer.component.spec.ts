@@ -35,6 +35,8 @@ describe('TreeNestedExplorerComponent', () => {
       'getContainerContent',
       'isContainer',
       'isCryptoDirectory',
+      'deleteFolder',
+      'deleteFile',
     ]);
     const matDialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
     const profileServiceSpyObj = jasmine.createSpyObj('ProfileServiceSpy', [

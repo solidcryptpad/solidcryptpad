@@ -101,8 +101,8 @@ export class TreeNestedExplorerComponent implements OnInit {
         },
       })
       .afterClosed()
-      .subscribe(() => {
-        this.dataSource.reloadNode(node);
+      .subscribe(async () => {
+        await this.dataSource.reloadNode(node);
       });
   }
 
@@ -112,8 +112,8 @@ export class TreeNestedExplorerComponent implements OnInit {
         data: node,
       })
       .afterClosed()
-      .subscribe(() => {
-        this.dataSource.reloadNode(node);
+      .subscribe(async () => {
+        await this.dataSource.reloadNode(node);
       });
   }
 
@@ -121,5 +121,15 @@ export class TreeNestedExplorerComponent implements OnInit {
     this.dialog.open(FileCreateComponent, {
       data: node,
     });
+  }
+
+  async deleteFolder(node: Node) {
+    await this.solidFileHandlerService.deleteFolder(node.link);
+    await this.dataSource.reloadNode(this.dataSource.getParent(node));
+  }
+
+  async deleteFile(node: Node) {
+    await this.solidFileHandlerService.deleteFile(node.link);
+    await this.dataSource.reloadNode(this.dataSource.getParent(node));
   }
 }

@@ -93,9 +93,25 @@ export class FolderDataSource implements DataSource<Node> {
    * closes and reloads node
    * @param node the node to reload
    */
-  public reloadNode(node: Node) {
+  public async reloadNode(node: Node) {
     this.closeNode(node);
-    this.openNode(node);
+    await this.openNode(node);
+  }
+
+  /**
+   * returns the parent node of the node or itself if root element
+   * @param node the child node
+   * @returns parent node or itself if it is the root element
+   */
+  public getParent(node: Node): Node {
+    const index = this.data.indexOf(node);
+
+    for (let i = index; i >= 0; i--) {
+      if (node.level > this.data[i].level) {
+        return this.data[i];
+      }
+    }
+    return node;
   }
 
   /**
