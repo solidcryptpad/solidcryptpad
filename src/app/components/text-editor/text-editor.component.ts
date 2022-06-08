@@ -17,6 +17,8 @@ import { fromEvent, debounceTime } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotFoundException } from '../../exceptions/not-found-exception';
 import { LinkShareService } from 'src/app/services/link-share/link-share.service';
+import { MatDialog } from '@angular/material/dialog';
+import { LinkShareComponent } from '../dialogs/link-share/link-share.component';
 
 @Component({
   selector: 'app-text-editor',
@@ -41,7 +43,8 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     private fileService: SolidFileHandlerService,
     private linkShareService: LinkShareService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -192,9 +195,14 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     this.router.navigate(['/editor'], { queryParams: { filename: '' } });
   }
 
-  async shareFile() {
-    const link = await this.linkShareService.createShareLink(this.fileUrl);
+  async shareFileReadOnly() {
+    const link = await this.linkShareService.createReadOnlyShareLink(
+      this.fileUrl
+    );
     console.log(link);
+    this.dialog.open(LinkShareComponent, {
+      data: link,
+    });
   }
 
   /**

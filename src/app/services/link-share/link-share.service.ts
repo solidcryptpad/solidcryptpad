@@ -26,15 +26,29 @@ export class LinkShareService {
     private profileService: ProfileService
   ) {}
 
-  async createShareLink(fileURL: string): Promise<string> {
+  groupTtlFilePath = 'solidcryptpad/myGroups.ttl';
+
+  baseShareUrl =
+    window.location.protocol +
+    '//' +
+    window.location.hostname +
+    (window.location.port ? `:${window.location.port}` : '') +
+    '/share?';
+
+  /**
+   * Creates a READ ONLY share link for the given file.
+   * Access is granted by adding the recipient to a group
+   * which has permissions to view the file. Such a group
+   * has to be prepended by its permission (currently, READ-...)
+   * followed by a cryptographically random string.
+   * @param fileURL
+   */
+  async createReadOnlyShareLink(fileURL: string): Promise<string> {
     const key = await this.keystoreService.getKey(fileURL);
     const encodedKey = btoa(key);
 
     await this.createGroupFileIfNotExists();
-    // generate groupKey
-    const groupKey = this.keystoreService.generateNewKey();
-    const podUrls = await this.profileService.getPodUrls();
-    const groupKeyUrl = podUrls[0] + 'solidcryptpad/myGroups.ttl#' + groupKey;
+    const groupKeyUrl = await this.generateReadOnlyGroupKeyUrl();
 
     await this.giveGroupPermissionsRead(fileURL, groupKeyUrl);
 
@@ -45,41 +59,24 @@ export class LinkShareService {
     };
     const urlParams = new URLSearchParams(data);
 
-    const link = `http://localhost:4200/share?` + urlParams.toString();
-
-    return link;
+    return this.baseShareUrl + urlParams.toString();
   }
 
+  /**
+   * Creates the myGroups.ttl file if it does not exist already,
+   * and sets its public access to append-only.
+   */
   async createGroupFileIfNotExists() {
-    // check if myGroups.ttl exists
-    const podUrls = await this.profileService.getPodUrls();
-    const path = podUrls[0] + 'solidcryptpad/myGroups.ttl';
+    const path = await this.getGroupTtlFileLocation();
     const groupFileExists = await this.fileService.fileExists(path);
 
     if (!groupFileExists) {
-      // create group
-      const blobby = new Blob([], { type: 'text/turtle' });
-      await this.fileService.writeFile(blobby, path);
+      await this.fileService.writeFile(
+        new Blob([], { type: 'text/turtle' }),
+        path
+      );
 
-      const myFileWithAcl = await getFileWithAcl(path, {
-        fetch: this.authService.authenticatedFetch.bind(this.authService),
-      });
-
-      let resourceAcl;
-
-      if (!hasResourceAcl(myFileWithAcl)) {
-        if (!hasAccessibleAcl(myFileWithAcl)) {
-          throw new Error('Acl file is inaccessible');
-        }
-
-        if (!hasFallbackAcl(myFileWithAcl)) {
-          throw new Error('Current user does not have permission to load acl');
-        }
-
-        resourceAcl = createAclFromFallbackAcl(myFileWithAcl);
-      } else {
-        resourceAcl = getResourceAcl(myFileWithAcl);
-      }
+      const [resourceAcl, myFileWithAcl] = await this.getAclForFile(path);
 
       const updatedAcl = setPublicResourceAccess(resourceAcl, {
         read: false,
@@ -94,8 +91,13 @@ export class LinkShareService {
     }
   }
 
-  async giveGroupPermissionsRead(fileUrl: string, groupUrl: string) {
-    const myFileWithAcl = await getFileWithAcl(fileUrl, {
+  /**
+   * Returns a file's Acl and the file itself. If the file does not currently have
+   * an acl then one is created for it.
+   * @param path of the file whose acl is requested
+   */
+  async getAclForFile(path: string) {
+    const myFileWithAcl = await getFileWithAcl(path, {
       fetch: this.authService.authenticatedFetch.bind(this.authService),
     });
 
@@ -115,7 +117,11 @@ export class LinkShareService {
       resourceAcl = getResourceAcl(myFileWithAcl);
     }
 
-    console.log("this file's resourceAcl: ", resourceAcl);
+    return [resourceAcl, myFileWithAcl] as const;
+  }
+
+  async giveGroupPermissionsRead(fileUrl: string, groupUrl: string) {
+    const [resourceAcl, myFileWithAcl] = await this.getAclForFile(fileUrl);
 
     const updatedAcl = setGroupResourceAccess(resourceAcl, groupUrl, {
       read: true,
@@ -129,7 +135,25 @@ export class LinkShareService {
     });
   }
 
-  async addWebIdToGroup(webId: string, groupUrl: string) {
+  /**
+   * Generates a cryptographically random group key url for a read only
+   * group.
+   */
+  async generateReadOnlyGroupKeyUrl(): Promise<string> {
+    const groupKey = 'READ-' + this.keystoreService.generateNewKey();
+    const groupTtlFileLocation = await this.getGroupTtlFileLocation();
+    return groupTtlFileLocation + '#' + groupKey;
+  }
+
+  /**
+   * Inserts the current user's webId to the specified group
+   * by using a so called n3-patch. Further information
+   * can be found under https://solid.github.io/specification/protocol#n3-patch
+   * @param webId the webId to be added
+   * @param groupUrl the group to which the webId is to be added
+   */
+  async addWebIdToGroup(groupUrl: string) {
+    const webId = await this.authService.getWebId();
     const n3Patch = `
 @prefix solid: <http://www.w3.org/ns/solid/terms#>.
 @prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
@@ -137,7 +161,6 @@ export class LinkShareService {
 _:addAccess a solid:InsertDeletePatch;
   solid:inserts { <${groupUrl}> vcard:hasMember <${webId}>. }.
 `;
-    // send as PATCH to fileUrl
 
     await window.fetch(groupUrl, {
       method: 'PATCH',
@@ -146,5 +169,13 @@ _:addAccess a solid:InsertDeletePatch;
       },
       body: n3Patch,
     });
+  }
+
+  /**
+   * Returns the location of myGroups.ttl
+   */
+  async getGroupTtlFileLocation() {
+    const podUrls = await this.profileService.getPodUrls();
+    return podUrls[0] + this.groupTtlFilePath;
   }
 }

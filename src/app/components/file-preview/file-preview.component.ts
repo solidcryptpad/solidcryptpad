@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SolidFileHandlerService } from '../../services/file-handler/solid-file-handler.service';
 
@@ -7,18 +7,23 @@ import { SolidFileHandlerService } from '../../services/file-handler/solid-file-
   templateUrl: './file-preview.component.html',
   styleUrls: ['./file-preview.component.scss'],
 })
-export class FilePreviewComponent {
+export class FilePreviewComponent implements OnInit {
   fileUrl = '';
   textFileContent = 'no content';
   fileType = '';
   errorMsg = '';
   imageUrl: string | ArrayBuffer | null | undefined;
+  key = '';
+  keyInUrl: boolean;
+  group = '';
 
   constructor(
     private fileService: SolidFileHandlerService,
     private route: ActivatedRoute,
     private router: Router
-  ) {}
+  ) {
+    this.keyInUrl = false;
+  }
 
   ngOnInit(): void {
     this.setupFilenameFromParams();
@@ -37,6 +42,15 @@ export class FilePreviewComponent {
         console.debug('no filename given');
         //Redirect to files
       }
+
+      if (params['key']) {
+        this.keyInUrl = true;
+        this.key = params['key'];
+      }
+
+      if (params['group']) {
+        this.group = params['group'];
+      }
     });
   }
 
@@ -44,7 +58,18 @@ export class FilePreviewComponent {
    * loads the current file and decrypted the File
    */
   loadDecryptedFile(): void {
-    this.fileService.readAndDecryptFile(this.fileUrl).then(
+    let readFile;
+
+    if (this.keyInUrl) {
+      readFile = this.fileService.readAndDecryptFileWithKey(
+        this.fileUrl,
+        atob(this.key)
+      );
+    } else {
+      readFile = this.fileService.readAndDecryptFile(this.fileUrl);
+    }
+
+    readFile.then(
       (blob) => {
         this.fileType = blob.type;
         console.log('Preview for File with ContentType: ' + this.fileType);
@@ -88,5 +113,9 @@ export class FilePreviewComponent {
 
   open(link: string) {
     this.router.navigateByUrl(`/editor?file=${link}`);
+  }
+
+  isWriteable() {
+    return this.group.includes('WRITE');
   }
 }

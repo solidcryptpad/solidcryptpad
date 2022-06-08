@@ -37,6 +37,7 @@ const routes: Routes = [
   {
     path: 'share',
     component: ShareComponent,
+    canActivate: [AuthenticatedGuard],
   },
   {
     path: 'faq',

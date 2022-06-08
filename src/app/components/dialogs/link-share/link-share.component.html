@@ -1,1 +1,13 @@
-<p>link-share works!</p>
+<h1 mat-dialog-title>Share File via link</h1>
+<div mat-dialog-content>
+  <p>
+    Here is your freshly baked link for sharing the file with your
+    collaborators.
+  </p>
+
+  <code>{{ this.data }}</code>
+</div>
+<div mat-dialog-actions>
+  <button mat-button [cdkCopyToClipboard]="data">Copy to clipboard</button>
+  <button mat-button (click)="cancel()">Close</button>
+</div>
