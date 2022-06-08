@@ -116,6 +116,10 @@ export class FilePreviewComponent implements OnInit {
   }
 
   isWriteable() {
-    return this.group.includes('WRITE');
+    if (this.group != '') {
+      return this.group.includes('WRITE');
+    }
+
+    return true;
   }
 }
