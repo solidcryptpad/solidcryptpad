@@ -5,6 +5,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ProfileService } from 'src/app/services/profile/profile.service';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
+import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
 
 describe('TextEditorComponent', () => {
   let component: TextEditorComponent;
@@ -13,6 +14,10 @@ describe('TextEditorComponent', () => {
   let fileServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
 
   beforeEach(async () => {
+    const authenticationSpy = jasmine.createSpyObj(
+      'SolidAuthenticationService',
+      ['getWebId']
+    );
     const profileServiceSpyObj = jasmine.createSpyObj('ProfileServiceSpy', [
       'getPodUrls',
     ]);
@@ -32,6 +37,10 @@ describe('TextEditorComponent', () => {
         {
           provide: SolidFileHandlerService,
           useValue: fileServiceSpyObj,
+        },
+        {
+          provide: SolidAuthenticationService,
+          useValue: authenticationSpy,
         },
       ],
     }).compileComponents();
