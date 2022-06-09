@@ -35,16 +35,6 @@ describe('KeystoreService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should set master password', async () => {
-    service.setMasterPassword('testpwd');
-    expect(await service.getMasterPassword()).not.toEqual('');
-  });
-
-  it('should hash master password', async () => {
-    service.setMasterPassword('testpwd');
-    expect(await service.getMasterPassword()).not.toEqual('testpwd');
-  });
-
   it('should load keystore from localstorage', () => {
     const key = 'somekey';
     const id = 'testURL/test';
