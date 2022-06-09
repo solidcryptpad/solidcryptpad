@@ -9,8 +9,7 @@ describe('Folder sharing', function () {
     cy.createRandomAccount().as('friend');
   });
 
-  // this test case does not succeed, because our link sharing mechanism does not work with CSS currently
-  it.skip('can browse files after sharing', function () {
+  it('can browse files after sharing', function () {
     setupTestFolder(this.owner);
 
     cy.contains('Files').click();
@@ -38,10 +37,12 @@ describe('Folder sharing', function () {
       cy.log(link);
       cy.visit(link as string);
     });
+    cy.get('#nested_expand').click();
 
     cy.contains('test');
-    cy.contains('nested');
     cy.contains('file.txt');
+    cy.contains('nested');
+    cy.contains('nested.txt');
   });
 });
 

@@ -17,6 +17,13 @@ import { SolidFileHandlerService } from '../file-handler/solid-file-handler.serv
 import { ProfileService } from '../profile/profile.service';
 import { EncryptionService } from '../encryption/encryption/encryption.service';
 
+interface Permissions {
+  read: boolean;
+  append: boolean;
+  write: boolean;
+  control: boolean;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -30,6 +37,7 @@ export class LinkShareService {
   ) {}
 
   groupTtlFilePath = 'solidcryptpad/myGroups.ttl';
+  private readonly groupsFolderPath = 'solidcryptpad/groups/';
 
   baseShareUrl =
     window.location.protocol +
@@ -66,13 +74,28 @@ export class LinkShareService {
   }
 
   /**
-   * Creates a READ ONLY share link for the given folder.
+   * Creates a read only share link for the given folder.
    */
   async createReadOnlyFolderLink(folderURL: string): Promise<string> {
     // TODO: somehow give access to a keystore for this folder
-    await this.createGroupFileIfNotExists();
-    const groupKeyUrl = await this.generateReadOnlyGroupKeyUrl();
+    await this.ensureGroupsFolderExists();
 
+    // secret group file, but publicly readable if the name is known
+    const groupUrl = await this.generateSecretGroupFileName();
+    await this.fileService.writeFile(
+      new Blob([], { type: 'text/turtle' }),
+      groupUrl
+    );
+    await this.setItemPublicPermissions(groupUrl, {
+      append: true,
+      read: true,
+      write: false,
+      control: false,
+    });
+
+    // give group access to read the folder and all items in it without an acl file
+    // TODO: also give all files with custom acl access to this link?
+    const groupKeyUrl = `${groupUrl}#sharing-group`;
     await this.giveGroupDefaultPermissionRead(folderURL, groupKeyUrl);
     await this.giveGroupPermissionsRead(folderURL, groupKeyUrl);
 
@@ -82,6 +105,30 @@ export class LinkShareService {
     });
 
     return this.baseShareUrl + urlParams.toString();
+  }
+
+  /**
+   * Creates groups folder with appropriate permissions if it does not exist
+   */
+  async ensureGroupsFolderExists() {
+    const groupsFolderUrl = await this.getGroupsFolderUrl();
+    if (!(await this.fileService.containerExists(groupsFolderUrl))) {
+      await this.createSecretFolder(groupsFolderUrl);
+    }
+  }
+
+  /**
+   * Create a folder where only the creator has access
+   */
+  async createSecretFolder(folderUrl: string) {
+    await this.fileService.writeContainer(folderUrl);
+    // TODO: consider creating ACL from scratch, to prevent inheriting bad defaults
+    await this.setItemPublicPermissions(folderUrl, {
+      append: false,
+      read: false,
+      write: false,
+      control: false,
+    });
   }
 
   /**
@@ -111,6 +158,17 @@ export class LinkShareService {
         fetch: this.authService.authenticatedFetch.bind(this.authService),
       });
     }
+  }
+
+  async setItemPublicPermissions(
+    fileUrl: string,
+    permissions: Permissions
+  ): Promise<void> {
+    const [resourceAcl, myFileWithAcl] = await this.getAclForFile(fileUrl);
+    const updatedAcl = setPublicResourceAccess(resourceAcl, permissions);
+    await saveAclFor(myFileWithAcl, updatedAcl, {
+      fetch: this.authService.authenticatedFetch.bind(this.authService),
+    });
   }
 
   /**
@@ -185,6 +243,12 @@ export class LinkShareService {
     return groupTtlFileLocation + '#' + groupKey;
   }
 
+  async generateSecretGroupFileName(): Promise<string> {
+    const secret = this.encryptionService.generateNewKey();
+    const groupFolderUrl = await this.getGroupsFolderUrl();
+    return `${groupFolderUrl}group-${secret}.ttl`;
+  }
+
   /**
    * Inserts the current user's webId to the specified group
    * by using a so called n3-patch. Further information
@@ -217,5 +281,10 @@ _:addAccess a solid:InsertDeletePatch;
   async getGroupTtlFileLocation() {
     const podUrls = await this.profileService.getPodUrls();
     return podUrls[0] + this.groupTtlFilePath;
+  }
+
+  async getGroupsFolderUrl() {
+    const podUrls = await this.profileService.getPodUrls();
+    return podUrls[0] + this.groupsFolderPath;
   }
 }
