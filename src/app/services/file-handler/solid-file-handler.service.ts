@@ -9,7 +9,7 @@ import { AlreadyExistsException } from 'src/app/exceptions/already-exists-except
 import { InvalidUrlException } from 'src/app/exceptions/invalid-url-exception';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
-import { KeystoreService } from '../keystore/keystore.service';
+import { KeystoreService } from '../encryption/keystore/keystore.service';
 import { BaseException } from 'src/app/exceptions/base-exception';
 import { SolidClientService } from '../module-wrappers/solid-client/solid-client.service';
 import { NotFoundException } from 'src/app/exceptions/not-found-exception';

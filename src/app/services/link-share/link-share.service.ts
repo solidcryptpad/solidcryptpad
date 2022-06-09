@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { KeystoreService } from '../keystore/keystore.service';
+import { KeystoreService } from '../encryption/keystore/keystore.service';
 import {
   createAclFromFallbackAcl,
   getFileWithAcl,
@@ -14,6 +14,7 @@ import {
 import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
 import { SolidFileHandlerService } from '../file-handler/solid-file-handler.service';
 import { ProfileService } from '../profile/profile.service';
+import { EncryptionService } from '../encryption/encryption/encryption.service';
 
 @Injectable({
   providedIn: 'root',
@@ -21,6 +22,7 @@ import { ProfileService } from '../profile/profile.service';
 export class LinkShareService {
   constructor(
     private keystoreService: KeystoreService,
+    private encryptionService: EncryptionService,
     private authService: SolidAuthenticationService,
     private fileService: SolidFileHandlerService,
     private profileService: ProfileService
@@ -140,7 +142,7 @@ export class LinkShareService {
    * group.
    */
   async generateReadOnlyGroupKeyUrl(): Promise<string> {
-    const groupKey = 'READ-' + this.keystoreService.generateNewKey();
+    const groupKey = 'READ-' + this.encryptionService.generateNewKey();
     const groupTtlFileLocation = await this.getGroupTtlFileLocation();
     return groupTtlFileLocation + '#' + groupKey;
   }
