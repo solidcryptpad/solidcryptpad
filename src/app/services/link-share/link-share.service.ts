@@ -8,6 +8,7 @@ import {
   hasFallbackAcl,
   hasResourceAcl,
   saveAclFor,
+  setGroupDefaultAccess,
   setGroupResourceAccess,
   setPublicResourceAccess,
 } from '@inrupt/solid-client';
@@ -60,6 +61,25 @@ export class LinkShareService {
       group: groupKeyUrl,
     };
     const urlParams = new URLSearchParams(data);
+
+    return this.baseShareUrl + urlParams.toString();
+  }
+
+  /**
+   * Creates a READ ONLY share link for the given folder.
+   */
+  async createReadOnlyFolderLink(folderURL: string): Promise<string> {
+    // TODO: somehow give access to a keystore for this folder
+    await this.createGroupFileIfNotExists();
+    const groupKeyUrl = await this.generateReadOnlyGroupKeyUrl();
+
+    await this.giveGroupDefaultPermissionRead(folderURL, groupKeyUrl);
+    await this.giveGroupPermissionsRead(folderURL, groupKeyUrl);
+
+    const urlParams = new URLSearchParams({
+      folder: folderURL,
+      group: groupKeyUrl,
+    });
 
     return this.baseShareUrl + urlParams.toString();
   }
@@ -126,6 +146,24 @@ export class LinkShareService {
     const [resourceAcl, myFileWithAcl] = await this.getAclForFile(fileUrl);
 
     const updatedAcl = setGroupResourceAccess(resourceAcl, groupUrl, {
+      read: true,
+      write: false,
+      append: false,
+      control: false,
+    });
+
+    await saveAclFor(myFileWithAcl, updatedAcl, {
+      fetch: this.authService.authenticatedFetch.bind(this.authService),
+    });
+  }
+
+  /**
+   * Gives this group read permissions for all contained resources of the folder
+   */
+  async giveGroupDefaultPermissionRead(folderUrl: string, groupUrl: string) {
+    const [resourceAcl, myFileWithAcl] = await this.getAclForFile(folderUrl);
+
+    const updatedAcl = setGroupDefaultAccess(resourceAcl, groupUrl, {
       read: true,
       write: false,
       append: false,

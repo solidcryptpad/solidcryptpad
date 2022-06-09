@@ -18,6 +18,7 @@ import { FileUploadComponent } from '../dialogs/file-upload/file-upload.componen
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ProfileService } from 'src/app/services/profile/profile.service';
 import { NotificationService } from 'src/app/services/notification/notification.service';
+import { LinkShareService } from 'src/app/services/link-share/link-share.service';
 
 describe('TreeNestedExplorerComponent', () => {
   let component: TreeNestedExplorerComponent;
@@ -26,6 +27,7 @@ describe('TreeNestedExplorerComponent', () => {
   let profileServiceSpy: jasmine.SpyObj<ProfileService>;
   let dialogSpy: jasmine.SpyObj<MatDialog>;
   let notificationSpy: jasmine.SpyObj<NotificationService>;
+  let linkShareSpy: jasmine.SpyObj<LinkShareService>;
 
   beforeEach(async () => {
     const notificationServiceSpy = jasmine.createSpyObj('NotificationService', [
@@ -41,6 +43,9 @@ describe('TreeNestedExplorerComponent', () => {
     const matDialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
     const profileServiceSpyObj = jasmine.createSpyObj('ProfileServiceSpy', [
       'getPodUrls',
+    ]);
+    const linkShareServiceSpy = jasmine.createSpyObj('LinkShareSpy', [
+      'createReadOnlyFolderLink',
     ]);
 
     const dialogHandlerSpy = jasmine.createSpyObj('MatDialog', [
@@ -85,6 +90,7 @@ describe('TreeNestedExplorerComponent', () => {
           useValue: matDialogSpy,
         },
         { provide: NotificationService, useValue: notificationServiceSpy },
+        { provide: LinkShareService, useValue: linkShareServiceSpy },
       ],
     }).compileComponents();
 
@@ -100,6 +106,10 @@ describe('TreeNestedExplorerComponent', () => {
     profileServiceSpy = TestBed.inject(
       ProfileService
     ) as jasmine.SpyObj<ProfileService>;
+    // eslint-disable-next-line unused-imports/no-unused-vars
+    linkShareSpy = TestBed.inject(
+      LinkShareService
+    ) as jasmine.SpyObj<LinkShareService>;
 
     dialogSpy = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
 
