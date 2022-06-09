@@ -3,7 +3,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatTreeHarness } from '@angular/material/tree/testing';
 import { TreeNestedExplorerComponent } from './tree-nested-explorer.component';
-import { Node } from './folder-data-source.class';
+import { FolderDataSource, Node } from './folder-data-source.class';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 import { MatTreeModule } from '@angular/material/tree';
 import { ActivatedRoute } from '@angular/router';
@@ -171,9 +171,12 @@ describe('TreeNestedExplorerComponent', () => {
   });
 
   it('create_folder opens correct dialog', async () => {
-    dialogSpy.open.and.returnValue({ afterClosed: () => of() } as any);
+    dialogSpy.open.and.returnValue({ afterClosed: () => of('ret') } as any);
+    component.dataSource = jasmine.createSpyObj('dataSource', [
+      'reloadNode',
+    ]) as jasmine.SpyObj<FolderDataSource>;
 
-    component.createFolder(new Node('', '', 0, true));
+    await component.createFolder(new Node('', '', 0, true));
 
     expect(dialogSpy.open).toHaveBeenCalledOnceWith(
       FolderCreateComponent,
@@ -193,6 +196,9 @@ describe('TreeNestedExplorerComponent', () => {
   });
   it('opens upload dialog when calling upload', async () => {
     dialogSpy.open.and.returnValue({ afterClosed: () => of('ret') } as any);
+    component.dataSource = jasmine.createSpyObj('dataSource', [
+      'reloadNode',
+    ]) as jasmine.SpyObj<FolderDataSource>;
 
     const node = new Node(
       'https://example.org/solidcryptpad/test/',
@@ -202,7 +208,7 @@ describe('TreeNestedExplorerComponent', () => {
       false
     );
 
-    component.upload(node);
+    await component.upload(node);
 
     expect(dialogSpy.open).toHaveBeenCalledWith(FileUploadComponent, {
       data: {

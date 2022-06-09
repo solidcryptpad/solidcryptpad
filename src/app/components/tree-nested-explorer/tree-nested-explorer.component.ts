@@ -10,6 +10,7 @@ import { ProfileService } from 'src/app/services/profile/profile.service';
 import { FolderDataSource, Node } from './folder-data-source.class';
 import { NotificationService } from 'src/app/services/notification/notification.service';
 import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
+import { firstValueFrom } from 'rxjs';
 
 /**
  * represents an element in the tree
@@ -93,28 +94,22 @@ export class TreeNestedExplorerComponent implements OnInit {
     }
   }
 
-  upload(node: Node) {
-    this.dialog
-      .open(FileUploadComponent, {
-        data: {
-          folder: { url: node.link },
-        },
-      })
-      .afterClosed()
-      .subscribe(async () => {
-        await this.dataSource.reloadNode(node);
-      });
+  async upload(node: Node) {
+    const dialogRef = this.dialog.open(FileUploadComponent, {
+      data: {
+        folder: { url: node.link },
+      },
+    });
+    await firstValueFrom(dialogRef.afterClosed());
+    this.dataSource.reloadNode(node);
   }
 
-  createFolder(node: Node) {
-    this.dialog
-      .open(FolderCreateComponent, {
-        data: node,
-      })
-      .afterClosed()
-      .subscribe(async () => {
-        await this.dataSource.reloadNode(node);
-      });
+  async createFolder(node: Node) {
+    const dialogRef = this.dialog.open(FolderCreateComponent, {
+      data: node,
+    });
+    await firstValueFrom(dialogRef.afterClosed());
+    this.dataSource.reloadNode(node);
   }
 
   createFile(node: Node) {
