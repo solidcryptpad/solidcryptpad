@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
+import { SolidAuthenticationService } from '../../authentication/solid-authentication.service';
 
 import { KeystoreService } from './keystore.service';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
@@ -35,12 +35,6 @@ describe('KeystoreService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should create unique keys', () => {
-    const key1 = service.generateNewKey();
-    const key2 = service.generateNewKey();
-    expect(key1).not.toBe(key2);
-  });
-
   it('should set master password', async () => {
     service.setMasterPassword('testpwd');
     expect(await service.getMasterPassword()).not.toEqual('');
@@ -52,7 +46,7 @@ describe('KeystoreService', () => {
   });
 
   it('should load keystore from localstorage', () => {
-    const key = service.generateNewKey();
+    const key = 'somekey';
     const id = 'testURL/test';
     const keystore = [{ ID: id, KEY: key }];
     localStorage.setItem('keystore', JSON.stringify(keystore));
@@ -60,7 +54,7 @@ describe('KeystoreService', () => {
   });
 
   it('should find key in localstorage', () => {
-    const key = service.generateNewKey();
+    const key = 'somekey';
     const id = 'testURL/test';
     const keystore = [{ ID: id, KEY: key }];
     localStorage.setItem('keystore', JSON.stringify(keystore));

@@ -11,7 +11,7 @@ import {
   WithResourceInfo,
 } from '@inrupt/solid-client';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
-import { KeystoreService } from '../keystore/keystore.service';
+import { KeystoreService } from '../encryption/keystore/keystore.service';
 import { AlreadyExistsException } from 'src/app/exceptions/already-exists-exception';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
 import { BaseException } from 'src/app/exceptions/base-exception';
