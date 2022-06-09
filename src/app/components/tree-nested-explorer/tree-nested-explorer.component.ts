@@ -2,6 +2,7 @@ import { FlatTreeControl } from '@angular/cdk/tree';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
+import { LinkShareService } from 'src/app/services/link-share/link-share.service';
 import { MatDialog } from '@angular/material/dialog';
 import { FileUploadComponent } from '../dialogs/file-upload/file-upload.component';
 import { FolderCreateComponent } from '../dialogs/folder-create/folder-create.component';
@@ -11,6 +12,7 @@ import { FolderDataSource, Node } from './folder-data-source.class';
 import { NotificationService } from 'src/app/services/notification/notification.service';
 import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
 import { firstValueFrom } from 'rxjs';
+import { FolderShareComponent } from '../dialogs/folder-share/folder-share.component';
 
 /**
  * represents an element in the tree
@@ -28,6 +30,7 @@ export class TreeNestedExplorerComponent implements OnInit {
   constructor(
     private solidFileHandlerService: SolidFileHandlerService,
     private profileService: ProfileService,
+    private linkShareService: LinkShareService,
     private route: ActivatedRoute,
     private router: Router,
     private dialog: MatDialog,
@@ -126,5 +129,14 @@ export class TreeNestedExplorerComponent implements OnInit {
   async deleteFile(node: Node) {
     await this.solidFileHandlerService.deleteFile(node.link);
     await this.dataSource.reloadNode(this.dataSource.getParent(node));
+  }
+
+  async shareFolder(node: Node) {
+    const link = await this.linkShareService.createReadOnlyFolderLink(
+      node.link
+    );
+    await this.dialog.open(FolderShareComponent, {
+      data: link,
+    });
   }
 }
