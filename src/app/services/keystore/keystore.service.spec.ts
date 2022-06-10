@@ -3,16 +3,19 @@ import { SolidAuthenticationService } from '../authentication/solid-authenticati
 
 import { KeystoreService } from './keystore.service';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { UserLocalStorage } from '../user-local-storage/user-local-storage.service';
 
 describe('KeystoreService', () => {
   let service: KeystoreService;
   let authenticationServiceSpy: jasmine.SpyObj<SolidAuthenticationService>;
-
+  let userLocalStorage: UserLocalStorage;
   beforeEach(() => {
     const authenticationSpy = jasmine.createSpyObj('SolidAuthenticationSpy', [
       'writeKeystoreToPod',
       'loadKeystore',
     ]);
+
+    userLocalStorage = new UserLocalStorage();
 
     TestBed.configureTestingModule({
       imports: [MatDialogModule],
@@ -20,6 +23,7 @@ describe('KeystoreService', () => {
         { provide: MAT_DIALOG_DATA, useValue: {} },
         KeystoreService,
         { provide: SolidAuthenticationService, useValue: authenticationSpy },
+        { provide: UserLocalStorage, userValue: userLocalStorage },
       ],
     });
 
@@ -55,7 +59,7 @@ describe('KeystoreService', () => {
     const key = service.generateNewKey();
     const id = 'testURL/test';
     const keystore = [{ ID: id, KEY: key }];
-    localStorage.setItem('keystore', JSON.stringify(keystore));
+    userLocalStorage.setItem('keystore', JSON.stringify(keystore));
     expect(service.getLocalKeystore()).toEqual(keystore);
   });
 
@@ -63,7 +67,7 @@ describe('KeystoreService', () => {
     const key = service.generateNewKey();
     const id = 'testURL/test';
     const keystore = [{ ID: id, KEY: key }];
-    localStorage.setItem('keystore', JSON.stringify(keystore));
+    userLocalStorage.setItem('keystore', JSON.stringify(keystore));
     expect(service.getKeyFromLocalKeystore(id)).toBe(key);
   });
 });
