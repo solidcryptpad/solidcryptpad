@@ -16,6 +16,9 @@ import { YXmlFragment } from 'yjs/dist/src/types/YXmlFragment';
 import { fromEvent, debounceTime } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotFoundException } from '../../exceptions/not-found-exception';
+import { LinkShareService } from 'src/app/services/link-share/link-share.service';
+import { MatDialog } from '@angular/material/dialog';
+import { LinkShareComponent } from '../dialogs/link-share/link-share.component';
 
 @Component({
   selector: 'app-text-editor',
@@ -29,6 +32,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   xmlFragement: YXmlFragment | undefined;
   baseUrl = '';
   fileUrl = '';
+  sharedKey = '';
   errorMsg = '';
   provider!: WebrtcProvider;
   ydoc!: Y.Doc;
@@ -37,8 +41,10 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   constructor(
     private profileService: ProfileService,
     private fileService: SolidFileHandlerService,
+    private linkShareService: LinkShareService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -48,6 +54,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   setupBaseUrl(): void {
     this.profileService.getPodUrls().then((podUrls) => {
       this.baseUrl = podUrls[0];
+      this.setupSharedFileKey();
       this.setupFilenameFromParams();
     });
   }
@@ -64,6 +71,16 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       } else {
         this.setupEditor();
       }
+    });
+  }
+
+  setupSharedFileKey(): void {
+    this.route.queryParams.subscribe((params) => {
+      const key = params['key'];
+      if (key) {
+        this.sharedKey = atob(key);
+      }
+      console.log(this.sharedKey); // TEMP
     });
   }
 
@@ -118,30 +135,51 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     await this.fileService.writeAndEncryptFile(blob, url);
   }
 
+  handleReadFile(blob: Blob): void {
+    blob.text().then((text) => {
+      this.html = text;
+      this.readyForSave = true;
+      this.editor.commands.focus().exec();
+    });
+  }
+
+  handleReadFileError(reason: Error): void {
+    if (reason instanceof NotFoundException) {
+      console.debug('file not found, creating file');
+      this.readyForSave = true;
+      this.saveFile();
+      return;
+    } else {
+      this.errorMsg = 'Error while opening your file: ' + reason;
+    }
+    console.error('couldnt load file: ' + reason);
+  }
+
   /**
    * loads the current file that is open in editor
    */
   loadFile(): void {
-    this.fileService.readAndDecryptFile(this.fileUrl).then(
-      (blob) => {
-        blob.text().then((text) => {
-          this.html = text;
-          this.readyForSave = true;
-          this.editor.commands.focus().exec();
-        });
-      },
-      (reason) => {
-        if (reason instanceof NotFoundException) {
-          console.debug('file not found, creating file');
-          this.readyForSave = true;
-          this.saveFile();
-          return;
-        } else {
-          this.errorMsg = 'Error while opening your file: ' + reason;
+    if (this.sharedKey) {
+      this.fileService
+        .readAndDecryptFileWithKey(this.fileUrl, this.sharedKey)
+        .then(
+          (blob) => {
+            this.handleReadFile(blob);
+          },
+          (reason) => {
+            this.handleReadFileError(reason);
+          }
+        );
+    } else {
+      this.fileService.readAndDecryptFile(this.fileUrl).then(
+        (blob) => {
+          this.handleReadFile(blob);
+        },
+        (reason) => {
+          this.handleReadFileError(reason);
         }
-        console.error('couldnt load file: ' + reason);
-      }
-    );
+      );
+    }
   }
 
   /**
@@ -155,6 +193,16 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     this.closeEditor();
     this.html = '';
     this.router.navigate(['/editor'], { queryParams: { filename: '' } });
+  }
+
+  async shareFileReadOnly() {
+    const link = await this.linkShareService.createReadOnlyShareLink(
+      this.fileUrl
+    );
+    console.log(link);
+    this.dialog.open(LinkShareComponent, {
+      data: link,
+    });
   }
 
   /**

@@ -18,7 +18,9 @@
         (click)="this.open(node)"
         style="margin-left: 20px"
       >
-        <mat-icon class="mat-icon" title="Open in editor">open_in_new</mat-icon>
+        <mat-icon class="mat-icon" data-cy="open-node" title="Open"
+          >open_in_new</mat-icon
+        >
       </button>
 
       <span class="spacer"></span>
@@ -76,6 +78,9 @@
           <button mat-menu-item (click)="this.open(node)">Open Folder</button>
           <button mat-menu-item (click)="this.upload(node)">
             Upload Files
+          </button>
+          <button mat-menu-item (click)="this.shareFolder(node)">
+            Share Folder
           </button>
           <button mat-menu-item (click)="this.createFolder(node)">
             Create Folder

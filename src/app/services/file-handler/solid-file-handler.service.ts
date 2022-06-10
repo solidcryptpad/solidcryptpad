@@ -9,7 +9,7 @@ import { AlreadyExistsException } from 'src/app/exceptions/already-exists-except
 import { InvalidUrlException } from 'src/app/exceptions/invalid-url-exception';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
-import { KeystoreService } from '../keystore/keystore.service';
+import { KeystoreService } from '../encryption/keystore/keystore.service';
 import { BaseException } from 'src/app/exceptions/base-exception';
 import { SolidClientService } from '../module-wrappers/solid-client/solid-client.service';
 import { NotFoundException } from 'src/app/exceptions/not-found-exception';
@@ -69,6 +69,14 @@ export class SolidFileHandlerService {
     }
     const file = await this.readFile(fileURL);
     return await this.keystoreService.decryptFile(file, fileURL);
+  }
+
+  async readAndDecryptFileWithKey(fileURL: string, key: string): Promise<Blob> {
+    if (!this.isCryptoDirectory(fileURL)) {
+      throw new NotACryptpadUrlException('file is not in a valid directory');
+    }
+    const file = await this.readFile(fileURL);
+    return await this.keystoreService.decryptFileWithKey(file, key);
   }
 
   /**
@@ -191,6 +199,19 @@ export class SolidFileHandlerService {
       }
       throw error;
     }
+    return true;
+  }
+
+  async fileExists(fileURL: string): Promise<boolean> {
+    try {
+      await this.readFile(fileURL);
+    } catch (error: any) {
+      if (error instanceof NotFoundException) {
+        return false;
+      }
+      throw error;
+    }
+
     return true;
   }
 

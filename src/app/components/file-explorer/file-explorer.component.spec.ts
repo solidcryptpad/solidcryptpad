@@ -14,6 +14,7 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-tree-nested-explorer',
+  template: ``,
 })
 class MockTreeExplorerComponent {}
 
