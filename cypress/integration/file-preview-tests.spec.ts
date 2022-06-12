@@ -89,7 +89,7 @@ describe('File-Preview Test', function () {
     cy.url().should('not.include', 'Example');
 
     cy.contains('Files').click();
-    cy.get('#solidcryptpad_expand').click();
+    //cy.get('#solidcryptpad_expand').click();
 
     cy.contains(fileName);
     cy.get('[data-cy="open-node"]').click();
