@@ -1,12 +1,12 @@
 import { FetchError } from '@inrupt/solid-client';
 import { throwWithContext } from 'src/app/exceptions/error-options';
 import { KeyNotFoundException } from 'src/app/exceptions/key-not-found-exception';
-import { SecureRemoteStorage } from './keystore.service';
+import { Keystore, SecureRemoteStorage } from './keystore.interface';
 
 /**
  * Manages all keys of a folder and its contents
  */
-export class FolderKeystore {
+export class FolderKeystore implements Keystore {
   private keys: { [fileUrl: string]: string } = {};
 
   /**
@@ -62,12 +62,24 @@ export class FolderKeystore {
     await this.storage.saveSecure(this.url, JSON.stringify(data));
   }
 
-  // TODO: update type
-  toInfoJSON(): object {
-    return {
+  getStorage(): SecureRemoteStorage {
+    return this.storage;
+  }
+
+  serialize(): string {
+    return JSON.stringify({
       url: this.url,
       root: this.root,
-    };
+      storage: this.storage.serialize(),
+    });
+  }
+
+  static deserialize(
+    serialization: string,
+    storage: SecureRemoteStorage
+  ): FolderKeystore {
+    const data = JSON.parse(serialization);
+    return new FolderKeystore(data.url, data.root, storage);
   }
 }
 
