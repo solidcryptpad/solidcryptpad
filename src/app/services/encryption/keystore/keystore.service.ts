@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { ProfileService } from '../../profile/profile.service';
 import { overwriteFile, getFile, FetchError } from '@inrupt/solid-client';
 import { WrongMasterPasswordException } from 'src/app/exceptions/wrong-master-password-exception';
-import { KeyNotFoundException } from 'src/app/exceptions/key-not-found-exception';
 import { SolidAuthenticationService } from '../../authentication/solid-authentication.service';
 import { UserLocalStorage } from '../../user-local-storage/user-local-storage.service';
 import { EncryptionService } from '../encryption/encryption.service';
@@ -159,44 +158,6 @@ export class KeystoreService {
     } catch (error) {
       throw new WrongMasterPasswordException('Wrong master password');
     }
-  }
-
-  /**
-   * Encrypts a file by using its FileURL to find the matching key from the keystore.
-   * If no matching key is found, a new one is generated.
-   */
-  async encryptFile(file: Blob, fileURL: string): Promise<Blob> {
-    let key = await this.getKey(fileURL);
-    if (!key) {
-      key = this.encryptionService.generateNewKey();
-      await this.storeKey(fileURL, key);
-    }
-
-    const encryptedFileContent = await this.encryptionService.encryptBlob(
-      file,
-      key
-    );
-    const encryptedFile = new Blob([encryptedFileContent]);
-
-    return encryptedFile;
-  }
-
-  /**
-   * Decrypts a file by using its FileURL to find the matching key from the keystore.
-   */
-  async decryptFile(file: Blob, fileURL: string): Promise<Blob> {
-    const key = await this.getKey(fileURL);
-    if (!key) {
-      throw new KeyNotFoundException('Decryption key not found');
-    }
-    return this.encryptionService.decryptAsBlob(await file.text(), key);
-  }
-
-  /**
-   * Decrypts a file by using the provided key
-   */
-  async decryptFileWithKey(file: Blob, key: string): Promise<Blob> {
-    return this.encryptionService.decryptAsBlob(await file.text(), key);
   }
 }
 interface KeyEntry {

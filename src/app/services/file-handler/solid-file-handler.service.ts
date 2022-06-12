@@ -9,7 +9,6 @@ import { AlreadyExistsException } from 'src/app/exceptions/already-exists-except
 import { InvalidUrlException } from 'src/app/exceptions/invalid-url-exception';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
-import { KeystoreService } from '../encryption/keystore/keystore.service';
 import { BaseException } from 'src/app/exceptions/base-exception';
 import { SolidClientService } from '../module-wrappers/solid-client/solid-client.service';
 import { NotFoundException } from 'src/app/exceptions/not-found-exception';
@@ -19,6 +18,7 @@ import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-
 import { throwWithContext } from 'src/app/exceptions/error-options';
 import { FolderNotEmptyException } from 'src/app/exceptions/folder-not-empty-exception';
 import { SolidPodException } from 'src/app/exceptions/solid-pod-exception';
+import { FileEncryptionService } from '../encryption/file-encryption/file-encryption.service';
 
 @Injectable({
   providedIn: 'root',
@@ -27,7 +27,7 @@ export class SolidFileHandlerService {
   private readonly cryptoDirectoryName = 'solidcryptpad';
 
   constructor(
-    private keystoreService: KeystoreService,
+    private fileEncryptionService: FileEncryptionService,
     private solidClientService: SolidClientService,
     private authService: SolidAuthenticationService
   ) {}
@@ -68,7 +68,7 @@ export class SolidFileHandlerService {
       throw new NotACryptpadUrlException('file is not in a valid directory');
     }
     const file = await this.readFile(fileURL);
-    return await this.keystoreService.decryptFile(file, fileURL);
+    return await this.fileEncryptionService.decryptFile(file, fileURL);
   }
 
   async readAndDecryptFileWithKey(fileURL: string, key: string): Promise<Blob> {
@@ -76,7 +76,7 @@ export class SolidFileHandlerService {
       throw new NotACryptpadUrlException('file is not in a valid directory');
     }
     const file = await this.readFile(fileURL);
-    return await this.keystoreService.decryptFileWithKey(file, key);
+    return await this.fileEncryptionService.decryptFileWithKey(file, key);
   }
 
   /**
@@ -103,7 +103,7 @@ export class SolidFileHandlerService {
 
     try {
       return await this.solidClientService.overwriteFile(fileURL, file, {
-        contentType: file.type || 'text/plain', //TODO standard content type?
+        contentType: file.type || 'text/plain',
         fetch: this.authService.authenticatedFetch.bind(this.authService),
       });
     } catch (error: any) {
@@ -135,9 +135,12 @@ export class SolidFileHandlerService {
     if (!this.isCryptoDirectory(fileURL)) {
       throw new NotACryptpadUrlException('file is not in a valid directory');
     }
-    const encryptedFile = await this.keystoreService.encryptFile(file, fileURL);
+    const encryptedFile = await this.fileEncryptionService.encryptFile(
+      file,
+      fileURL
+    );
 
-    return await this.writeFile(encryptedFile, fileURL, fileName);
+    return this.writeFile(encryptedFile, fileURL, fileName);
   }
 
   /**

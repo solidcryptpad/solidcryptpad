@@ -11,18 +11,18 @@ import {
   WithResourceInfo,
 } from '@inrupt/solid-client';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
-import { KeystoreService } from '../encryption/keystore/keystore.service';
 import { AlreadyExistsException } from 'src/app/exceptions/already-exists-exception';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
 import { BaseException } from 'src/app/exceptions/base-exception';
 import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
 import { FolderNotEmptyException } from 'src/app/exceptions/folder-not-empty-exception';
+import { FileEncryptionService } from '../encryption/file-encryption/file-encryption.service';
 
 describe('SolidFileHandlerService', () => {
   let service: SolidFileHandlerService;
   let authenticationServiceSpy: jasmine.SpyObj<SolidAuthenticationService>;
   let solidClientServiceSpy: jasmine.SpyObj<SolidClientService>;
-  let keyStoreServiceSpy: jasmine.SpyObj<KeystoreService>;
+  let fileEncryptionServiceSpy: jasmine.SpyObj<FileEncryptionService>;
 
   beforeEach(() => {
     const authenticationSpy = jasmine.createSpyObj('SolidAuthenticationSpy', [
@@ -40,10 +40,10 @@ describe('SolidFileHandlerService', () => {
       'deleteContainer',
       'deleteFile',
     ]);
-    const keyStoreSpy = jasmine.createSpyObj('KeystoreService', [
-      'decryptFile',
-      'setMasterPassword',
+    const fileEncryptionSpy = jasmine.createSpyObj('FileEncryptionService', [
       'encryptFile',
+      'decryptFile',
+      'decryptFileWithKey',
     ]);
 
     TestBed.configureTestingModule({
@@ -51,7 +51,7 @@ describe('SolidFileHandlerService', () => {
         SolidFileHandlerService,
         { provide: SolidAuthenticationService, useValue: authenticationSpy },
         { provide: SolidClientService, useValue: solidClientSpy },
-        { provide: KeystoreService, useValue: keyStoreSpy },
+        { provide: FileEncryptionService, useValue: fileEncryptionSpy },
       ],
     });
     service = TestBed.inject(SolidFileHandlerService);
@@ -65,9 +65,9 @@ describe('SolidFileHandlerService', () => {
       SolidClientService
     ) as jasmine.SpyObj<SolidClientService>;
 
-    keyStoreServiceSpy = TestBed.inject(
-      KeystoreService
-    ) as jasmine.SpyObj<KeystoreService>;
+    fileEncryptionServiceSpy = TestBed.inject(
+      FileEncryptionService
+    ) as jasmine.SpyObj<FileEncryptionService>;
   });
 
   it('should be created', () => {
@@ -130,7 +130,7 @@ describe('SolidFileHandlerService', () => {
     const decryptedFile = new Blob(['decrypted File']);
 
     solidClientServiceSpy.getFile.and.returnValue(Promise.resolve(file));
-    keyStoreServiceSpy.decryptFile.and.returnValue(
+    fileEncryptionServiceSpy.decryptFile.and.returnValue(
       Promise.resolve(decryptedFile)
     );
 
@@ -139,7 +139,7 @@ describe('SolidFileHandlerService', () => {
       .toBeResolvedTo(decryptedFile);
 
     expect(solidClientServiceSpy.getFile).toHaveBeenCalled();
-    expect(keyStoreServiceSpy.decryptFile).toHaveBeenCalled();
+    expect(fileEncryptionServiceSpy.decryptFile).toHaveBeenCalled();
   });
 
   it('writeFile calls overwriteFile', async () => {
@@ -188,14 +188,14 @@ describe('SolidFileHandlerService', () => {
     const encryptedFile = new Blob(['encryptedFile File']);
 
     solidClientServiceSpy.overwriteFile.and.returnValue(Promise.resolve(file));
-    keyStoreServiceSpy.encryptFile.and.returnValue(
+    fileEncryptionServiceSpy.encryptFile.and.returnValue(
       Promise.resolve(encryptedFile)
     );
 
     await service.writeAndEncryptFile(file, url);
 
     expect(solidClientServiceSpy.overwriteFile).toHaveBeenCalled();
-    expect(keyStoreServiceSpy.encryptFile).toHaveBeenCalledWith(
+    expect(fileEncryptionServiceSpy.encryptFile).toHaveBeenCalledWith(
       file,
       jasmine.anything()
     );
