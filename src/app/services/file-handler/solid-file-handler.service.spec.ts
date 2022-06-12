@@ -308,20 +308,19 @@ describe('SolidFileHandlerService', () => {
   });
 
   it('getContainer calls convertError on error', async () => {
-    const url = 'https://real.url.com';
-
-    solidClientServiceSpy.getSolidDataset.and.throwError(new Error());
-
+    solidClientServiceSpy.getSolidDataset.and.rejectWith(new Error());
     spyOn(service, 'convertError');
 
-    await service.getContainer(url);
+    await service.getContainer('https://example.com');
 
     expect(service.convertError).toHaveBeenCalled();
   });
 
   it('getContainer calls getSolidDataset', async () => {
-    const url = 'https://real.url.com';
-    await service.getContainer(url);
+    solidClientServiceSpy.getSolidDataset.and.resolveTo();
+
+    await service.getContainer('https://example.com');
+
     expect(solidClientServiceSpy.getSolidDataset).toHaveBeenCalled();
   });
 

@@ -1,36 +1,13 @@
 import { Injectable } from '@angular/core';
 import { KeystoreService } from '../encryption/keystore/keystore.service';
-import {
-  createAclFromFallbackAcl,
-  getFileWithAcl,
-  getResourceAcl,
-  hasAccessibleAcl,
-  hasFallbackAcl,
-  hasResourceAcl,
-  saveAclFor,
-  setGroupDefaultAccess,
-  setGroupResourceAccess,
-  setPublicResourceAccess,
-} from '@inrupt/solid-client';
 import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
 import { SolidFileHandlerService } from '../file-handler/solid-file-handler.service';
 import { ProfileService } from '../profile/profile.service';
 import { EncryptionService } from '../encryption/encryption/encryption.service';
-import { PermissionException } from 'src/app/exceptions/permission-exception';
-
-interface Permissions {
-  read: boolean;
-  append: boolean;
-  write: boolean;
-  control: boolean;
-}
-
-const noPermissions = {
-  read: false,
-  append: false,
-  write: false,
-  control: false,
-} as const;
+import {
+  SolidPermissionService,
+  SolidPermissions,
+} from '../solid-permission/solid-permission.service';
 
 @Injectable({
   providedIn: 'root',
@@ -41,12 +18,12 @@ export class LinkShareService {
     private encryptionService: EncryptionService,
     private authService: SolidAuthenticationService,
     private fileService: SolidFileHandlerService,
-    private profileService: ProfileService
+    private profileService: ProfileService,
+    private permissionService: SolidPermissionService
   ) {}
 
   private readonly groupTtlFilePath = 'solidcryptpad/myGroups.ttl';
   private readonly groupsFolderPath = 'solidcryptpad/groups/';
-  private readonly baseShareUrl = window.location.origin + '/share?';
 
   /**
    * Creates a READ ONLY share link for the given file.
@@ -63,18 +40,19 @@ export class LinkShareService {
     await this.createGroupFileIfNotExists();
     const groupKeyUrl = await this.generateReadOnlyGroupKeyUrl();
 
-    await this.setGroupResourcePermissions(fileURL, groupKeyUrl, {
-      read: true,
-    });
+    await this.permissionService.setGroupResourcePermissions(
+      fileURL,
+      groupKeyUrl,
+      {
+        read: true,
+      }
+    );
 
-    const data = {
+    return this.toSharingLink({
       file: fileURL,
       key: encodedKey,
       group: groupKeyUrl,
-    };
-    const urlParams = new URLSearchParams(data);
-
-    return this.baseShareUrl + urlParams.toString();
+    });
   }
 
   /**
@@ -101,7 +79,7 @@ export class LinkShareService {
    */
   private async createFolderSharingLink(
     folderURL: string,
-    grantedPermissions: Partial<Permissions>
+    grantedPermissions: Partial<SolidPermissions>
   ): Promise<string> {
     // TODO: somehow give access to a keystore for this folder
     await this.ensureGroupsFolderExists();
@@ -112,16 +90,19 @@ export class LinkShareService {
       new Blob([], { type: 'text/turtle' }),
       groupUrl
     );
-    await this.setItemPublicPermissions(groupUrl, { read: true, append: true });
+    await this.permissionService.setResourcePublicPermissions(groupUrl, {
+      read: true,
+      append: true,
+    });
 
     // give access to the folder and all items in it without an acl file
     const groupKeyUrl = `${groupUrl}#sharing-group`;
-    await this.setGroupDefaultPermissions(
+    await this.permissionService.setGroupDefaultPermissions(
       folderURL,
       groupKeyUrl,
       grantedPermissions
     );
-    await this.setGroupResourcePermissions(
+    await this.permissionService.setGroupResourcePermissions(
       folderURL,
       groupKeyUrl,
       grantedPermissions
@@ -131,15 +112,18 @@ export class LinkShareService {
     await this.fileService.traverseContainerContentsRecursively(
       folderURL,
       async (resourceUrl) => {
-        console.log(resourceUrl, await this.hasAcl(resourceUrl));
-        if (await this.hasAcl(resourceUrl)) {
+        console.log(
+          resourceUrl,
+          await this.permissionService.hasAcl(resourceUrl)
+        );
+        if (await this.permissionService.hasAcl(resourceUrl)) {
           if (this.fileService.isContainer(resourceUrl))
-            await this.setGroupDefaultPermissions(
+            await this.permissionService.setGroupDefaultPermissions(
               resourceUrl,
               groupKeyUrl,
               grantedPermissions
             );
-          await this.setGroupResourcePermissions(
+          await this.permissionService.setGroupResourcePermissions(
             resourceUrl,
             groupKeyUrl,
             grantedPermissions
@@ -148,12 +132,10 @@ export class LinkShareService {
       }
     );
 
-    const urlParams = new URLSearchParams({
+    return this.toSharingLink({
       folder: folderURL,
       group: groupKeyUrl,
     });
-
-    return this.baseShareUrl + urlParams.toString();
   }
 
   /**
@@ -172,7 +154,7 @@ export class LinkShareService {
   async createSecretFolder(folderUrl: string) {
     await this.fileService.writeContainer(folderUrl);
     // TODO: consider creating ACL from scratch, to prevent inheriting bad defaults
-    await this.setItemPublicPermissions(folderUrl, {});
+    await this.permissionService.setResourcePublicPermissions(folderUrl, {});
   }
 
   /**
@@ -188,134 +170,11 @@ export class LinkShareService {
         new Blob([], { type: 'text/turtle' }),
         path
       );
-
-      const [resourceAcl, myFileWithAcl] = await this.getAclForFile(path);
-
-      const updatedAcl = setPublicResourceAccess(resourceAcl, {
-        read: false,
-        write: false,
+      await this.permissionService.setResourcePublicPermissions(path, {
         append: true,
-        control: false,
-      });
-
-      await saveAclFor(myFileWithAcl, updatedAcl, {
-        fetch: this.authService.authenticatedFetch.bind(this.authService),
       });
     }
   }
-
-  async setItemPublicPermissions(
-    fileUrl: string,
-    grantedPermissions: Partial<Permissions>
-  ): Promise<void> {
-    const [resourceAcl, myFileWithAcl] = await this.getAclForFile(fileUrl);
-    const permissions: Permissions = {
-      ...noPermissions,
-      ...grantedPermissions,
-    };
-    const updatedAcl = setPublicResourceAccess(resourceAcl, permissions);
-    await saveAclFor(myFileWithAcl, updatedAcl, {
-      fetch: this.authService.authenticatedFetch.bind(this.authService),
-    });
-  }
-
-  /**
-   * Returns a file's Acl and the file itself. If the file does not currently have
-   * an acl then one is created for it.
-   * @param path of the file whose acl is requested
-   */
-  async getAclForFile(path: string) {
-    const myFileWithAcl = await getFileWithAcl(path, {
-      fetch: this.authService.authenticatedFetch.bind(this.authService),
-    });
-
-    let resourceAcl;
-
-    if (!hasResourceAcl(myFileWithAcl)) {
-      if (!hasAccessibleAcl(myFileWithAcl)) {
-        throw new Error('Acl file is inaccessible');
-      }
-
-      if (!hasFallbackAcl(myFileWithAcl)) {
-        throw new Error('Current user does not have permission to load acl');
-      }
-
-      resourceAcl = createAclFromFallbackAcl(myFileWithAcl);
-      console.log('from fallback', path, resourceAcl);
-    } else {
-      resourceAcl = getResourceAcl(myFileWithAcl);
-    }
-
-    return [resourceAcl, myFileWithAcl] as const;
-  }
-
-  async setGroupResourcePermissions(
-    resourceUrl: string,
-    groupUrl: string,
-    grantedPermissions: Partial<Permissions>
-  ) {
-    const [resourceAcl, myFileWithAcl] = await this.getAclForFile(resourceUrl);
-    const permissions: Permissions = {
-      ...noPermissions,
-      ...grantedPermissions,
-    };
-
-    const updatedAcl = setGroupResourceAccess(
-      resourceAcl,
-      groupUrl,
-      permissions
-    );
-
-    await saveAclFor(myFileWithAcl, updatedAcl, {
-      fetch: this.authService.authenticatedFetch.bind(this.authService),
-    });
-  }
-
-  /**
-   * Return true if the resource has its own acl file
-   *
-   * @throws PermissionException if the current user has no control access
-   */
-  async hasAcl(resourceUrl: string): Promise<boolean> {
-    const resourceWithAcl = await getFileWithAcl(resourceUrl, {
-      fetch: this.authService.authenticatedFetch.bind(this.authService),
-    });
-
-    if (!hasAccessibleAcl(resourceWithAcl))
-      throw new PermissionException(
-        `You don't seem to have control access to ${resourceUrl}`
-      );
-    return hasResourceAcl(resourceWithAcl);
-  }
-
-  /**
-   * Set default group permissions for all contained resources
-   * @param folderUrl
-   * @param groupUrl
-   * @param grantedPermissions new permissions of this group. Default to false for unspecified values
-   */
-  async setGroupDefaultPermissions(
-    folderUrl: string,
-    groupUrl: string,
-    grantedPermissions: Partial<Permissions>
-  ) {
-    const [resourceAcl, myFileWithAcl] = await this.getAclForFile(folderUrl);
-    const permissions: Permissions = {
-      ...noPermissions,
-      ...grantedPermissions,
-    };
-
-    const updatedAcl = setGroupDefaultAccess(
-      resourceAcl,
-      groupUrl,
-      permissions
-    );
-
-    await saveAclFor(myFileWithAcl, updatedAcl, {
-      fetch: this.authService.authenticatedFetch.bind(this.authService),
-    });
-  }
-
   /**
    * Generates a cryptographically random group key url for a read only
    * group.
@@ -349,7 +208,7 @@ _:addAccess a solid:InsertDeletePatch;
   solid:inserts { <${groupUrl}> vcard:hasMember <${webId}>. }.
 `;
 
-    await window.fetch(groupUrl, {
+    await this.authService.authenticatedFetch(groupUrl, {
       method: 'PATCH',
       headers: {
         'content-type': 'text/n3',
@@ -369,5 +228,10 @@ _:addAccess a solid:InsertDeletePatch;
   async getGroupsFolderUrl() {
     const podUrls = await this.profileService.getPodUrls();
     return podUrls[0] + this.groupsFolderPath;
+  }
+
+  private toSharingLink(data: Record<string, string>): string {
+    const urlParams = new URLSearchParams(data);
+    return `${window.location.origin}/share?${urlParams.toString()}`;
   }
 }

@@ -10,7 +10,7 @@ describe('Folder sharing', function () {
   });
 
   // TODO: test with files that already had their own acl file before sharing
-  it.only('can browse files after sharing read-only link', function () {
+  it('can browse files after sharing read-only link', function () {
     const urls = setupTestFolder(this.owner);
 
     cy.contains('Files').click();
