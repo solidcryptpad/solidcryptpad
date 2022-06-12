@@ -176,13 +176,11 @@ export class SolidFileHandlerService {
   async getContainer(
     containerURL: string
   ): Promise<SolidDataset & WithServerResourceInfo> {
-    try {
-      return await this.solidClientService.getSolidDataset(containerURL, {
+    return this.solidClientService
+      .getSolidDataset(containerURL, {
         fetch: this.authService.authenticatedFetch.bind(this.authService),
-      });
-    } catch (error: any) {
-      this.convertError(error);
-    }
+      })
+      .catch((err: any) => this.convertError(err));
   }
 
   /**
@@ -309,6 +307,36 @@ export class SolidFileHandlerService {
   }
 
   /**
+   * Iterates through all items in a container. If the contained resources are also containers, recursively iterate through its contents.
+   * Guarantees no order of calling.
+   *
+   * @param folderUrl
+   * @param urlHandler will be called with every resource contained in the folder
+   */
+  async traverseContainerContentsRecursively(
+    folderUrl: string,
+    urlHandler: (url: string) => Promise<void>
+  ): Promise<void> {
+    console.group('traverse', folderUrl);
+    await this.getContainerContent(folderUrl);
+    await sleep(1000);
+    const contents: string[] = [];
+    console.log(contents);
+    const containerUrls = contents.filter((url) => this.isContainer(url));
+    console.log(containerUrls);
+    const fileUrls = contents.filter((url) => !this.isContainer(url));
+
+    await Promise.all([
+      ...fileUrls.map(urlHandler),
+      ...containerUrls.map(urlHandler),
+      ...containerUrls.map((url) =>
+        this.traverseContainerContentsRecursively(url, urlHandler)
+      ),
+    ]);
+    console.groupEnd();
+  }
+
+  /**
    * converts any given error
    * @param error the error to convert
    */
@@ -352,4 +380,8 @@ export class SolidFileHandlerService {
       cause: error,
     });
   }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

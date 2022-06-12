@@ -9,8 +9,9 @@ describe('Folder sharing', function () {
     cy.createRandomAccount().as('friend');
   });
 
-  it('can browse files after sharing', function () {
-    setupTestFolder(this.owner);
+  // TODO: test with files that already had their own acl file before sharing
+  it.only('can browse files after sharing read-only link', function () {
+    const urls = setupTestFolder(this.owner);
 
     cy.contains('Files').click();
     cy.contains('test');
@@ -28,10 +29,11 @@ describe('Folder sharing', function () {
         return cy.wrap(link);
       })
       .as('link');
-
+    /*
     cy.contains('Close').click();
     cy.get('[data-cy=nav-account-icon]').click();
     cy.contains('Logout').click();
+*/
     cy.loginMocked(this.friend);
     cy.get('@link').then((link) => {
       cy.log(link);
@@ -43,6 +45,18 @@ describe('Folder sharing', function () {
     cy.contains('file.txt');
     cy.contains('nested');
     cy.contains('nested.txt');
+    cy.get('@link').then((link) => {
+      const params = new URLSearchParams(new URL(link).search);
+      const groupUrl = params.get('group');
+      cy.authenticatedRequest(this.owner, {
+        method: 'GET',
+        url: groupUrl,
+      });
+      cy.authenticatedRequest(this.owner, {
+        method: 'GET',
+        url: urls.testFolder + '.acl',
+      });
+    });
   });
 });
 
