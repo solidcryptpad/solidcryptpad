@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { KeyNotFoundException } from 'src/app/exceptions/key-not-found-exception';
+import { throwWithContext } from 'src/app/exceptions/error-options';
 import { EncryptionService } from '../encryption/encryption.service';
 import { KeystoreService } from '../keystore/keystore.service';
 
@@ -17,19 +17,13 @@ export class FileEncryptionService {
    * If no matching key is found, a new one is generated.
    */
   async encryptFile(file: Blob, fileURL: string): Promise<Blob> {
-    let key = await this.keystoreService.getKey(fileURL);
-    if (!key) {
-      key = this.encryptionService.generateNewKey();
-      await this.keystoreService.storeKey(fileURL, key);
-    }
-
+    const key = await this.keystoreService.getOrCreateKey(fileURL);
     const encryptedFileContent = await this.encryptionService.encryptBlob(
       file,
       key
     );
-    const encryptedFile = new Blob([encryptedFileContent]);
 
-    return encryptedFile;
+    return new Blob([encryptedFileContent]);
   }
 
   /**
@@ -37,16 +31,17 @@ export class FileEncryptionService {
    */
   async decryptFile(file: Blob, fileURL: string): Promise<Blob> {
     const key = await this.keystoreService.getKey(fileURL);
-    if (!key) {
-      throw new KeyNotFoundException('Decryption key not found');
-    }
-    return this.encryptionService.decryptAsBlob(await file.text(), key);
+    return this.encryptionService
+      .decryptAsBlob(await file.text(), key)
+      .catch(throwWithContext(`Could not decrypt ${file}`));
   }
 
   /**
    * Decrypts a file by using the provided key
    */
   async decryptFileWithKey(file: Blob, key: string): Promise<Blob> {
-    return this.encryptionService.decryptAsBlob(await file.text(), key);
+    return this.encryptionService
+      .decryptAsBlob(await file.text(), key)
+      .catch(throwWithContext(`Could not decrypt ${file}`));
   }
 }

@@ -4,7 +4,9 @@ describe('MasterPassword', () => {
   beforeEach(() => {
     cy.createRandomAccount().then(cy.loginMocked).as('user');
     cy.get('@user').then((user) =>
-      cy.intercept('PUT', `${user.podUrl}/private/Keystore`).as('savedKeystore')
+      cy
+        .intercept('PUT', `${user.podUrl}/solidcryptpad-keystores/*`)
+        .as('savedKeystore')
     );
   });
 

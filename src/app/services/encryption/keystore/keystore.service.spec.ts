@@ -38,20 +38,4 @@ describe('KeystoreService', () => {
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
-
-  it('should load keystore from localstorage', () => {
-    const key = 'somekey';
-    const id = 'testURL/test';
-    const keystore = [{ ID: id, KEY: key }];
-    userLocalStorage.setItem('keystore', JSON.stringify(keystore));
-    expect(service.getLocalKeystore()).toEqual(keystore);
-  });
-
-  it('should find key in localstorage', () => {
-    const key = 'somekey';
-    const id = 'testURL/test';
-    const keystore = [{ ID: id, KEY: key }];
-    userLocalStorage.setItem('keystore', JSON.stringify(keystore));
-    expect(service.getKeyFromLocalKeystore(id)).toBe(key);
-  });
 });
