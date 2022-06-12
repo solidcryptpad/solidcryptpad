@@ -4,6 +4,7 @@ import { overwriteFile, getFile, FetchError } from '@inrupt/solid-client';
 import { WrongMasterPasswordException } from 'src/app/exceptions/wrong-master-password-exception';
 import { KeyNotFoundException } from 'src/app/exceptions/key-not-found-exception';
 import { SolidAuthenticationService } from '../../authentication/solid-authentication.service';
+import { UserLocalStorage } from '../../user-local-storage/user-local-storage.service';
 import { EncryptionService } from '../encryption/encryption.service';
 import { MasterPasswordService } from '../master-password/master-password.service';
 
@@ -15,7 +16,8 @@ export class KeystoreService {
     private encryptionService: EncryptionService,
     private masterPasswordService: MasterPasswordService,
     private profileService: ProfileService,
-    private authService: SolidAuthenticationService
+    private authService: SolidAuthenticationService,
+    private userLocalStorage: UserLocalStorage
   ) {}
 
   /**
@@ -64,8 +66,8 @@ export class KeystoreService {
    */
   getLocalKeystore(): KeyEntry[] {
     let keystore = [];
-    if (localStorage.getItem(this.keystoreKey)) {
-      const keystoreString = localStorage.getItem(this.keystoreKey);
+    if (this.userLocalStorage.getItem(this.keystoreKey)) {
+      const keystoreString = this.userLocalStorage.getItem(this.keystoreKey);
       if (keystoreString) {
         keystore = JSON.parse(keystoreString);
       }
@@ -101,7 +103,7 @@ export class KeystoreService {
       }
     }
 
-    localStorage.setItem(this.keystoreKey, JSON.stringify(keystore));
+    this.userLocalStorage.setItem(this.keystoreKey, JSON.stringify(keystore));
     return keystore;
   }
 
@@ -111,7 +113,7 @@ export class KeystoreService {
   async storeKey(fileID: string, key: string) {
     const keystore = await this.loadKeystore();
     keystore.push({ ID: fileID, KEY: key });
-    localStorage.setItem(this.keystoreKey, JSON.stringify(keystore));
+    this.userLocalStorage.setItem(this.keystoreKey, JSON.stringify(keystore));
     await this.writeKeystoreToPod();
   }
 

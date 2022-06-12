@@ -19,6 +19,9 @@ import { NotFoundException } from '../../exceptions/not-found-exception';
 import { LinkShareService } from 'src/app/services/link-share/link-share.service';
 import { MatDialog } from '@angular/material/dialog';
 import { LinkShareComponent } from '../dialogs/link-share/link-share.component';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import ColorHash from 'color-hash';
 
 @Component({
   selector: 'app-text-editor',
@@ -97,6 +100,10 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       password: this.getRoomPassword(),
     });
 
+    this.profileService.getUserName().then((value) => {
+      this.setUsername(value);
+    });
+
     this.xmlFragement = this.ydoc.getXmlFragment('prosemirror');
 
     this.editor = new Editor({
@@ -153,6 +160,15 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       this.errorMsg = 'Error while opening your file: ' + reason;
     }
     console.error('couldnt load file: ' + reason);
+  }
+
+  setUsername(username: string): void {
+    const colorHash = new ColorHash();
+    const color = colorHash.hex(username);
+    this.provider.awareness.setLocalStateField('user', {
+      color: color,
+      name: username,
+    });
   }
 
   /**

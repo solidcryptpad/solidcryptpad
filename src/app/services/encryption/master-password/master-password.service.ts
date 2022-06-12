@@ -5,6 +5,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { SetMasterPasswordComponent } from 'src/app/components/set-master-password/set-master-password.component';
 import { EnterMasterPasswordComponent } from 'src/app/components/enter-master-password/enter-master-password.component';
 import { WrongMasterPasswordException } from 'src/app/exceptions/wrong-master-password-exception';
+import { UserLocalStorage } from '../../user-local-storage/user-local-storage.service';
 
 @Injectable({
   providedIn: 'root',
@@ -15,12 +16,13 @@ export class MasterPasswordService {
 
   constructor(
     private encryptionService: EncryptionService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private userLocalStorage: UserLocalStorage
   ) {}
 
   async setMasterPassword(pwd: string) {
     if (pwd) {
-      localStorage.setItem(
+      this.userLocalStorage.setItem(
         this.masterPasswordHashKey,
         this.encryptionService.SHA256Salted(pwd)
       );
@@ -28,10 +30,12 @@ export class MasterPasswordService {
   }
 
   async getMasterPassword(): Promise<string> {
-    if (!localStorage.getItem(this.masterPasswordHashKey)) {
+    if (!this.userLocalStorage.getItem(this.masterPasswordHashKey)) {
       this.setMasterPassword(await this.openMasterPasswordDialog());
     }
-    const masterPasswordHash = localStorage.getItem(this.masterPasswordHashKey);
+    const masterPasswordHash = this.userLocalStorage.getItem(
+      this.masterPasswordHashKey
+    );
 
     if (!masterPasswordHash) {
       throw new WrongMasterPasswordException('Master password not set');
@@ -53,6 +57,6 @@ export class MasterPasswordService {
   }
 
   checkMasterPasswordNotSet(): boolean {
-    return !localStorage.getItem(this.masterPasswordHashKey);
+    return !this.userLocalStorage.getItem(this.masterPasswordHashKey);
   }
 }

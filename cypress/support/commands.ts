@@ -141,6 +141,7 @@ Cypress.Commands.add('givenFile', (user, url, content, options = {}) => {
 });
 
 const MASTER_PASSWORD_KEY = 'masterPasswordHash';
+const USER_KEYS_KEY = 'USER_STORAGE_KEYS';
 
 Cypress.Commands.add('enterMasterPassword', (user) => {
   /* when directly using cy.get(input...).type(masterPassword)
@@ -176,6 +177,13 @@ Cypress.Commands.add('enterMasterPassword', (user) => {
 
 Cypress.Commands.add('storeMasterPassword', (user) => {
   cy.window().then((win) => {
+    // make the application aware that the masterpassword is set
+    const userKeys = JSON.parse(
+      win.localStorage.getItem(USER_KEYS_KEY) ?? '[]'
+    );
+    userKeys.push(MASTER_PASSWORD_KEY);
+    win.localStorage.setItem(USER_KEYS_KEY, JSON.stringify(userKeys));
+    // set the masterpassword
     win.localStorage.setItem(
       MASTER_PASSWORD_KEY,
       hashMasterPassword(user.masterPassword)
