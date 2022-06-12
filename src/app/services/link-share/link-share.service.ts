@@ -22,7 +22,6 @@ export class LinkShareService {
     private permissionService: SolidPermissionService
   ) {}
 
-  private readonly groupTtlFilePath = 'solidcryptpad/myGroups.ttl';
   private readonly groupsFolderPath = 'solidcryptpad/groups/';
 
   /**
@@ -34,25 +33,7 @@ export class LinkShareService {
    * @param fileURL
    */
   async createReadOnlyShareLink(fileURL: string): Promise<string> {
-    const key = await this.keystoreService.getKey(fileURL);
-    const encodedKey = btoa(key);
-
-    await this.createGroupFileIfNotExists();
-    const groupKeyUrl = await this.generateReadOnlyGroupKeyUrl();
-
-    await this.permissionService.setGroupResourcePermissions(
-      fileURL,
-      groupKeyUrl,
-      {
-        read: true,
-      }
-    );
-
-    return this.toSharingLink({
-      file: fileURL,
-      key: encodedKey,
-      group: groupKeyUrl,
-    });
+    return this.createFileSharingLink(fileURL, { read: true });
   }
 
   /**
@@ -74,6 +55,29 @@ export class LinkShareService {
     });
   }
 
+  private async createFileSharingLink(
+    fileUrl: string,
+    grantedPermissions: Partial<SolidPermissions>
+  ): Promise<string> {
+    const key = await this.keystoreService.getKey(fileUrl);
+    const encodedKey = btoa(key);
+
+    await this.ensureGroupsFolderExists();
+    const groupUrl = await this.createNewRandomGroup();
+
+    await this.permissionService.setGroupResourcePermissions(
+      fileUrl,
+      groupUrl,
+      grantedPermissions
+    );
+
+    return this.toSharingLink({
+      file: fileUrl,
+      key: encodedKey,
+      group: groupUrl,
+    });
+  }
+
   /**
    * Creates a share link for for the given folder with the given permissions.
    */
@@ -82,29 +86,20 @@ export class LinkShareService {
     grantedPermissions: Partial<SolidPermissions>
   ): Promise<string> {
     // TODO: somehow give access to a keystore for this folder
-    await this.ensureGroupsFolderExists();
+    // currently it only handles solid sharing, not encryption
 
-    // secret group file, but publicly readable if the name is known
-    const groupUrl = await this.generateSecretGroupFileName();
-    await this.fileService.writeFile(
-      new Blob([], { type: 'text/turtle' }),
-      groupUrl
-    );
-    await this.permissionService.setResourcePublicPermissions(groupUrl, {
-      read: true,
-      append: true,
-    });
+    await this.ensureGroupsFolderExists();
+    const groupUrl = await this.createNewRandomGroup();
 
     // give access to the folder and all items in it without an acl file
-    const groupKeyUrl = `${groupUrl}#sharing-group`;
     await this.permissionService.setGroupDefaultPermissions(
       folderURL,
-      groupKeyUrl,
+      groupUrl,
       grantedPermissions
     );
     await this.permissionService.setGroupResourcePermissions(
       folderURL,
-      groupKeyUrl,
+      groupUrl,
       grantedPermissions
     );
     // give access to all items in the folder with an acl file
@@ -120,12 +115,12 @@ export class LinkShareService {
           if (this.fileService.isContainer(resourceUrl))
             await this.permissionService.setGroupDefaultPermissions(
               resourceUrl,
-              groupKeyUrl,
+              groupUrl,
               grantedPermissions
             );
           await this.permissionService.setGroupResourcePermissions(
             resourceUrl,
-            groupKeyUrl,
+            groupUrl,
             grantedPermissions
           );
         }
@@ -134,7 +129,7 @@ export class LinkShareService {
 
     return this.toSharingLink({
       folder: folderURL,
-      group: groupKeyUrl,
+      group: groupUrl,
     });
   }
 
@@ -158,34 +153,23 @@ export class LinkShareService {
   }
 
   /**
-   * Creates the myGroups.ttl file if it does not exist already,
-   * and sets its public access to append-only.
+   * Creates a secret group file, which is publicly readable and appendable
+   * @returns groupUrl
    */
-  async createGroupFileIfNotExists() {
-    const path = await this.getGroupTtlFileLocation();
-    const groupFileExists = await this.fileService.fileExists(path);
-
-    if (!groupFileExists) {
-      await this.fileService.writeFile(
-        new Blob([], { type: 'text/turtle' }),
-        path
-      );
-      await this.permissionService.setResourcePublicPermissions(path, {
-        append: true,
-      });
-    }
-  }
-  /**
-   * Generates a cryptographically random group key url for a read only
-   * group.
-   */
-  async generateReadOnlyGroupKeyUrl(): Promise<string> {
-    const groupKey = 'READ-' + this.encryptionService.generateNewKey();
-    const groupTtlFileLocation = await this.getGroupTtlFileLocation();
-    return groupTtlFileLocation + '#' + groupKey;
+  async createNewRandomGroup(): Promise<string> {
+    const groupFileUrl = await this.generateSecretGroupFileUrl();
+    await this.fileService.writeFile(
+      new Blob([], { type: 'text/turtle' }),
+      groupFileUrl
+    );
+    await this.permissionService.setResourcePublicPermissions(groupFileUrl, {
+      read: true,
+      append: true,
+    });
+    return `${groupFileUrl}#sharing-group`;
   }
 
-  async generateSecretGroupFileName(): Promise<string> {
+  async generateSecretGroupFileUrl(): Promise<string> {
     const secret = this.encryptionService.generateNewKey();
     const groupFolderUrl = await this.getGroupsFolderUrl();
     return `${groupFolderUrl}group-${secret}.ttl`;
@@ -215,14 +199,6 @@ _:addAccess a solid:InsertDeletePatch;
       },
       body: n3Patch,
     });
-  }
-
-  /**
-   * Returns the location of myGroups.ttl
-   */
-  async getGroupTtlFileLocation() {
-    const podUrls = await this.profileService.getPodUrls();
-    return podUrls[0] + this.groupTtlFilePath;
   }
 
   async getGroupsFolderUrl() {
