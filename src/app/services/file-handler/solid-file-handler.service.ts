@@ -317,13 +317,8 @@ export class SolidFileHandlerService {
     folderUrl: string,
     urlHandler: (url: string) => Promise<void>
   ): Promise<void> {
-    console.group('traverse', folderUrl);
-    await this.getContainerContent(folderUrl);
-    await sleep(1000);
-    const contents: string[] = [];
-    console.log(contents);
+    const contents: string[] = await this.getContainerContent(folderUrl);
     const containerUrls = contents.filter((url) => this.isContainer(url));
-    console.log(containerUrls);
     const fileUrls = contents.filter((url) => !this.isContainer(url));
 
     await Promise.all([
@@ -333,7 +328,6 @@ export class SolidFileHandlerService {
         this.traverseContainerContentsRecursively(url, urlHandler)
       ),
     ]);
-    console.groupEnd();
   }
 
   /**
@@ -345,7 +339,6 @@ export class SolidFileHandlerService {
       throw error;
     }
     if (error instanceof TypeError) {
-      console.error(error);
       throw new InvalidUrlException('the given url is not valid', {
         cause: error,
       });
@@ -380,8 +373,4 @@ export class SolidFileHandlerService {
       cause: error,
     });
   }
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }

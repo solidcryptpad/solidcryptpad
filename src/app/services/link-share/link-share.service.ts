@@ -107,10 +107,6 @@ export class LinkShareService {
     await this.fileService.traverseContainerContentsRecursively(
       folderURL,
       async (resourceUrl) => {
-        console.log(
-          resourceUrl,
-          await this.permissionService.hasAcl(resourceUrl)
-        );
         if (await this.permissionService.hasAcl(resourceUrl)) {
           if (this.fileService.isContainer(resourceUrl))
             await this.permissionService.setGroupDefaultPermissions(
