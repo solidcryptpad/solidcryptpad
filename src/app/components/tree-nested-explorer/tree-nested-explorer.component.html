@@ -79,8 +79,11 @@
           <button mat-menu-item (click)="this.upload(node)">
             Upload Files
           </button>
-          <button mat-menu-item (click)="this.shareFolder(node)">
-            Share Folder
+          <button mat-menu-item (click)="this.shareFolderReadOnly(node)">
+            Share Folder (read only)
+          </button>
+          <button mat-menu-item (click)="this.shareFolderReadWrite(node)">
+            Share Folder (read+write)
           </button>
           <button mat-menu-item (click)="this.createFolder(node)">
             Create Folder
