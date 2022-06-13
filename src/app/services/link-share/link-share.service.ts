@@ -92,7 +92,6 @@ export class LinkShareService {
     );
 
     // give access to all items in the folder which already have their own acl file
-    // TODO: test if this really works
     await this.fileService.traverseContainerContentsRecursively(
       folderURL,
       async (resourceUrl) => {

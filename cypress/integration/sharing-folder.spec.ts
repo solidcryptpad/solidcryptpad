@@ -49,6 +49,48 @@ describe('Folder sharing', function () {
     cy.contains('Permission denied');
   });
 
+  // testing, because the logic is complex to give access to files which already have an ACL file
+  it('given read-only link and file that already had an acl file, can view file', function () {
+    const folderName = 'test';
+    const fileName = 'file.txt';
+    const fileContent = 'Hello World';
+    const fileUrl = `${this.owner.podUrl}/solidcryptpad/${folderName}/${fileName}`;
+
+    // file preparation
+    cy.contains('Files').click();
+    cy.explorerCreateFolderIn('solidcryptpad', folderName);
+    cy.explorerUploadFileIn(folderName, fileName, new Blob([fileContent]));
+
+    // set specific acl for this file
+    cy.authenticatedRequest(this.owner, {
+      method: 'PUT',
+      url: fileUrl + '.acl',
+      body: createAclForWebId(this.owner.webId, './' + fileName),
+      headers: {
+        'content-type': 'text/turtle',
+      },
+    });
+
+    // sharing
+    cy.explorerOpenMenu(folderName);
+    cy.contains('Share Folder').click();
+    cy.contains('Create Link').click();
+    cy.contains('freshly baked');
+
+    cy.get('code')
+      .then((el) => cy.wrap(el.contents().text()))
+      .as('link');
+
+    // opening link as other user
+    cy.loginMocked(this.friend);
+    cy.get('@link').then(cy.visit);
+
+    // opening shared file
+    cy.contains(folderName);
+    cy.explorerOpenNode(fileName);
+    cy.contains(fileContent);
+  });
+
   it('can edit and upload files after sharing read-write link', function () {
     const folderName = 'test';
     const fileName = 'file.txt';
@@ -93,9 +135,13 @@ describe('Folder sharing', function () {
     cy.contains('Preview from');
     cy.contains(newFileContent);
   });
-
-  // this should be tested, because this requires huge extra steps for the permission logic
-  it(
-    'can view file which already was shared as a single file, after sharing read-only folder link'
-  );
 });
+
+function createAclForWebId(webId: string, relativeFileUrl: string) {
+  return `@prefix acl: <http://www.w3.org/ns/auth/acl#>.
+<#owner>
+    a acl:Authorization;
+    acl:agent <${webId}>;
+    acl:accessTo <${relativeFileUrl}>;
+    acl:mode acl:Read, acl:Write, acl:Control.`;
+}
