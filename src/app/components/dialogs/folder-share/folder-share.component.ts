@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, FormControl } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { throwWithContext } from 'src/app/exceptions/error-options';
 import { LinkShareService } from 'src/app/services/link-share/link-share.service';
@@ -11,7 +11,7 @@ import { LinkShareService } from 'src/app/services/link-share/link-share.service
 })
 export class FolderShareComponent {
   access = this.formBuilder.group({
-    read: true,
+    read: new FormControl({ value: true, disabled: true }),
     write: false,
   });
   loading = false;
@@ -26,7 +26,7 @@ export class FolderShareComponent {
 
   async createLink(): Promise<void> {
     const url = this.data.folderUrl;
-    const permissions = this.access.value;
+    const permissions = this.access.getRawValue();
     this.loading = true;
     try {
       this.link = await this.linkSharingService.createFolderSharingLink(
