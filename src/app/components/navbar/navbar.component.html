@@ -21,6 +21,9 @@
       <mat-icon data-cy="nav-account-icon">account_circle</mat-icon>
     </button>
     <mat-menu #menu="matMenu">
+      <button mat-menu-item (click)="changeMasterPassword()">
+        Change Password
+      </button>
       <button mat-menu-item (click)="logout()">Logout</button>
     </mat-menu>
   </div>
