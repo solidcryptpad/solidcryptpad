@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SolidFileHandlerService } from '../../services/file-handler/solid-file-handler.service';
+import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 
 @Component({
   selector: 'app-file-preview',
@@ -18,7 +18,7 @@ export class FilePreviewComponent implements OnInit {
   group = '';
 
   constructor(
-    private fileService: SolidFileHandlerService,
+    private fileEncryptionService: FileEncryptionService,
     private route: ActivatedRoute,
     private router: Router
   ) {
@@ -61,12 +61,12 @@ export class FilePreviewComponent implements OnInit {
     let readFile;
 
     if (this.keyInUrl) {
-      readFile = this.fileService.readAndDecryptFileWithKey(
+      readFile = this.fileEncryptionService.readAndDecryptFileWithKey(
         this.fileUrl,
         atob(this.key)
       );
     } else {
-      readFile = this.fileService.readAndDecryptFile(this.fileUrl);
+      readFile = this.fileEncryptionService.readAndDecryptFile(this.fileUrl);
     }
 
     readFile.then(

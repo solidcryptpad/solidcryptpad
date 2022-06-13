@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as cryptoJS from 'crypto-js';
+import { InvalidContentException } from 'src/app/exceptions/invalid-content';
 
 @Injectable({
   providedIn: 'root',
@@ -53,8 +54,11 @@ export class EncryptionService {
     });
   }
 
-  // TODO: assert that dataURL starts with data url prefix
   private dataURLtoBlob(dataUrl: string): Promise<Blob> {
+    if (!dataUrl.startsWith('data:'))
+      throw new InvalidContentException(
+        'Encrypted file is in unexpected format'
+      );
     return window.fetch(dataUrl).then((res) => res.blob());
   }
 }

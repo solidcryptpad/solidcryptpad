@@ -12,6 +12,7 @@ import {
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MockDragAndDropDirective } from 'src/app/directives/drag-and-drop/drag-and-drop.directive.mock';
+import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 
 import { FileUploadComponent } from './file-upload.component';
@@ -21,6 +22,7 @@ describe('FileUploadComponent', () => {
   let fixture: ComponentFixture<FileUploadComponent>;
   let dragAndDropMock: MockDragAndDropDirective;
   let fileServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
+  let fileEncryptionServiceSpy: jasmine.SpyObj<FileEncryptionService>;
   let dialogRefSpy: jasmine.SpyObj<MatDialogRef<FileUploadComponent>>;
 
   const toFileList = (files: File[]): FileList => {
@@ -31,9 +33,9 @@ describe('FileUploadComponent', () => {
 
   beforeEach(async () => {
     const fileServiceSpy = jasmine.createSpyObj(SolidFileHandlerService, [
-      'writeAndEncryptFile',
       'guessContentType',
     ]);
+    const fileEncryptionSpy = jasmine.createSpyObj(['writeAndEncryptFile']);
     const dialogRef = jasmine.createSpyObj(MatDialogRef, ['close']);
     await TestBed.configureTestingModule({
       imports: [MatDialogModule, NoopAnimationsModule],
@@ -41,6 +43,7 @@ describe('FileUploadComponent', () => {
         { provide: MAT_DIALOG_DATA, useValue: {} },
         { provide: MatDialogRef, useValue: dialogRef },
         { provide: SolidFileHandlerService, useValue: fileServiceSpy },
+        { provide: FileEncryptionService, useValue: fileEncryptionSpy },
       ],
       declarations: [FileUploadComponent, MockDragAndDropDirective],
     }).compileComponents();
@@ -60,6 +63,9 @@ describe('FileUploadComponent', () => {
     fileServiceSpy = TestBed.inject(
       SolidFileHandlerService
     ) as jasmine.SpyObj<SolidFileHandlerService>;
+    fileEncryptionServiceSpy = TestBed.inject(
+      FileEncryptionService
+    ) as jasmine.SpyObj<FileEncryptionService>;
 
     fixture.detectChanges();
   });
@@ -131,12 +137,12 @@ describe('FileUploadComponent', () => {
     const folderUrl = 'https://example.org/some/folder/';
     component['data'] = { folder: { url: folderUrl } };
     fileServiceSpy.guessContentType.and.returnValue('text/markdown');
-    fileServiceSpy.writeAndEncryptFile.and.resolveTo();
+    fileEncryptionServiceSpy.writeAndEncryptFile.and.resolveTo();
 
     component.uploadFile(file);
 
     const expectedFileUrl = folderUrl + file.name;
-    expect(fileServiceSpy.writeAndEncryptFile).toHaveBeenCalledWith(
+    expect(fileEncryptionServiceSpy.writeAndEncryptFile).toHaveBeenCalledWith(
       file.slice(0, file.size, 'text/markdown'),
       expectedFileUrl
     );

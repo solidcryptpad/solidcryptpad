@@ -11,7 +11,7 @@ import {
 } from 'y-prosemirror';
 import { keymap } from 'prosemirror-keymap';
 import { ProfileService } from '../../services/profile/profile.service';
-import { SolidFileHandlerService } from '../../services/file-handler/solid-file-handler.service';
+import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 import { YXmlFragment } from 'yjs/dist/src/types/YXmlFragment';
 import { fromEvent, debounceTime } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -43,7 +43,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
 
   constructor(
     private profileService: ProfileService,
-    private fileService: SolidFileHandlerService,
+    private fileEncryptionService: FileEncryptionService,
     private linkShareService: LinkShareService,
     private route: ActivatedRoute,
     private router: Router,
@@ -139,7 +139,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     const url = this.fileUrl;
     const data = this.html;
     const blob = new Blob([data], { type: 'text/plain' });
-    await this.fileService.writeAndEncryptFile(blob, url);
+    await this.fileEncryptionService.writeAndEncryptFile(blob, url);
   }
 
   handleReadFile(blob: Blob): void {
@@ -176,7 +176,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    */
   loadFile(): void {
     if (this.sharedKey) {
-      this.fileService
+      this.fileEncryptionService
         .readAndDecryptFileWithKey(this.fileUrl, this.sharedKey)
         .then(
           (blob) => {
@@ -187,7 +187,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
           }
         );
     } else {
-      this.fileService.readAndDecryptFile(this.fileUrl).then(
+      this.fileEncryptionService.readAndDecryptFile(this.fileUrl).then(
         (blob) => {
           this.handleReadFile(blob);
         },

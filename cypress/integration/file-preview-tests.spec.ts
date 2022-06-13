@@ -9,25 +9,9 @@ describe('File-Preview Test', function () {
   it('can upload text file to folder and show preview', function () {
     cy.contains('Files').click();
     cy.contains('Folder URL');
-    cy.contains('solidcryptpad')
-      .closest('[data-cy=tree-node]')
-      .find('[data-cy=folder-menu]')
-      .as('solidcryptpad-menu');
-    cy.get('@solidcryptpad-menu').click();
-    cy.contains('Upload Files').click();
     const fileName = 'test.txt';
     const fileContent = 'some file content';
-    cy.get('input[type=file]').selectFile({
-      contents: Cypress.Buffer.from(fileContent),
-      fileName,
-    });
-
-    cy.contains(fileName);
-    cy.get('.mat-dialog-actions').contains('button', 'Upload').click();
-    // wait until dialog closed
-    cy.contains('File Upload').should('not.exist');
-
-    cy.contains(fileName);
+    cy.explorerUploadFileIn('solidcryptpad', fileName, new Blob([fileContent]));
     cy.get('[data-cy="open-node"]').click();
     cy.contains('Preview from ');
     cy.contains(fileName);
@@ -38,26 +22,10 @@ describe('File-Preview Test', function () {
   it('can upload markdown file to folder and show preview', function () {
     cy.contains('Files').click();
     cy.contains('Folder URL');
-
-    cy.contains('solidcryptpad')
-      .closest('[data-cy=tree-node]')
-      .find('[data-cy=folder-menu]')
-      .as('solidcryptpad-menu');
-    cy.get('@solidcryptpad-menu').click();
-    cy.contains('Upload Files').click();
-
     const fileName = 'mdTest.md';
     const fileContent = '## some file content\n1. hallo\n2. test';
-    cy.get('input[type=file]').selectFile({
-      contents: Cypress.Buffer.from(fileContent),
-      fileName,
-    });
-    cy.contains(fileName);
-    cy.get('.mat-dialog-actions').contains('button', 'Upload').click();
-    // wait until dialog closed
-    cy.contains('File Upload').should('not.exist');
+    cy.explorerUploadFileIn('solidcryptpad', fileName, new Blob([fileContent]));
 
-    cy.contains(fileName);
     cy.get('[data-cy="open-node"]').click();
     cy.contains('Preview from ');
     cy.contains(fileName);
