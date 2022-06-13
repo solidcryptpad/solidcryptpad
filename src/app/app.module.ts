@@ -50,6 +50,7 @@ import { LinkShareComponent } from './components/dialogs/link-share/link-share.c
 import { FolderShareComponent } from './components/dialogs/folder-share/folder-share.component';
 import { ShareComponent } from './components/share/share.component';
 import { ClipboardModule } from '@angular/cdk/clipboard';
+import { ChangePasswordComponent } from './components/dialogs/change-password/change-password.component';
 
 @NgModule({
   declarations: [
@@ -73,6 +74,7 @@ import { ClipboardModule } from '@angular/cdk/clipboard';
     LinkShareComponent,
     FolderShareComponent,
     ShareComponent,
+    ChangePasswordComponent,
   ],
   imports: [
     MatInputModule,

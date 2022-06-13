@@ -7,6 +7,7 @@ import { SolidAuthenticationService } from '../../authentication/solid-authentic
 import { UserLocalStorage } from '../../user-local-storage/user-local-storage.service';
 import { EncryptionService } from '../encryption/encryption.service';
 import { MasterPasswordService } from '../master-password/master-password.service';
+import { MatDialog } from '@angular/material/dialog';
 
 @Injectable({
   providedIn: 'root',
@@ -17,6 +18,7 @@ export class KeystoreService {
     private masterPasswordService: MasterPasswordService,
     private profileService: ProfileService,
     private authService: SolidAuthenticationService,
+    private dialog: MatDialog,
     private userLocalStorage: UserLocalStorage
   ) {}
 
@@ -120,7 +122,7 @@ export class KeystoreService {
   /**
    * Writes the current keystore from the local storage to the solid pod.
    */
-  private async writeKeystoreToPod() {
+  public async writeKeystoreToPod() {
     const podUrls = await this.profileService.getPodUrls();
     const encryptedKeystore = await this.encryptKeystore(
       this.getLocalKeystore()
