@@ -11,6 +11,9 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute, Router, Routes } from '@angular/router';
 import { of } from 'rxjs';
 import { Component } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
+import { ProfileService } from 'src/app/services/profile/profile.service';
 
 @Component({
   selector: 'app-tree-nested-explorer',
@@ -25,7 +28,16 @@ describe('FileExplorerComponent', () => {
 
   beforeEach(async () => {
     const routes = [{ path: 'files', component: {} }] as Routes;
-
+    const dialogHandlerSpy = jasmine.createSpyObj('MatDialog', [
+      'open',
+      'afterClosed',
+    ]);
+    const profileHandlerSpy = jasmine.createSpyObj('ProfileService', [
+      'getUserName',
+    ]);
+    const fileHandlerSpy = jasmine.createSpyObj('FileEncryptionService', [
+      'readAndDecryptFile',
+    ]);
     await TestBed.configureTestingModule({
       imports: [FormsModule, RouterTestingModule.withRoutes(routes)],
       declarations: [FileExplorerComponent, MockTreeExplorerComponent],
@@ -38,6 +50,18 @@ describe('FileExplorerComponent', () => {
               url: 'example.url.com/',
             }),
           },
+        },
+        {
+          provide: FileEncryptionService,
+          useValue: fileHandlerSpy,
+        },
+        {
+          provide: MatDialog,
+          useValue: dialogHandlerSpy,
+        },
+        {
+          provide: ProfileService,
+          useValue: profileHandlerSpy,
         },
       ],
     }).compileComponents();

@@ -9,7 +9,8 @@ describe('FileExplorer menu actions', function () {
   });
 
   it('can upload files to folder', function () {
-    cy.contains('solidcryptpad')
+    cy.get('mat-tree-node')
+      .contains('solidcryptpad')
       .closest('[data-cy=tree-node]')
       .find('[data-cy=folder-menu]')
       .as('solidcryptpad-menu');
@@ -35,7 +36,8 @@ describe('FileExplorer menu actions', function () {
   });
 
   it('can upload files using drag and drop', function () {
-    cy.contains('solidcryptpad')
+    cy.get('mat-tree-node')
+      .contains('solidcryptpad')
       .closest('[data-cy=tree-node]')
       .find('[data-cy=folder-menu]')
       .as('profile-menu');
