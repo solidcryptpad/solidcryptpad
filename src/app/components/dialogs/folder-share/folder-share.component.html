@@ -1,13 +1,42 @@
 <h1 mat-dialog-title>Share Folder via link</h1>
-<div mat-dialog-content>
-  <p>
-    Here is your freshly baked link for sharing the folder with your
-    collaborators.
-  </p>
 
-  <code>{{ this.data }}</code>
+<div *ngIf="!this.link">
+  <div mat-dialog-content>
+    <section [formGroup]="access">
+      <h4>What access should it give?</h4>
+      <p>
+        <mat-checkbox formControlName="read" [disabled]="true"
+          >Read</mat-checkbox
+        >
+      </p>
+      <p><mat-checkbox formControlName="write">Write</mat-checkbox></p>
+    </section>
+    <p>
+      Your collaborators will be able to READ
+      {{ this.access.value.write ? "and WRITE to " : "" }}
+      <a [href]="data.folderUrl">{{ this.data.folderUrl }}</a> and its contents.
+    </p>
+    <mat-progress-bar
+      *ngIf="this.loading"
+      mode="indeterminate"
+    ></mat-progress-bar>
+  </div>
+  <div mat-dialog-actions>
+    <button mat-button (click)="createLink()">Create Link</button>
+    <button mat-button (click)="cancel()">Close</button>
+  </div>
 </div>
-<div mat-dialog-actions>
-  <button mat-button [cdkCopyToClipboard]="data">Copy to clipboard</button>
-  <button mat-button (click)="cancel()">Close</button>
+
+<div *ngIf="this.link">
+  <div mat-dialog-content>
+    <p>
+      Here is your freshly baked link for sharing the folder with your
+      collaborators.
+    </p>
+    <code>{{ this.link }}</code>
+  </div>
+  <div mat-dialog-actions>
+    <button mat-button [cdkCopyToClipboard]="link">Copy to clipboard</button>
+    <button mat-button (click)="cancel()">Close</button>
+  </div>
 </div>

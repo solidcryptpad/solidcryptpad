@@ -19,7 +19,8 @@ describe('Folder sharing', function () {
 
     // sharing
     cy.explorerOpenMenu(folderName);
-    cy.contains('Share Folder (read only)').click();
+    cy.contains('Share Folder').click();
+    cy.contains('Create Link').click();
     cy.contains('freshly baked');
 
     cy.get('code')
@@ -60,7 +61,9 @@ describe('Folder sharing', function () {
 
     // sharing
     cy.explorerOpenMenu(folderName);
-    cy.contains('Share Folder (read+write)').click();
+    cy.contains('Share Folder').click();
+    cy.contains('Write').click();
+    cy.contains('Create Link').click();
     cy.contains('freshly baked');
 
     cy.get('code')
