@@ -111,6 +111,7 @@ export class LinkShareService {
       groupUrl,
       grantedPermissions
     );
+
     // give access to all items in the folder with an acl file
     // TODO: test if this really works
     await this.fileService.traverseContainerContentsRecursively(
