@@ -21,6 +21,7 @@ import {
   MatSlideToggleModule,
 } from '@angular/material/slide-toggle';
 import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 describe('NavbarComponent', () => {
   let component: NavbarComponent;
@@ -36,6 +37,11 @@ describe('NavbarComponent', () => {
   };
 
   beforeEach(async () => {
+    const dialogHandlerSpy = jasmine.createSpyObj('MatDialog', [
+      'open',
+      'afterClosed',
+    ]);
+
     const authenticationSpy = jasmine.createSpyObj('SolidAuthenticationSpy', [
       'logout',
     ]);
@@ -52,6 +58,7 @@ describe('NavbarComponent', () => {
         MatMenuModule,
         MatSlideToggleModule,
         RouterTestingModule.withRoutes(routes),
+        MatDialogModule,
       ],
       declarations: [
         NavbarComponent,
@@ -65,14 +72,16 @@ describe('NavbarComponent', () => {
           provide: NotificationService,
           useValue: notificationSpy,
         },
-
         {
           provide: SolidAuthenticationService,
           useValue: authenticationSpy,
         },
+        {
+          provide: MatDialog,
+          useValue: dialogHandlerSpy,
+        },
       ],
     }).compileComponents();
-
     router = TestBed.inject(Router);
   });
 
