@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
 import { FolderKeystore } from 'src/app/services/encryption/keystore/folder-keystore.class';
+import { KeystoreStorageService } from 'src/app/services/encryption/keystore/keystore-storage.service';
 import { KeystoreService } from 'src/app/services/encryption/keystore/keystore.service';
 import { LinkShareService } from '../../services/link-share/link-share.service';
 
@@ -15,7 +16,8 @@ export class ShareComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private linkShareService: LinkShareService,
-    private keystoreService: KeystoreService
+    private keystoreService: KeystoreService,
+    private keystoreStorageService: KeystoreStorageService
   ) {}
 
   ngOnInit(): void {
@@ -51,7 +53,7 @@ export class ShareComponent implements OnInit {
     keystoreEncryptionKey: string
   ) {
     await this.linkShareService.addWebIdToGroup(group);
-    const storage = this.keystoreService.createSecureStorage(
+    const storage = this.keystoreStorageService.createSecureStorage(
       keystoreEncryptionKey
     );
     await this.keystoreService.addKeystore(

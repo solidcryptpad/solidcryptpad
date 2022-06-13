@@ -14,20 +14,15 @@ import { SolidClientService } from '../module-wrappers/solid-client/solid-client
 import { NotFoundException } from 'src/app/exceptions/not-found-exception';
 import * as mime from 'mime';
 import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
-import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
 import { throwWithContext } from 'src/app/exceptions/error-options';
 import { FolderNotEmptyException } from 'src/app/exceptions/folder-not-empty-exception';
 import { SolidPodException } from 'src/app/exceptions/solid-pod-exception';
-import { FileEncryptionService } from '../encryption/file-encryption/file-encryption.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SolidFileHandlerService {
-  private readonly cryptoDirectoryName = 'solidcryptpad';
-
   constructor(
-    private fileEncryptionService: FileEncryptionService,
     private solidClientService: SolidClientService,
     private authService: SolidAuthenticationService
   ) {}
@@ -50,33 +45,6 @@ export class SolidFileHandlerService {
     } catch (error: any) {
       this.convertError(error);
     }
-  }
-
-  /**
-   * reads and exncrypted file saved at the url
-   *
-   * @param fileURL the url to read from
-   * @returns a promise for the decrypted file as a blob
-   * @throws InvalidUrlException if the given url is not considered valid
-   * @throws PermissionException if the given url cannot be written to
-   * @throws UnknownException on all errors that are not explicitly caught
-   * @throws NotFoundException if the given file was not found
-   * @throws NotACryptpadUrlException if the url does not point into a solidcryptpad folder
-   */
-  async readAndDecryptFile(fileURL: string): Promise<Blob> {
-    if (!this.isCryptoDirectory(fileURL)) {
-      throw new NotACryptpadUrlException('file is not in a valid directory');
-    }
-    const file = await this.readFile(fileURL);
-    return await this.fileEncryptionService.decryptFile(file, fileURL);
-  }
-
-  async readAndDecryptFileWithKey(fileURL: string, key: string): Promise<Blob> {
-    if (!this.isCryptoDirectory(fileURL)) {
-      throw new NotACryptpadUrlException('file is not in a valid directory');
-    }
-    const file = await this.readFile(fileURL);
-    return await this.fileEncryptionService.decryptFileWithKey(file, key);
   }
 
   /**
@@ -109,38 +77,6 @@ export class SolidFileHandlerService {
     } catch (error: any) {
       this.convertError(error);
     }
-  }
-
-  /**
-   * encrypts a file and writes it to an url
-   * if the given link is a directory the fileName is appended
-   * if the file already exists then it is overwritten
-   * if the file does not exist then a new one is created
-   *
-   * @param fileURL the url to write to
-   * @returns a promise for the saved file
-   * @throws InvalidUrlException if the given url is not considered valid
-   * @throws PermissionException if the given url cannot be written to cause of missing permissions
-   * @throws UnknownException on all errors that are not explicitly caught
-   * @throws AlreadyExistsException if the file cannot be overwritten
-   */
-  async writeAndEncryptFile(
-    file: Blob,
-    fileURL: string,
-    fileName = 'unnamed'
-  ): Promise<Blob> {
-    if (this.isContainer(fileURL)) {
-      fileURL = fileURL + '' + fileName;
-    }
-    if (!this.isCryptoDirectory(fileURL)) {
-      throw new NotACryptpadUrlException('file is not in a valid directory');
-    }
-    const encryptedFile = await this.fileEncryptionService.encryptFile(
-      file,
-      fileURL
-    );
-
-    return this.writeFile(encryptedFile, fileURL, fileName);
   }
 
   /**
@@ -260,23 +196,6 @@ export class SolidFileHandlerService {
    */
   guessContentType(url: string): string | null {
     return mime.getType(url);
-  }
-
-  /**
-   * checks if the directory is a valid cryptodirectory
-   * @param url the url to check
-   * @returns if it contains the wanted directoryname
-   */
-  isCryptoDirectory(url: string): boolean {
-    return url.includes('/' + this.cryptoDirectoryName + '/');
-  }
-
-  /**
-   * @param baseUrl url to which the crypto directory path should be added. Must end with /
-   * @returns url of the crypto directory
-   */
-  getDefaultCryptoDirectoryUrl(baseUrl: string): string {
-    return `${baseUrl}${this.cryptoDirectoryName}/`;
   }
 
   /**

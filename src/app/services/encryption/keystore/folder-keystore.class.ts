@@ -1,4 +1,4 @@
-import { FetchError } from '@inrupt/solid-client';
+import { NotFoundException } from 'src/app/exceptions/not-found-exception';
 import { throwWithContext } from 'src/app/exceptions/error-options';
 import { KeyNotFoundException } from 'src/app/exceptions/key-not-found-exception';
 import { Keystore, SecureRemoteStorage } from './keystore.interface';
@@ -62,7 +62,7 @@ export class FolderKeystore implements Keystore {
       const data: FolderKeystoreJSON = JSON.parse(json);
       this.keys = data.keys;
     } catch (error) {
-      if (error instanceof FetchError && error.statusCode === 404) {
+      if (error instanceof NotFoundException) {
         this.keys = {};
       } else
         throwWithContext(`Could not load keys for ${this.root}`)(

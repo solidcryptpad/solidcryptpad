@@ -10,6 +10,7 @@ import {
 } from '../solid-permission/solid-permission.service';
 import { Keystore } from '../encryption/keystore/keystore.interface';
 import { FolderKeystore } from '../encryption/keystore/folder-keystore.class';
+import { KeystoreStorageService } from '../encryption/keystore/keystore-storage.service';
 
 @Injectable({
   providedIn: 'root',
@@ -17,6 +18,7 @@ import { FolderKeystore } from '../encryption/keystore/folder-keystore.class';
 export class LinkShareService {
   constructor(
     private keystoreService: KeystoreService,
+    private keystoreStorageService: KeystoreStorageService,
     private encryptionService: EncryptionService,
     private authService: SolidAuthenticationService,
     private fileService: SolidFileHandlerService,
@@ -143,7 +145,8 @@ export class LinkShareService {
     encryptionKey: string
   ): Promise<string> {
     const keystoreUrl = folderUrl + '.keystore';
-    const storage = this.keystoreService.createSecureStorage(encryptionKey);
+    const storage =
+      this.keystoreStorageService.createSecureStorage(encryptionKey);
     const keystore: Keystore = new FolderKeystore(
       keystoreUrl,
       folderUrl,
