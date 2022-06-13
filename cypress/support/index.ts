@@ -68,6 +68,18 @@ declare global {
         user: UserConfig,
         ...args: Parameters<Cypress.Chainable['request']>
       ): Chainable<void>;
+
+      explorerOpenNode(itemName: string): Chainable<void>;
+      explorerOpenMenu(itemName: string): Chainable<JQuery<HTMLElement>>;
+      explorerCreateFolderIn(
+        parentFolderName: string,
+        folderName: string
+      ): Chainable<void>;
+      explorerUploadFileIn(
+        parentFolderName: string,
+        fileName: string,
+        content: Blob
+      ): Chainable<void>;
     }
   }
   interface Window {

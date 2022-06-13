@@ -10,28 +10,42 @@ export class FolderKeystore implements Keystore {
   private keys: { [fileUrl: string]: string } = {};
 
   /**
-   * @param url url where the keystore is stored on the pod
+   * @param keystoreUrl url where the keystore is stored on the pod
    * @param root url of the folder for which this keystore has the keys
    * @param storage storage that is used to save and load the keystore
    */
   constructor(
-    private url: string,
+    private keystoreUrl: string,
     private root: string,
     private storage: SecureRemoteStorage
   ) {}
 
-  containsKeyForUrl(url: string): boolean {
+  handlesKeyForUrl(url: string) {
     return url.startsWith(this.root);
   }
 
-  async getKey(url: string): Promise<string> {
+  async getKey(url: string) {
     return this.keys[url] ?? this.getRemoteKey(url);
   }
 
-  async addKey(url: string, key: string): Promise<void> {
+  async getKeysAll() {
+    await this.loadKeys();
+    return { ...this.keys };
+  }
+
+  async addKey(url: string, key: string) {
     // a race condition can happen if in two tabs we add a key at the same time
     await this.loadKeys();
     this.keys[url] = key;
+    await this.saveKeys();
+  }
+
+  async addKeys(keys: { [url: string]: string }): Promise<void> {
+    await this.loadKeys();
+    this.keys = {
+      ...this.keys,
+      ...keys,
+    };
     await this.saveKeys();
   }
 
@@ -44,7 +58,7 @@ export class FolderKeystore implements Keystore {
 
   private async loadKeys(): Promise<void> {
     try {
-      const json = await this.storage.loadSecure(this.url);
+      const json = await this.storage.loadSecure(this.keystoreUrl);
       const data: FolderKeystoreJSON = JSON.parse(json);
       this.keys = data.keys;
     } catch (error) {
@@ -59,7 +73,7 @@ export class FolderKeystore implements Keystore {
 
   private async saveKeys(): Promise<void> {
     const data: FolderKeystoreJSON = { keys: this.keys };
-    await this.storage.saveSecure(this.url, JSON.stringify(data));
+    await this.storage.saveSecure(this.keystoreUrl, JSON.stringify(data));
   }
 
   getStorage(): SecureRemoteStorage {
@@ -68,7 +82,7 @@ export class FolderKeystore implements Keystore {
 
   serialize(): string {
     return JSON.stringify({
-      url: this.url,
+      url: this.keystoreUrl,
       root: this.root,
       storage: this.storage.serialize(),
     });

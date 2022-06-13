@@ -8,6 +8,8 @@ import {
   SolidPermissionService,
   SolidPermissions,
 } from '../solid-permission/solid-permission.service';
+import { Keystore } from '../encryption/keystore/keystore.interface';
+import { FolderKeystore } from '../encryption/keystore/folder-keystore.class';
 
 @Injectable({
   providedIn: 'root',
@@ -86,6 +88,11 @@ export class LinkShareService {
     grantedPermissions: Partial<SolidPermissions>
   ): Promise<string> {
     // TODO: somehow give access to a keystore for this folder
+    const encryptionKey = this.encryptionService.generateNewKey();
+    const keystoreUrl = await this.setupKeystoreForFolder(
+      folderURL,
+      encryptionKey
+    );
     // currently it only handles solid sharing, not encryption
 
     await this.ensureGroupsFolderExists();
@@ -126,7 +133,26 @@ export class LinkShareService {
     return this.toSharingLink({
       folder: folderURL,
       group: groupUrl,
+      keystore: keystoreUrl,
+      keystoreEncryptionKey: encryptionKey,
     });
+  }
+
+  private async setupKeystoreForFolder(
+    folderUrl: string,
+    encryptionKey: string
+  ): Promise<string> {
+    const keystoreUrl = folderUrl + '.keystore';
+    const storage = this.keystoreService.createSecureStorage(encryptionKey);
+    const keystore: Keystore = new FolderKeystore(
+      keystoreUrl,
+      folderUrl,
+      storage
+    );
+    const keys = await this.keystoreService.getKeysInFolder(folderUrl);
+    await keystore.addKeys(keys);
+    await this.keystoreService.addKeystore(keystore);
+    return keystoreUrl;
   }
 
   /**
