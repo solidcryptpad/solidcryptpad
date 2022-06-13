@@ -11,18 +11,15 @@ import {
   WithResourceInfo,
 } from '@inrupt/solid-client';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
-import { KeystoreService } from '../encryption/keystore/keystore.service';
 import { AlreadyExistsException } from 'src/app/exceptions/already-exists-exception';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
 import { BaseException } from 'src/app/exceptions/base-exception';
-import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
 import { FolderNotEmptyException } from 'src/app/exceptions/folder-not-empty-exception';
 
 describe('SolidFileHandlerService', () => {
   let service: SolidFileHandlerService;
   let authenticationServiceSpy: jasmine.SpyObj<SolidAuthenticationService>;
   let solidClientServiceSpy: jasmine.SpyObj<SolidClientService>;
-  let keyStoreServiceSpy: jasmine.SpyObj<KeystoreService>;
 
   beforeEach(() => {
     const authenticationSpy = jasmine.createSpyObj('SolidAuthenticationSpy', [
@@ -40,18 +37,12 @@ describe('SolidFileHandlerService', () => {
       'deleteContainer',
       'deleteFile',
     ]);
-    const keyStoreSpy = jasmine.createSpyObj('KeystoreService', [
-      'decryptFile',
-      'setMasterPassword',
-      'encryptFile',
-    ]);
 
     TestBed.configureTestingModule({
       providers: [
         SolidFileHandlerService,
         { provide: SolidAuthenticationService, useValue: authenticationSpy },
         { provide: SolidClientService, useValue: solidClientSpy },
-        { provide: KeystoreService, useValue: keyStoreSpy },
       ],
     });
     service = TestBed.inject(SolidFileHandlerService);
@@ -64,10 +55,6 @@ describe('SolidFileHandlerService', () => {
     solidClientServiceSpy = TestBed.inject(
       SolidClientService
     ) as jasmine.SpyObj<SolidClientService>;
-
-    keyStoreServiceSpy = TestBed.inject(
-      KeystoreService
-    ) as jasmine.SpyObj<KeystoreService>;
   });
 
   it('should be created', () => {
@@ -124,24 +111,6 @@ describe('SolidFileHandlerService', () => {
     expect(service.convertError).toHaveBeenCalled();
   });
 
-  it('readAndDecryptFile calls decryptFile with returned file', async () => {
-    const url = 'https://real.url.com/solidcryptpad/test';
-    const file = mockFileFrom(url);
-    const decryptedFile = new Blob(['decrypted File']);
-
-    solidClientServiceSpy.getFile.and.returnValue(Promise.resolve(file));
-    keyStoreServiceSpy.decryptFile.and.returnValue(
-      Promise.resolve(decryptedFile)
-    );
-
-    await expectAsync(service.readAndDecryptFile(url))
-      .withContext('file was not decrypted')
-      .toBeResolvedTo(decryptedFile);
-
-    expect(solidClientServiceSpy.getFile).toHaveBeenCalled();
-    expect(keyStoreServiceSpy.decryptFile).toHaveBeenCalled();
-  });
-
   it('writeFile calls overwriteFile', async () => {
     const url = 'https://real.url.com';
     const blob = new Blob(['blob']) as Blob & WithResourceInfo;
@@ -180,42 +149,6 @@ describe('SolidFileHandlerService', () => {
     await service.writeFile(file, url);
 
     expect(service.convertError).toHaveBeenCalled();
-  });
-
-  it('writeAndEncryptFile calls writeFile and encryptFile', async () => {
-    const url = 'https://real.url.com/solidcryptpad/test';
-    const file = mockFileFrom(url);
-    const encryptedFile = new Blob(['encryptedFile File']);
-
-    solidClientServiceSpy.overwriteFile.and.returnValue(Promise.resolve(file));
-    keyStoreServiceSpy.encryptFile.and.returnValue(
-      Promise.resolve(encryptedFile)
-    );
-
-    await service.writeAndEncryptFile(file, url);
-
-    expect(solidClientServiceSpy.overwriteFile).toHaveBeenCalled();
-    expect(keyStoreServiceSpy.encryptFile).toHaveBeenCalledWith(
-      file,
-      jasmine.anything()
-    );
-  });
-
-  it('writeAndEncryptFile throws exception on url without solidcryptpad', async () => {
-    const url = 'https://real.url.com/test';
-    const file = mockFileFrom(url);
-
-    await expectAsync(
-      service.writeAndEncryptFile(file, url)
-    ).toBeRejectedWithError(NotACryptpadUrlException);
-  });
-
-  it('readAndDecryptFile throws exception on url without solidcryptpad', async () => {
-    const url = 'https://real.url.com/test';
-
-    await expectAsync(service.readAndDecryptFile(url)).toBeRejectedWithError(
-      NotACryptpadUrlException
-    );
   });
 
   it('convertError converts 404 to NotFoundException', () => {
@@ -308,20 +241,19 @@ describe('SolidFileHandlerService', () => {
   });
 
   it('getContainer calls convertError on error', async () => {
-    const url = 'https://real.url.com';
-
-    solidClientServiceSpy.getSolidDataset.and.throwError(new Error());
-
+    solidClientServiceSpy.getSolidDataset.and.rejectWith(new Error());
     spyOn(service, 'convertError');
 
-    await service.getContainer(url);
+    await service.getContainer('https://example.com');
 
     expect(service.convertError).toHaveBeenCalled();
   });
 
   it('getContainer calls getSolidDataset', async () => {
-    const url = 'https://real.url.com';
-    await service.getContainer(url);
+    solidClientServiceSpy.getSolidDataset.and.resolveTo();
+
+    await service.getContainer('https://example.com');
+
     expect(solidClientServiceSpy.getSolidDataset).toHaveBeenCalled();
   });
 
@@ -400,25 +332,6 @@ describe('SolidFileHandlerService', () => {
     expect(created).toBeFalse();
     expect(service.writeContainer).not.toHaveBeenCalled();
   }));
-
-  it('isCryptoDirectory returns false for non-crypto-directory', () => {
-    const result = service.isCryptoDirectory('https://example.org/test/foo/');
-    expect(result).toBeFalse();
-  });
-
-  it('isCryptoDirectory returns true for crypto-directory', () => {
-    const result = service.isCryptoDirectory(
-      'https://example.org/solidcryptpad/foo/'
-    );
-    expect(result).toBeTrue();
-  });
-
-  it('getDefaultCryptoDirectoryUrl append default crypto directory to baseUrl', () => {
-    const cryptoDirectoryUrl = service.getDefaultCryptoDirectoryUrl(
-      'https://example.org/test/'
-    );
-    expect(cryptoDirectoryUrl).toBe('https://example.org/test/solidcryptpad/');
-  });
 
   it('deleteFolder calls deleteContainer', async () => {
     const url = 'https://real.url.com';

@@ -19,11 +19,13 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ProfileService } from 'src/app/services/profile/profile.service';
 import { NotificationService } from 'src/app/services/notification/notification.service';
 import { LinkShareService } from 'src/app/services/link-share/link-share.service';
+import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 
 describe('TreeNestedExplorerComponent', () => {
   let component: TreeNestedExplorerComponent;
   let fixture: ComponentFixture<TreeNestedExplorerComponent>;
   let fileHandlerServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
+  let fileEncryptionServiceSpy: jasmine.SpyObj<FileEncryptionService>;
   let profileServiceSpy: jasmine.SpyObj<ProfileService>;
   let dialogSpy: jasmine.SpyObj<MatDialog>;
   let notificationSpy: jasmine.SpyObj<NotificationService>;
@@ -36,9 +38,12 @@ describe('TreeNestedExplorerComponent', () => {
     const fileHandlerSpy = jasmine.createSpyObj('SolidFileHandlerSpy', [
       'getContainerContent',
       'isContainer',
-      'isCryptoDirectory',
       'deleteFolder',
       'deleteFile',
+    ]);
+    const fileEncryptionSpy = jasmine.createSpyObj('SolidEncryptionSpy', [
+      'isCryptoDirectory',
+      'getDefaultCryptoDirectoryUrl',
     ]);
     const matDialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
     const profileServiceSpyObj = jasmine.createSpyObj('ProfileServiceSpy', [
@@ -91,6 +96,7 @@ describe('TreeNestedExplorerComponent', () => {
         },
         { provide: NotificationService, useValue: notificationServiceSpy },
         { provide: LinkShareService, useValue: linkShareServiceSpy },
+        { provide: FileEncryptionService, useValue: fileEncryptionSpy },
       ],
     }).compileComponents();
 
@@ -101,6 +107,9 @@ describe('TreeNestedExplorerComponent', () => {
     fileHandlerServiceSpy = TestBed.inject(
       SolidFileHandlerService
     ) as jasmine.SpyObj<SolidFileHandlerService>;
+    fileEncryptionServiceSpy = TestBed.inject(
+      FileEncryptionService
+    ) as jasmine.SpyObj<FileEncryptionService>;
     dialogSpy = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
     // eslint-disable-next-line unused-imports/no-unused-vars
     profileServiceSpy = TestBed.inject(
@@ -114,7 +123,7 @@ describe('TreeNestedExplorerComponent', () => {
     dialogSpy = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
 
     // onInit calls this with the url param specified above, which is a crypto directory
-    fileHandlerServiceSpy.isCryptoDirectory.and.returnValue(true);
+    fileEncryptionServiceSpy.isCryptoDirectory.and.returnValue(true);
 
     fixture = TestBed.createComponent(TreeNestedExplorerComponent);
 

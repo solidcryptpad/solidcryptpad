@@ -29,13 +29,15 @@
     "files-scs:config/util/index/default.json",
     "files-scs:config/util/logging/winston.json",
     "files-scs:config/util/representation-conversion/default.json",
-    "files-scs:config/util/variables/default.json"
+    "files-scs:config/util/variables/default.json",
+    "./acl.json"
   ],
   "@graph": [
     {
       "comment": [
         "A single-pod server that stores its resources on disk.",
-        "Based on the file-no-setup.json config, but with a modified memory.json"
+        "Based on the file-no-setup.json config, but with a modified memory.json",
+        "and modified acl.json"
       ]
     },
     {

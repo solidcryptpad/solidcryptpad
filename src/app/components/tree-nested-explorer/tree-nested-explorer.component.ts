@@ -13,6 +13,7 @@ import { NotificationService } from 'src/app/services/notification/notification.
 import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
 import { firstValueFrom } from 'rxjs';
 import { FolderShareComponent } from '../dialogs/folder-share/folder-share.component';
+import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 
 /**
  * represents an element in the tree
@@ -29,6 +30,7 @@ export class TreeNestedExplorerComponent implements OnInit {
 
   constructor(
     private solidFileHandlerService: SolidFileHandlerService,
+    private fileEncryptionService: FileEncryptionService,
     private profileService: ProfileService,
     private linkShareService: LinkShareService,
     private route: ActivatedRoute,
@@ -41,10 +43,7 @@ export class TreeNestedExplorerComponent implements OnInit {
     this.route.queryParams.subscribe(async (params) => {
       let rootPath: string | undefined = params['url'];
       // check if url is valid
-      if (
-        rootPath &&
-        !this.solidFileHandlerService.isCryptoDirectory(rootPath)
-      ) {
+      if (rootPath && !this.fileEncryptionService.isCryptoDirectory(rootPath)) {
         throw new NotACryptpadUrlException(
           `Not loading ${rootPath}, because it is not an encrypted directory`
         );
@@ -53,7 +52,7 @@ export class TreeNestedExplorerComponent implements OnInit {
       if (!rootPath) {
         const baseUrl = (await this.profileService.getPodUrls())[0];
         rootPath =
-          this.solidFileHandlerService.getDefaultCryptoDirectoryUrl(baseUrl);
+          this.fileEncryptionService.getDefaultCryptoDirectoryUrl(baseUrl);
         const created =
           await this.solidFileHandlerService.ensureContainerExists(rootPath);
         if (created) {

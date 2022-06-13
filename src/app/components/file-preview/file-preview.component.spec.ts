@@ -5,21 +5,21 @@ import {
   tick,
 } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 
 import { FilePreviewComponent } from './file-preview.component';
 import { ActivatedRoute, Router, Routes } from '@angular/router';
 import { of } from 'rxjs';
+import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 
 describe('FilePreviewComponent', () => {
   let component: FilePreviewComponent;
   let fixture: ComponentFixture<FilePreviewComponent>;
   let router: Router;
-  let fileHandlerServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
+  let fileEncryptionServiceSpy: jasmine.SpyObj<FileEncryptionService>;
 
   beforeEach(async () => {
     const routes = [{ path: 'editor', component: {} }] as Routes;
-    const fileHandlerSpy = jasmine.createSpyObj('SolidFileHandlerSpy', [
+    const fileHandlerSpy = jasmine.createSpyObj('FileEncryptionService', [
       'readAndDecryptFile',
     ]);
     await TestBed.configureTestingModule({
@@ -28,7 +28,7 @@ describe('FilePreviewComponent', () => {
       providers: [
         FilePreviewComponent,
         {
-          provide: SolidFileHandlerService,
+          provide: FileEncryptionService,
           useValue: fileHandlerSpy,
         },
         {
@@ -42,9 +42,9 @@ describe('FilePreviewComponent', () => {
       ],
     }).compileComponents();
 
-    fileHandlerServiceSpy = TestBed.inject(
-      SolidFileHandlerService
-    ) as jasmine.SpyObj<SolidFileHandlerService>;
+    fileEncryptionServiceSpy = TestBed.inject(
+      FileEncryptionService
+    ) as jasmine.SpyObj<FileEncryptionService>;
 
     // eslint-disable-next-line unused-imports/no-unused-vars
     router = TestBed.inject(Router);
@@ -61,7 +61,7 @@ describe('FilePreviewComponent', () => {
   });
 
   it('ngOnInit calls setupFilenameFromParams', () => {
-    fileHandlerServiceSpy.readAndDecryptFile.and.returnValue(
+    fileEncryptionServiceSpy.readAndDecryptFile.and.returnValue(
       Promise.resolve(new Blob(['text blabal'], { type: 'image/png' }))
     );
     spyOn(component, 'setupFilenameFromParams');
@@ -89,17 +89,17 @@ describe('FilePreviewComponent', () => {
   });
 
   it('loadDecryptedFile loads test file and call readAndDecryptFile from FileHandler', () => {
-    fileHandlerServiceSpy.readAndDecryptFile.and.returnValue(
+    fileEncryptionServiceSpy.readAndDecryptFile.and.returnValue(
       Promise.resolve(new Blob(['text blabal'], { type: 'text/plain' }))
     );
     component.loadDecryptedFile();
-    expect(fileHandlerServiceSpy.readAndDecryptFile).toHaveBeenCalledWith(
+    expect(fileEncryptionServiceSpy.readAndDecryptFile).toHaveBeenCalledWith(
       component.fileUrl
     );
   });
 
   it('loadDecryptedFile loads text file and call getTextFileContent', fakeAsync(() => {
-    fileHandlerServiceSpy.readAndDecryptFile.and.returnValue(
+    fileEncryptionServiceSpy.readAndDecryptFile.and.returnValue(
       Promise.resolve(new Blob(['text blabal'], { type: 'text/plain' }))
     );
     spyOn(component, 'getTextFileContent');
@@ -111,7 +111,7 @@ describe('FilePreviewComponent', () => {
   }));
 
   it('loadDecryptedFile loads image and call getImageUrlFromBlob', fakeAsync(() => {
-    fileHandlerServiceSpy.readAndDecryptFile.and.returnValue(
+    fileEncryptionServiceSpy.readAndDecryptFile.and.returnValue(
       Promise.resolve(new Blob(['text blabal'], { type: 'image/png' }))
     );
     spyOn(component, 'getImageUrlFromBlob');
@@ -132,7 +132,7 @@ describe('FilePreviewComponent', () => {
 
   it('loadDecryptedFile loads file and set errorMsg', fakeAsync(() => {
     const contentType = 'ggg/plain';
-    fileHandlerServiceSpy.readAndDecryptFile.and.returnValue(
+    fileEncryptionServiceSpy.readAndDecryptFile.and.returnValue(
       Promise.resolve(new Blob(['text blabal albgh'], { type: contentType }))
     );
     component.loadDecryptedFile();
