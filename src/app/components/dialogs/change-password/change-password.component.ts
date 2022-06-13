@@ -34,7 +34,6 @@ export class ChangePasswordComponent {
       this.dialogRef.close();
       return;
     }
-
     if (this.new_password != this.repeated_password) {
       this.notificationService.error({
         title: 'Password',
