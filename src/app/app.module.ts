@@ -19,6 +19,7 @@ import { TextEditorComponent } from './components/text-editor/text-editor.compon
 import { NgxEditorModule } from 'ngx-editor';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { EnterMasterPasswordComponent } from './components/enter-master-password/enter-master-password.component';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialogModule } from '@angular/material/dialog';
 import { GlobalErrorHandlerService } from './services/global-error-handler/global-error-handler.service';
 import { TreeNestedExplorerComponent } from './components/tree-nested-explorer/tree-nested-explorer.component';
@@ -79,6 +80,7 @@ import { ChangePasswordComponent } from './components/dialogs/change-password/ch
   imports: [
     MatInputModule,
     MatFormFieldModule,
+    MatCheckboxModule,
     MatDialogModule,
     BrowserModule,
     AppRoutingModule,

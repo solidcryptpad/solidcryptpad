@@ -40,25 +40,6 @@ export class LinkShareService {
     return this.createFileSharingLink(fileURL, { read: true });
   }
 
-  /**
-   * Creates a read only share link for the given folder.
-   */
-  async createReadOnlyFolderLink(folderURL: string): Promise<string> {
-    return this.createFolderSharingLink(folderURL, {
-      read: true,
-    });
-  }
-
-  /**
-   * Creates a read only share link for the given folder.
-   */
-  async createReadWriteFolderLink(folderURL: string): Promise<string> {
-    return this.createFolderSharingLink(folderURL, {
-      read: true,
-      write: true,
-    });
-  }
-
   private async createFileSharingLink(
     fileUrl: string,
     grantedPermissions: Partial<SolidPermissions>
@@ -85,17 +66,15 @@ export class LinkShareService {
   /**
    * Creates a share link for for the given folder with the given permissions.
    */
-  private async createFolderSharingLink(
+  public async createFolderSharingLink(
     folderURL: string,
     grantedPermissions: Partial<SolidPermissions>
   ): Promise<string> {
-    // TODO: somehow give access to a keystore for this folder
     const encryptionKey = this.encryptionService.generateNewKey();
     const keystoreUrl = await this.setupKeystoreForFolder(
       folderURL,
       encryptionKey
     );
-    // currently it only handles solid sharing, not encryption
 
     await this.ensureGroupsFolderExists();
     const groupUrl = await this.createNewRandomGroup();
@@ -112,8 +91,7 @@ export class LinkShareService {
       grantedPermissions
     );
 
-    // give access to all items in the folder with an acl file
-    // TODO: test if this really works
+    // give access to all items in the folder which already have their own acl file
     await this.fileService.traverseContainerContentsRecursively(
       folderURL,
       async (resourceUrl) => {
@@ -146,6 +124,10 @@ export class LinkShareService {
     encryptionKey: string
   ): Promise<string> {
     const keystoreUrl = folderUrl + '.keystore';
+    // assume that it already is known and contains keys if it already exists
+    if (await this.fileService.fileExists(keystoreUrl)) {
+      return keystoreUrl;
+    }
     const storage =
       this.keystoreStorageService.createSecureStorage(encryptionKey);
     const keystore: Keystore = new FolderKeystore(

@@ -130,21 +130,11 @@ export class TreeNestedExplorerComponent implements OnInit {
     await this.dataSource.reloadNode(this.dataSource.getParent(node));
   }
 
-  async shareFolderReadOnly(node: Node) {
-    const link = await this.linkShareService.createReadOnlyFolderLink(
-      node.link
-    );
+  async shareFolder(node: Node) {
     await this.dialog.open(FolderShareComponent, {
-      data: link,
-    });
-  }
-
-  async shareFolderReadWrite(node: Node) {
-    const link = await this.linkShareService.createReadWriteFolderLink(
-      node.link
-    );
-    await this.dialog.open(FolderShareComponent, {
-      data: link,
+      data: {
+        folderUrl: node.link,
+      },
     });
   }
 }
