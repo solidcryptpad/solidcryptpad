@@ -208,11 +208,10 @@ function hashMasterPassword(masterPassword: string): string {
 }
 
 Cypress.Commands.add('explorerOpenMenu', (itemName: string) => {
-  cy.contains(itemName)
-    .get('mat-tree-node')
+  cy.get('app-tree-nested-explorer')
+    .contains(itemName)
     .closest('[data-cy=tree-node]')
     .find('[data-cy=folder-menu]')
-    .first()
     .click();
 });
 
