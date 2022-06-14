@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatLabel } from '@angular/material/form-field';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 
 import { FolderCreateComponent } from './folder-create.component';
@@ -16,7 +18,8 @@ describe('FolderCreateComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      declarations: [FolderCreateComponent],
+      imports: [FormsModule],
+      declarations: [FolderCreateComponent, MatLabel],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: {} },
         // eslint-disable-next-line

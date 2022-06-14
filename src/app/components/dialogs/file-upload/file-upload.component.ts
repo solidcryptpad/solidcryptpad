@@ -1,6 +1,7 @@
 import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { throwWithContext } from 'src/app/exceptions/error-options';
+import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 
 interface FileUploadData {
@@ -26,7 +27,8 @@ export class FileUploadComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA) private data: FileUploadData,
     private dialogRef: MatDialogRef<FileUploadComponent>,
-    private fileService: SolidFileHandlerService
+    private fileService: SolidFileHandlerService,
+    private fileEncryptionService: FileEncryptionService
   ) {}
 
   async uploadFiles(): Promise<void> {
@@ -41,7 +43,7 @@ export class FileUploadComponent {
     const contentType = this.fileService.guessContentType(file.name);
     const blob = file.slice(0, file.size, contentType || undefined);
 
-    await this.fileService
+    await this.fileEncryptionService
       .writeAndEncryptFile(blob, url)
       .catch(throwWithContext('could not upload file'));
   }

@@ -9,23 +9,20 @@ import { AlreadyExistsException } from 'src/app/exceptions/already-exists-except
 import { InvalidUrlException } from 'src/app/exceptions/invalid-url-exception';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
-import { KeystoreService } from '../keystore/keystore.service';
 import { BaseException } from 'src/app/exceptions/base-exception';
 import { SolidClientService } from '../module-wrappers/solid-client/solid-client.service';
 import { NotFoundException } from 'src/app/exceptions/not-found-exception';
 import * as mime from 'mime';
 import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
-import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
 import { throwWithContext } from 'src/app/exceptions/error-options';
+import { FolderNotEmptyException } from 'src/app/exceptions/folder-not-empty-exception';
+import { SolidPodException } from 'src/app/exceptions/solid-pod-exception';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SolidFileHandlerService {
-  private readonly cryptoDirectoryName = 'solidcryptpad';
-
   constructor(
-    private keystoreService: KeystoreService,
     private solidClientService: SolidClientService,
     private authService: SolidAuthenticationService
   ) {}
@@ -48,25 +45,6 @@ export class SolidFileHandlerService {
     } catch (error: any) {
       this.convertError(error);
     }
-  }
-
-  /**
-   * reads and exncrypted file saved at the url
-   *
-   * @param fileURL the url to read from
-   * @returns a promise for the decrypted file as a blob
-   * @throws InvalidUrlException if the given url is not considered valid
-   * @throws PermissionException if the given url cannot be written to
-   * @throws UnknownException on all errors that are not explicitly caught
-   * @throws NotFoundException if the given file was not found
-   * @throws NotACryptpadUrlException if the url does not point into a solidcryptpad folder
-   */
-  async readAndDecryptFile(fileURL: string): Promise<Blob> {
-    if (!this.isCryptoDirectory(fileURL)) {
-      throw new NotACryptpadUrlException('file is not in a valid directory');
-    }
-    const file = await this.readFile(fileURL);
-    return await this.keystoreService.decryptFile(file, fileURL);
   }
 
   /**
@@ -93,41 +71,12 @@ export class SolidFileHandlerService {
 
     try {
       return await this.solidClientService.overwriteFile(fileURL, file, {
-        contentType: file.type || 'text/plain', //TODO standard content type?
+        contentType: file.type || 'text/plain',
         fetch: this.authService.authenticatedFetch.bind(this.authService),
       });
     } catch (error: any) {
       this.convertError(error);
     }
-  }
-
-  /**
-   * encrypts a file and writes it to an url
-   * if the given link is a directory the fileName is appended
-   * if the file already exists then it is overwritten
-   * if the file does not exist then a new one is created
-   *
-   * @param fileURL the url to write to
-   * @returns a promise for the saved file
-   * @throws InvalidUrlException if the given url is not considered valid
-   * @throws PermissionException if the given url cannot be written to cause of missing permissions
-   * @throws UnknownException on all errors that are not explicitly caught
-   * @throws AlreadyExistsException if the file cannot be overwritten
-   */
-  async writeAndEncryptFile(
-    file: Blob,
-    fileURL: string,
-    fileName = 'unnamed'
-  ): Promise<Blob> {
-    if (this.isContainer(fileURL)) {
-      fileURL = fileURL + '' + fileName;
-    }
-    if (!this.isCryptoDirectory(fileURL)) {
-      throw new NotACryptpadUrlException('file is not in a valid directory');
-    }
-    const encryptedFile = await this.keystoreService.encryptFile(file, fileURL);
-
-    return await this.writeFile(encryptedFile, fileURL, fileName);
   }
 
   /**
@@ -166,13 +115,11 @@ export class SolidFileHandlerService {
   async getContainer(
     containerURL: string
   ): Promise<SolidDataset & WithServerResourceInfo> {
-    try {
-      return await this.solidClientService.getSolidDataset(containerURL, {
+    return this.solidClientService
+      .getSolidDataset(containerURL, {
         fetch: this.authService.authenticatedFetch.bind(this.authService),
-      });
-    } catch (error: any) {
-      this.convertError(error);
-    }
+      })
+      .catch((err: any) => this.convertError(err));
   }
 
   /**
@@ -189,6 +136,19 @@ export class SolidFileHandlerService {
       }
       throw error;
     }
+    return true;
+  }
+
+  async fileExists(fileURL: string): Promise<boolean> {
+    try {
+      await this.readFile(fileURL);
+    } catch (error: any) {
+      if (error instanceof NotFoundException) {
+        return false;
+      }
+      throw error;
+    }
+
     return true;
   }
 
@@ -239,20 +199,57 @@ export class SolidFileHandlerService {
   }
 
   /**
-   * checks if the directory is a valid cryptodirectory
-   * @param url the url to check
-   * @returns if it contains the wanted directoryname
+   * deletes the folder at the url
+   * @param url url of folder to delete
    */
-  isCryptoDirectory(url: string): boolean {
-    return url.includes('/' + this.cryptoDirectoryName + '/');
+  async deleteFolder(url: string): Promise<void> {
+    try {
+      await this.solidClientService.deleteContainer(url, {
+        fetch: this.authService.authenticatedFetch.bind(this.authService),
+      });
+    } catch (error: any) {
+      //is checked here because message doesn't make sense for most cases
+      if (error instanceof FetchError && error.statusCode == 409) {
+        throw new FolderNotEmptyException(
+          'folder has to be empty to be deleted'
+        );
+      }
+      this.convertError(error);
+    }
+  }
+
+  async deleteFile(url: string): Promise<void> {
+    try {
+      await this.solidClientService.deleteFile(url, {
+        fetch: this.authService.authenticatedFetch.bind(this.authService),
+      });
+    } catch (error: any) {
+      this.convertError(error);
+    }
   }
 
   /**
-   * @param baseUrl url to which the crypto directory path should be added. Must end with /
-   * @returns url of the crypto directory
+   * Iterates through all items in a container. If the contained resources are also containers, recursively iterate through its contents.
+   * Guarantees no order of calling.
+   *
+   * @param folderUrl
+   * @param urlHandler will be called with every resource contained in the folder
    */
-  getDefaultCryptoDirectoryUrl(baseUrl: string): string {
-    return `${baseUrl}${this.cryptoDirectoryName}/`;
+  async traverseContainerContentsRecursively(
+    folderUrl: string,
+    urlHandler: (url: string) => Promise<void>
+  ): Promise<void> {
+    const contents: string[] = await this.getContainerContent(folderUrl);
+    const containerUrls = contents.filter((url) => this.isContainer(url));
+    const fileUrls = contents.filter((url) => !this.isContainer(url));
+
+    await Promise.all([
+      ...fileUrls.map(urlHandler),
+      ...containerUrls.map(urlHandler),
+      ...containerUrls.map((url) =>
+        this.traverseContainerContentsRecursively(url, urlHandler)
+      ),
+    ]);
   }
 
   /**
@@ -264,7 +261,6 @@ export class SolidFileHandlerService {
       throw error;
     }
     if (error instanceof TypeError) {
-      console.error(error);
       throw new InvalidUrlException('the given url is not valid', {
         cause: error,
       });
@@ -286,7 +282,11 @@ export class SolidFileHandlerService {
             'A file or folder of that name already exists and cannot be overwritten',
             { cause: error }
           );
-
+        case 500:
+          throw new SolidPodException(
+            'your solid provider returned an error, this might not be our fault',
+            { cause: error }
+          );
         default:
           break;
       }

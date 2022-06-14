@@ -90,6 +90,31 @@ export class FolderDataSource implements DataSource<Node> {
   }
 
   /**
+   * closes and reloads node
+   * @param node the node to reload
+   */
+  public async reloadNode(node: Node) {
+    this.closeNode(node);
+    await this.openNode(node);
+  }
+
+  /**
+   * returns the parent node of the node or itself if root element
+   * @param node the child node
+   * @returns parent node or itself if it is the root element
+   */
+  public getParent(node: Node): Node {
+    const index = this.data.indexOf(node);
+
+    for (let i = index; i >= 0; i--) {
+      if (node.level > this.data[i].level) {
+        return this.data[i];
+      }
+    }
+    return node;
+  }
+
+  /**
    * handles closing the folders
    * @param event the change that occured in the folder
    */
@@ -98,26 +123,30 @@ export class FolderDataSource implements DataSource<Node> {
       .slice()
       .reverse()
       .forEach((node) => {
-        try {
-          node.isLoading = true;
-
-          const index = this.data.indexOf(node);
-          let count = 0;
-
-          // simply counts how many elements to remove, does not have to do anything in the body
-          for (
-            let i = index + 1;
-            i < this.data.length && this.data[i].level > node.level;
-            i++, count++
-          ) {}
-
-          this.data.splice(index + 1, count);
-        } finally {
-          // ensure loading animation stops on success and error
-          this.dataChange.next(this.data);
-          node.isLoading = false;
-        }
+        this.closeNode(node);
       });
+  }
+
+  private closeNode(node: Node) {
+    try {
+      node.isLoading = true;
+
+      const index = this.data.indexOf(node);
+      let count = 0;
+
+      // simply counts how many elements to remove, does not have to do anything in the body
+      for (
+        let i = index + 1;
+        i < this.data.length && this.data[i].level > node.level;
+        i++, count++
+      ) {}
+
+      this.data.splice(index + 1, count);
+    } finally {
+      // ensure loading animation stops on success and error
+      this.dataChange.next(this.data);
+      node.isLoading = false;
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function, unused-imports/no-unused-vars

@@ -5,11 +5,13 @@ import { Session } from '@inrupt/solid-client-authn-browser';
 
 import { SimpleSolidAuthenticationService } from './simple-solid-authentication.service';
 import { Router } from '@angular/router';
+import { UserLocalStorage } from '../user-local-storage/user-local-storage.service';
 
 describe('SimpleSolidAuthenticationService', () => {
   let service: SimpleSolidAuthenticationService;
   let authnBrowserSpy: jasmine.SpyObj<typeof authnBrowser>;
   let router: Router;
+  let userLocalStorage: UserLocalStorage;
 
   const mockLoginStatus = (isLoggedIn: boolean) =>
     authnBrowserSpy.getDefaultSession.and.returnValue({
@@ -23,9 +25,10 @@ describe('SimpleSolidAuthenticationService', () => {
       imports: [RouterTestingModule.withRoutes([])],
     });
     router = TestBed.inject(Router);
+    userLocalStorage = TestBed.inject(UserLocalStorage);
     service = TestBed.inject(
       SimpleSolidAuthenticationService,
-      new SimpleSolidAuthenticationService(router)
+      new SimpleSolidAuthenticationService(router, userLocalStorage)
     );
     authnBrowserSpy = jasmine.createSpyObj('authnBrowserSpy', [
       'onSessionRestore',

@@ -25,6 +25,16 @@ export interface UserConfig {
 }
 
 Cypress.Commands.add(
+  'explorerCreateFolderIn',
+  (parentFolderName: string, folderName: string) => {
+    cy.explorerOpenMenu(parentFolderName);
+    cy.contains('Create Folder').click();
+    cy.get('#create-folder').type(folderName);
+    cy.contains('button', 'Create').click();
+  }
+);
+
+Cypress.Commands.add(
   'createRandomAccount',
   function (): Cypress.Chainable<UserConfig> {
     const username = 'test-' + uuid.v4();
@@ -141,6 +151,7 @@ Cypress.Commands.add('givenFile', (user, url, content, options = {}) => {
 });
 
 const MASTER_PASSWORD_KEY = 'masterPasswordHash';
+const USER_KEYS_KEY = 'USER_STORAGE_KEYS';
 
 Cypress.Commands.add('enterMasterPassword', (user) => {
   /* when directly using cy.get(input...).type(masterPassword)
@@ -176,6 +187,13 @@ Cypress.Commands.add('enterMasterPassword', (user) => {
 
 Cypress.Commands.add('storeMasterPassword', (user) => {
   cy.window().then((win) => {
+    // make the application aware that the masterpassword is set
+    const userKeys = JSON.parse(
+      win.localStorage.getItem(USER_KEYS_KEY) ?? '[]'
+    );
+    userKeys.push(MASTER_PASSWORD_KEY);
+    win.localStorage.setItem(USER_KEYS_KEY, JSON.stringify(userKeys));
+    // set the masterpassword
     win.localStorage.setItem(
       MASTER_PASSWORD_KEY,
       hashMasterPassword(user.masterPassword)
@@ -188,3 +206,39 @@ function hashMasterPassword(masterPassword: string): string {
   const salt = '1205sOlIDCryptPADsalt1502';
   return cryptoJS.SHA256(masterPassword + salt).toString();
 }
+
+Cypress.Commands.add('explorerOpenMenu', (itemName: string) => {
+  cy.get('app-tree-nested-explorer')
+    .contains(itemName)
+    .closest('[data-cy=tree-node]')
+    .find('[data-cy=folder-menu]')
+    .click();
+});
+
+Cypress.Commands.add('explorerOpenNode', (itemName: string) => {
+  cy.contains(itemName).find('[data-cy=open-node]').click();
+});
+
+Cypress.Commands.add(
+  'explorerUploadFileIn',
+  (parentFolderName: string, fileName: string, fileContent: Blob) => {
+    cy.intercept('PUT', `/${parentFolderName}/${fileName}`).as('savedExample');
+    cy.explorerOpenMenu(parentFolderName);
+    cy.contains('Upload Files').click();
+    cy.wrap(Cypress.Blob.blobToArrayBuffer(fileContent)).as(
+      'fileContentBuffer'
+    );
+    cy.get('@fileContentBuffer').then((buffer) =>
+      cy.get('input[type=file]').selectFile({
+        contents: Cypress.Buffer.from(buffer),
+        fileName,
+      })
+    );
+    cy.contains(fileName);
+    cy.get('.mat-dialog-actions').contains('button', 'Upload').click();
+
+    // wait until dialog closed
+    cy.contains('File Upload').should('not.exist');
+    cy.contains(fileName);
+  }
+);

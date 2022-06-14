@@ -11,11 +11,17 @@ import {
 } from 'y-prosemirror';
 import { keymap } from 'prosemirror-keymap';
 import { ProfileService } from '../../services/profile/profile.service';
-import { SolidFileHandlerService } from '../../services/file-handler/solid-file-handler.service';
+import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 import { YXmlFragment } from 'yjs/dist/src/types/YXmlFragment';
 import { fromEvent, debounceTime } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotFoundException } from '../../exceptions/not-found-exception';
+import { LinkShareService } from 'src/app/services/link-share/link-share.service';
+import { MatDialog } from '@angular/material/dialog';
+import { LinkShareComponent } from '../dialogs/link-share/link-share.component';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import ColorHash from 'color-hash';
 
 @Component({
   selector: 'app-text-editor',
@@ -29,6 +35,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   xmlFragement: YXmlFragment | undefined;
   baseUrl = '';
   fileUrl = '';
+  sharedKey = '';
   errorMsg = '';
   provider!: WebrtcProvider;
   ydoc!: Y.Doc;
@@ -36,9 +43,11 @@ export class TextEditorComponent implements OnInit, OnDestroy {
 
   constructor(
     private profileService: ProfileService,
-    private fileService: SolidFileHandlerService,
+    private fileEncryptionService: FileEncryptionService,
+    private linkShareService: LinkShareService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -48,6 +57,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   setupBaseUrl(): void {
     this.profileService.getPodUrls().then((podUrls) => {
       this.baseUrl = podUrls[0];
+      this.setupSharedFileKey();
       this.setupFilenameFromParams();
     });
   }
@@ -67,6 +77,16 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     });
   }
 
+  setupSharedFileKey(): void {
+    this.route.queryParams.subscribe((params) => {
+      const key = params['key'];
+      if (key) {
+        this.sharedKey = atob(key);
+      }
+      console.log(this.sharedKey); // TEMP
+    });
+  }
+
   /**
    * prepares the editor for the current file
    * https://github.com/yjs/y-prosemirror#utilities
@@ -78,6 +98,10 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     // @ts-ignore
     this.provider = new WebrtcProvider(this.getRoomName(), this.ydoc, {
       password: this.getRoomPassword(),
+    });
+
+    this.profileService.getUserName().then((value) => {
+      this.setUsername(value);
     });
 
     this.xmlFragement = this.ydoc.getXmlFragment('prosemirror');
@@ -115,33 +139,63 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     const url = this.fileUrl;
     const data = this.html;
     const blob = new Blob([data], { type: 'text/plain' });
-    await this.fileService.writeAndEncryptFile(blob, url);
+    await this.fileEncryptionService.writeAndEncryptFile(blob, url);
+  }
+
+  handleReadFile(blob: Blob): void {
+    blob.text().then((text) => {
+      this.html = text;
+      this.readyForSave = true;
+      this.editor.commands.focus().exec();
+    });
+  }
+
+  handleReadFileError(reason: Error): void {
+    if (reason instanceof NotFoundException) {
+      console.debug('file not found, creating file');
+      this.readyForSave = true;
+      this.saveFile();
+      return;
+    } else {
+      this.errorMsg = 'Error while opening your file: ' + reason;
+    }
+    console.error('couldnt load file: ' + reason);
+  }
+
+  setUsername(username: string): void {
+    const colorHash = new ColorHash();
+    const color = colorHash.hex(username);
+    this.provider.awareness.setLocalStateField('user', {
+      color: color,
+      name: username,
+    });
   }
 
   /**
    * loads the current file that is open in editor
    */
   loadFile(): void {
-    this.fileService.readAndDecryptFile(this.fileUrl).then(
-      (blob) => {
-        blob.text().then((text) => {
-          this.html = text;
-          this.readyForSave = true;
-          this.editor.commands.focus().exec();
-        });
-      },
-      (reason) => {
-        if (reason instanceof NotFoundException) {
-          console.debug('file not found, creating file');
-          this.readyForSave = true;
-          this.saveFile();
-          return;
-        } else {
-          this.errorMsg = 'Error while opening your file: ' + reason;
+    if (this.sharedKey) {
+      this.fileEncryptionService
+        .readAndDecryptFileWithKey(this.fileUrl, this.sharedKey)
+        .then(
+          (blob) => {
+            this.handleReadFile(blob);
+          },
+          (reason) => {
+            this.handleReadFileError(reason);
+          }
+        );
+    } else {
+      this.fileEncryptionService.readAndDecryptFile(this.fileUrl).then(
+        (blob) => {
+          this.handleReadFile(blob);
+        },
+        (reason) => {
+          this.handleReadFileError(reason);
         }
-        console.error('couldnt load file: ' + reason);
-      }
-    );
+      );
+    }
   }
 
   /**
@@ -155,6 +209,16 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     this.closeEditor();
     this.html = '';
     this.router.navigate(['/editor'], { queryParams: { filename: '' } });
+  }
+
+  async shareFileReadOnly() {
+    const link = await this.linkShareService.createReadOnlyShareLink(
+      this.fileUrl
+    );
+    console.log(link);
+    this.dialog.open(LinkShareComponent, {
+      data: link,
+    });
   }
 
   /**

@@ -2,6 +2,7 @@ import { FlatTreeControl } from '@angular/cdk/tree';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
+import { LinkShareService } from 'src/app/services/link-share/link-share.service';
 import { MatDialog } from '@angular/material/dialog';
 import { FileUploadComponent } from '../dialogs/file-upload/file-upload.component';
 import { FolderCreateComponent } from '../dialogs/folder-create/folder-create.component';
@@ -10,6 +11,9 @@ import { ProfileService } from 'src/app/services/profile/profile.service';
 import { FolderDataSource, Node } from './folder-data-source.class';
 import { NotificationService } from 'src/app/services/notification/notification.service';
 import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
+import { firstValueFrom } from 'rxjs';
+import { FolderShareComponent } from '../dialogs/folder-share/folder-share.component';
+import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 
 /**
  * represents an element in the tree
@@ -26,7 +30,9 @@ export class TreeNestedExplorerComponent implements OnInit {
 
   constructor(
     private solidFileHandlerService: SolidFileHandlerService,
+    private fileEncryptionService: FileEncryptionService,
     private profileService: ProfileService,
+    private linkShareService: LinkShareService,
     private route: ActivatedRoute,
     private router: Router,
     private dialog: MatDialog,
@@ -37,10 +43,7 @@ export class TreeNestedExplorerComponent implements OnInit {
     this.route.queryParams.subscribe(async (params) => {
       let rootPath: string | undefined = params['url'];
       // check if url is valid
-      if (
-        rootPath &&
-        !this.solidFileHandlerService.isCryptoDirectory(rootPath)
-      ) {
+      if (rootPath && !this.fileEncryptionService.isCryptoDirectory(rootPath)) {
         throw new NotACryptpadUrlException(
           `Not loading ${rootPath}, because it is not an encrypted directory`
         );
@@ -49,7 +52,7 @@ export class TreeNestedExplorerComponent implements OnInit {
       if (!rootPath) {
         const baseUrl = (await this.profileService.getPodUrls())[0];
         rootPath =
-          this.solidFileHandlerService.getDefaultCryptoDirectoryUrl(baseUrl);
+          this.fileEncryptionService.getDefaultCryptoDirectoryUrl(baseUrl);
         const created =
           await this.solidFileHandlerService.ensureContainerExists(rootPath);
         if (created) {
@@ -93,25 +96,45 @@ export class TreeNestedExplorerComponent implements OnInit {
     }
   }
 
-  upload(node: Node) {
-    this.dialog.open(FileUploadComponent, {
+  async upload(node: Node) {
+    const dialogRef = this.dialog.open(FileUploadComponent, {
       data: {
-        folder: {
-          url: node.link,
-        },
+        folder: { url: node.link },
       },
     });
+    await firstValueFrom(dialogRef.afterClosed());
+    this.dataSource.reloadNode(node);
   }
 
-  createFolder(node: Node) {
-    this.dialog.open(FolderCreateComponent, {
+  async createFolder(node: Node) {
+    const dialogRef = this.dialog.open(FolderCreateComponent, {
       data: node,
     });
+    await firstValueFrom(dialogRef.afterClosed());
+    this.dataSource.reloadNode(node);
   }
 
   createFile(node: Node) {
     this.dialog.open(FileCreateComponent, {
       data: node,
+    });
+  }
+
+  async deleteFolder(node: Node) {
+    await this.solidFileHandlerService.deleteFolder(node.link);
+    await this.dataSource.reloadNode(this.dataSource.getParent(node));
+  }
+
+  async deleteFile(node: Node) {
+    await this.solidFileHandlerService.deleteFile(node.link);
+    await this.dataSource.reloadNode(this.dataSource.getParent(node));
+  }
+
+  async shareFolder(node: Node) {
+    await this.dialog.open(FolderShareComponent, {
+      data: {
+        folderUrl: node.link,
+      },
     });
   }
 }

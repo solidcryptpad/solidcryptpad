@@ -3,7 +3,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatTreeHarness } from '@angular/material/tree/testing';
 import { TreeNestedExplorerComponent } from './tree-nested-explorer.component';
-import { Node } from './folder-data-source.class';
+import { FolderDataSource, Node } from './folder-data-source.class';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 import { MatTreeModule } from '@angular/material/tree';
 import { ActivatedRoute } from '@angular/router';
@@ -18,14 +18,18 @@ import { FileUploadComponent } from '../dialogs/file-upload/file-upload.componen
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ProfileService } from 'src/app/services/profile/profile.service';
 import { NotificationService } from 'src/app/services/notification/notification.service';
+import { LinkShareService } from 'src/app/services/link-share/link-share.service';
+import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 
 describe('TreeNestedExplorerComponent', () => {
   let component: TreeNestedExplorerComponent;
   let fixture: ComponentFixture<TreeNestedExplorerComponent>;
   let fileHandlerServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
+  let fileEncryptionServiceSpy: jasmine.SpyObj<FileEncryptionService>;
   let profileServiceSpy: jasmine.SpyObj<ProfileService>;
   let dialogSpy: jasmine.SpyObj<MatDialog>;
   let notificationSpy: jasmine.SpyObj<NotificationService>;
+  let linkShareSpy: jasmine.SpyObj<LinkShareService>;
 
   beforeEach(async () => {
     const notificationServiceSpy = jasmine.createSpyObj('NotificationService', [
@@ -34,11 +38,19 @@ describe('TreeNestedExplorerComponent', () => {
     const fileHandlerSpy = jasmine.createSpyObj('SolidFileHandlerSpy', [
       'getContainerContent',
       'isContainer',
+      'deleteFolder',
+      'deleteFile',
+    ]);
+    const fileEncryptionSpy = jasmine.createSpyObj('SolidEncryptionSpy', [
       'isCryptoDirectory',
+      'getDefaultCryptoDirectoryUrl',
     ]);
     const matDialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
     const profileServiceSpyObj = jasmine.createSpyObj('ProfileServiceSpy', [
       'getPodUrls',
+    ]);
+    const linkShareServiceSpy = jasmine.createSpyObj('LinkShareSpy', [
+      'createReadOnlyFolderLink',
     ]);
 
     const dialogHandlerSpy = jasmine.createSpyObj('MatDialog', [
@@ -83,6 +95,8 @@ describe('TreeNestedExplorerComponent', () => {
           useValue: matDialogSpy,
         },
         { provide: NotificationService, useValue: notificationServiceSpy },
+        { provide: LinkShareService, useValue: linkShareServiceSpy },
+        { provide: FileEncryptionService, useValue: fileEncryptionSpy },
       ],
     }).compileComponents();
 
@@ -93,16 +107,23 @@ describe('TreeNestedExplorerComponent', () => {
     fileHandlerServiceSpy = TestBed.inject(
       SolidFileHandlerService
     ) as jasmine.SpyObj<SolidFileHandlerService>;
+    fileEncryptionServiceSpy = TestBed.inject(
+      FileEncryptionService
+    ) as jasmine.SpyObj<FileEncryptionService>;
     dialogSpy = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
     // eslint-disable-next-line unused-imports/no-unused-vars
     profileServiceSpy = TestBed.inject(
       ProfileService
     ) as jasmine.SpyObj<ProfileService>;
+    // eslint-disable-next-line unused-imports/no-unused-vars
+    linkShareSpy = TestBed.inject(
+      LinkShareService
+    ) as jasmine.SpyObj<LinkShareService>;
 
     dialogSpy = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
 
     // onInit calls this with the url param specified above, which is a crypto directory
-    fileHandlerServiceSpy.isCryptoDirectory.and.returnValue(true);
+    fileEncryptionServiceSpy.isCryptoDirectory.and.returnValue(true);
 
     fixture = TestBed.createComponent(TreeNestedExplorerComponent);
 
@@ -170,8 +191,11 @@ describe('TreeNestedExplorerComponent', () => {
 
   it('create_folder opens correct dialog', async () => {
     dialogSpy.open.and.returnValue({ afterClosed: () => of('ret') } as any);
+    component.dataSource = jasmine.createSpyObj('dataSource', [
+      'reloadNode',
+    ]) as jasmine.SpyObj<FolderDataSource>;
 
-    component.createFolder(new Node('', '', 0, true));
+    await component.createFolder(new Node('', '', 0, true));
 
     expect(dialogSpy.open).toHaveBeenCalledOnceWith(
       FolderCreateComponent,
@@ -190,6 +214,11 @@ describe('TreeNestedExplorerComponent', () => {
     );
   });
   it('opens upload dialog when calling upload', async () => {
+    dialogSpy.open.and.returnValue({ afterClosed: () => of('ret') } as any);
+    component.dataSource = jasmine.createSpyObj('dataSource', [
+      'reloadNode',
+    ]) as jasmine.SpyObj<FolderDataSource>;
+
     const node = new Node(
       'https://example.org/solidcryptpad/test/',
       'test',
@@ -198,7 +227,7 @@ describe('TreeNestedExplorerComponent', () => {
       false
     );
 
-    component.upload(node);
+    await component.upload(node);
 
     expect(dialogSpy.open).toHaveBeenCalledWith(FileUploadComponent, {
       data: {

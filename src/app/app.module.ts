@@ -14,12 +14,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { HomeComponent } from './components/home/home.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FileExplorerComponent } from './components/file-explorer/file-explorer.component';
-import { KeystoreComponent } from './components/keystore/keystore.component';
 import { ToastrModule } from 'ngx-toastr';
 import { TextEditorComponent } from './components/text-editor/text-editor.component';
 import { NgxEditorModule } from 'ngx-editor';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { EnterMasterPasswordComponent } from './components/enter-master-password/enter-master-password.component';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialogModule } from '@angular/material/dialog';
 import { GlobalErrorHandlerService } from './services/global-error-handler/global-error-handler.service';
 import { TreeNestedExplorerComponent } from './components/tree-nested-explorer/tree-nested-explorer.component';
@@ -47,6 +47,11 @@ import {
 } from './services/authentication/solid-authentication.service.mock';
 import { SolidAuthenticationService } from './services/authentication/solid-authentication.service';
 import { SimpleSolidAuthenticationService } from './services/authentication/simple-solid-authentication.service';
+import { LinkShareComponent } from './components/dialogs/link-share/link-share.component';
+import { FolderShareComponent } from './components/dialogs/folder-share/folder-share.component';
+import { ShareComponent } from './components/share/share.component';
+import { ClipboardModule } from '@angular/cdk/clipboard';
+import { ChangePasswordComponent } from './components/dialogs/change-password/change-password.component';
 
 @NgModule({
   declarations: [
@@ -56,7 +61,6 @@ import { SimpleSolidAuthenticationService } from './services/authentication/simp
     HomeComponent,
     TextEditorComponent,
     FileExplorerComponent,
-    KeystoreComponent,
     NavbarComponent,
     EnterMasterPasswordComponent,
     TreeNestedExplorerComponent,
@@ -68,10 +72,15 @@ import { SimpleSolidAuthenticationService } from './services/authentication/simp
     FileCreateComponent,
     DragAndDropDirective,
     SetMasterPasswordComponent,
+    LinkShareComponent,
+    FolderShareComponent,
+    ShareComponent,
+    ChangePasswordComponent,
   ],
   imports: [
     MatInputModule,
     MatFormFieldModule,
+    MatCheckboxModule,
     MatDialogModule,
     BrowserModule,
     AppRoutingModule,
@@ -97,6 +106,7 @@ import { SimpleSolidAuthenticationService } from './services/authentication/simp
     MatListModule,
     MatMenuModule,
     MarkdownModule.forRoot(),
+    ClipboardModule,
   ],
   providers: [
     {

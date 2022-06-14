@@ -18,8 +18,27 @@
         (click)="this.open(node)"
         style="margin-left: 20px"
       >
-        <mat-icon class="mat-icon" title="Open in editor">open_in_new</mat-icon>
+        <mat-icon class="mat-icon" data-cy="open-node" title="Open"
+          >open_in_new</mat-icon
+        >
       </button>
+
+      <span class="spacer"></span>
+
+      <div class="menu" data-cy="folder-menu">
+        <button
+          mat-icon-button
+          style="color: gray"
+          [matMenuTriggerFor]="folder_menu"
+        >
+          <mat-icon class="mat-icon" title="Options">more_horiz</mat-icon>
+        </button>
+        <mat-menu #folder_menu="matMenu">
+          <button mat-menu-item (click)="this.deleteFile(node)">
+            Delete File
+          </button>
+        </mat-menu>
+      </div>
     </mat-tree-node>
     <!-- NODE FOR FILES -->
 
@@ -60,11 +79,17 @@
           <button mat-menu-item (click)="this.upload(node)">
             Upload Files
           </button>
+          <button mat-menu-item (click)="this.shareFolder(node)">
+            Share Folder
+          </button>
           <button mat-menu-item (click)="this.createFolder(node)">
             Create Folder
           </button>
           <button mat-menu-item (click)="this.createFile(node)">
             Create File
+          </button>
+          <button mat-menu-item (click)="this.deleteFolder(node)">
+            Delete Folder
           </button>
         </mat-menu>
       </div>
