@@ -32,23 +32,24 @@ describe('Text-Editor Test', function () {
     cy.enterMasterPassword(this.user);
     cy.contains('solidcryptpad/ExampleFile0.txt');
     cy.get('.NgxEditor').type('Hello world!');
-    cy.get('Close and save file').click();
-    cy.get('Open ExampleFile0.txt').click();
+    cy.contains('Save and close file').click();
+    cy.contains('Open ExampleFile0.txt').click();
     cy.contains('Hello world!');
   });
 
   /**
-   Open a file without auto save and edit the content and save it.
+   Open a file without auto save and edit the content and close it.
    Then reopen the file and check the content.
    **/
   it('Edit file content and save it and reopen it', function () {
     cy.contains('Open ExampleFile0.txt').click();
     cy.enterMasterPassword(this.user);
+    cy.wait(500);
     cy.contains('Auto-Save').click();
     cy.contains('solidcryptpad/ExampleFile0.txt');
-    cy.get('.NgxEditor').type('Hello world!');
-    cy.get('Close and save file').click();
-    cy.get('Open ExampleFile0.txt').click();
-    cy.not('Hello world!');
+    cy.get('.NgxEditor').type('ABCDEFG');
+    cy.contains('Close file without saving').click();
+    cy.contains('Open ExampleFile0.txt').click();
+    cy.get('.NgxEditor').should('not.contain', 'ABCDEFG');
   });
 });
