@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, SecurityContext } from '@angular/core';
 import { Editor } from 'ngx-editor';
 import * as Y from 'yjs';
 import { WebrtcProvider } from 'y-webrtc';
@@ -19,6 +19,7 @@ import { NotFoundException } from '../../exceptions/not-found-exception';
 import { LinkShareService } from 'src/app/services/link-share/link-share.service';
 import { MatDialog } from '@angular/material/dialog';
 import { LinkShareComponent } from '../dialogs/link-share/link-share.component';
+import { DomSanitizer } from '@angular/platform-browser';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import ColorHash from 'color-hash';
@@ -47,7 +48,8 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     private linkShareService: LinkShareService,
     private route: ActivatedRoute,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -137,14 +139,14 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    */
   async saveFile(): Promise<void> {
     const url = this.fileUrl;
-    const data = this.html;
+    const data = this.sanitizeHtmlContent(this.html);
     const blob = new Blob([data], { type: 'text/plain' });
     await this.fileEncryptionService.writeAndEncryptFile(blob, url);
   }
 
   handleReadFile(blob: Blob): void {
     blob.text().then((text) => {
-      this.html = text;
+      this.html = this.sanitizeHtmlContent(text);
       this.readyForSave = true;
       this.editor.commands.focus().exec();
     });
@@ -252,6 +254,18 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    */
   getRoomPassword(): string {
     return 'pw-' + this.fileUrl; //TODO generate room pw
+  }
+
+  /**
+   * sanitize Html Content
+   * @param htmlstring sanitized Html Content
+   */
+  public sanitizeHtmlContent(htmlstring: string): string {
+    let content = this.sanitizer.sanitize(SecurityContext.HTML, htmlstring);
+    if (content === null) {
+      content = '';
+    }
+    return content;
   }
 
   ngOnDestroy(): void {
