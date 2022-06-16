@@ -295,4 +295,24 @@ export class SolidFileHandlerService {
       cause: error,
     });
   }
+
+  is_hidden_file(url: string): boolean {
+    // the groups folder is hidden
+    if (url.endsWith('/solidcryptpad/groups/')) {
+      return true;
+    }
+
+    // prepare for further checks
+    if (url.endsWith('/')) {
+      url = url.slice(0, url.length - 1);
+    }
+
+    // files starting with . should be hidden
+    const url_parts = url.split('/');
+    if (url_parts[url_parts.length - 1].startsWith('.')) {
+      return true;
+    }
+
+    return false;
+  }
 }

@@ -75,9 +75,11 @@ export class FolderDataSource implements DataSource<Node> {
     const childUrls = await this.solidFileHandlerService.getContainerContent(
       node.link
     );
-    const childNodes = childUrls.map((childUrl) =>
-      this.createNode(childUrl, node.level + 1)
-    );
+    const childNodes = childUrls
+      .filter(
+        (childUrl) => !this.solidFileHandlerService.is_hidden_file(childUrl)
+      )
+      .map((childUrl) => this.createNode(childUrl, node.level + 1));
 
     const index = this.data.indexOf(node);
     this.data.splice(index + 1, 0, ...childNodes);
