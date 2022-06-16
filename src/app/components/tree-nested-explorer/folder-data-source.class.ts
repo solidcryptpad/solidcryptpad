@@ -77,7 +77,7 @@ export class FolderDataSource implements DataSource<Node> {
     );
     const childNodes = childUrls
       .filter(
-        (childUrl) => !this.solidFileHandlerService.is_hidden_file(childUrl)
+        (childUrl) => !this.solidFileHandlerService.isHiddenFile(childUrl)
       )
       .map((childUrl) => this.createNode(childUrl, node.level + 1));
 

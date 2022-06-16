@@ -40,6 +40,7 @@ describe('TreeNestedExplorerComponent', () => {
       'isContainer',
       'deleteFolder',
       'deleteFile',
+      'isHiddenFile',
     ]);
     const fileEncryptionSpy = jasmine.createSpyObj('SolidEncryptionSpy', [
       'isCryptoDirectory',
@@ -164,6 +165,29 @@ describe('TreeNestedExplorerComponent', () => {
     await nodes[1].expand();
 
     expect((await tree.getNodes()).length).toBe(3);
+  });
+
+  it('tree does not load hidden files', async () => {
+    fileHandlerServiceSpy.getContainerContent.and.returnValues(
+      Promise.resolve(['example.url.com/solidcryptpad/root1/']),
+      Promise.resolve(['example.url.com/solidcryptpad/root1/child.file'])
+    );
+
+    // for some reason if this is set to true the elements are not added
+    fileHandlerServiceSpy.isContainer.and.returnValue(false);
+
+    fixture.detectChanges();
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+
+    const tree = await loader.getHarness(MatTreeHarness);
+    const nodes = await tree.getNodes();
+    expect(nodes.length).toEqual(2);
+
+    fileHandlerServiceSpy.isContainer.and.returnValue(true);
+
+    await nodes[1].expand();
+
+    expect((await tree.getNodes()).length).toBe(2);
   });
 
   it('tree closes elements correctly', async () => {

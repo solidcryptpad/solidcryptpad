@@ -296,7 +296,7 @@ export class SolidFileHandlerService {
     });
   }
 
-  is_hidden_file(url: string): boolean {
+  isHiddenFile(url: string): boolean {
     // the groups folder is hidden
     if (url.endsWith('/solidcryptpad/groups/')) {
       return true;
