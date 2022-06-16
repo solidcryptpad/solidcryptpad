@@ -296,6 +296,13 @@ export class SolidFileHandlerService {
     });
   }
 
+  /**
+   * checks if a file should be hidden from user
+   * if hides all files/folders starting with a . and the groups folder
+   * but it does not hide anything if it is a child of those folders
+   * @param url the file to check
+   * @returns if the file should be hidden
+   */
   isHiddenFile(url: string): boolean {
     // the groups folder is hidden
     if (url.endsWith('/solidcryptpad/groups/')) {

@@ -380,6 +380,42 @@ describe('SolidFileHandlerService', () => {
 
     expect(service.convertError).toHaveBeenCalled();
   });
+
+  it('isHiddenFile file works on invisible file', () => {
+    expect(
+      service.isHiddenFile('example.url.com/solidcryptpad/.root1')
+    ).toBeTrue();
+  });
+
+  it('isHiddenFile file works on normal file', () => {
+    expect(
+      service.isHiddenFile('example.url.com/solidcryptpad/root1')
+    ).toBeFalse();
+  });
+
+  it('isHiddenFile file works in hidden folders', () => {
+    expect(
+      service.isHiddenFile('example.url.com/solidcryptpad/.root1/test')
+    ).toBeFalse();
+  });
+
+  it('isHiddenFile file works on groups folder', () => {
+    expect(
+      service.isHiddenFile('example.url.com/solidcryptpad/groups/')
+    ).toBeTrue();
+  });
+
+  it('isHiddenFile file works on groups folder', () => {
+    expect(
+      service.isHiddenFile('example.url.com/solidcryptpad/groups/')
+    ).toBeTrue();
+  });
+
+  it('isHiddenFile file works inside groups folder', () => {
+    expect(
+      service.isHiddenFile('example.url.com/solidcryptpad/groups/test')
+    ).toBeFalse();
+  });
 });
 
 /**
