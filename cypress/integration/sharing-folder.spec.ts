@@ -122,6 +122,7 @@ describe('Folder sharing', function () {
     cy.url().as('filePreviewUrl');
     cy.contains(fileContent);
 
+    // modifying file
     const fileUrl = `${this.owner.podUrl}/solidcryptpad/${folderName}/${fileName}`;
     const newFileContent = 'Goodbye World!';
     cy.intercept('PUT', fileUrl).as('savedFile');
@@ -131,6 +132,8 @@ describe('Folder sharing', function () {
     cy.get('ngx-editor').clear().type(newFileContent);
     cy.wait('@savedFile');
 
+    // creator can see the changes
+    cy.loginMocked(this.owner);
     cy.get('@filePreviewUrl').then(cy.visit);
     cy.contains('Preview from');
     cy.contains(newFileContent);

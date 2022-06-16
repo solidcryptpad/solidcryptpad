@@ -5,7 +5,6 @@ import { MasterPasswordService } from '../master-password/master-password.servic
 import { KeyNotFoundException } from 'src/app/exceptions/key-not-found-exception';
 import { FolderKeystore } from './folder-keystore.class';
 import { throwWithContext } from 'src/app/exceptions/error-options';
-import { KeystoreNotFoundException } from 'src/app/exceptions/keystore-not-found-exception';
 import { Keystore } from './keystore.interface';
 import { KeystoreStorageService } from './keystore-storage.service';
 import { SolidFileHandlerService } from '../../file-handler/solid-file-handler.service';
@@ -26,31 +25,43 @@ export class KeystoreService {
 
   private readonly keystoresFolderPath: string = 'solidcryptpad-keystores/';
 
+  /**
+   * Search through all responsible keystores. Return the first found key for this url
+   */
   async getKey(url: string): Promise<string> {
-    const keystore = await this.getResponsibleKeystore(url);
-    return keystore.getKey(url);
+    const keystores = await this.findAllKeystores((keystore) =>
+      keystore.handlesKeyForUrl(url)
+    );
+    return Promise.any(keystores.map((keystore) => keystore.getKey(url))).catch(
+      (aggregateError) => {
+        throw new KeyNotFoundException(`Could not find key for ${url}`, {
+          cause: aggregateError,
+        });
+      }
+    );
   }
 
+  /**
+   * Try to get the corresponding key. If it is not found, create and store a new key.
+   */
   async getOrCreateKey(url: string): Promise<string> {
-    const keystore = await this.getResponsibleKeystore(url);
-    return keystore.getKey(url).catch(async (error) => {
-      if (error instanceof KeyNotFoundException) {
-        const newKey = this.encryptionService.generateNewKey();
-        // iterating through all, because multiple folders could contain the key (e.g. the own root keystore, and the shared keystore)
-        const keystores = await this.findKeystoreAll((keystore) =>
-          keystore.handlesKeyForUrl(url)
-        );
-        await Promise.all(
-          keystores.map((keystore) => keystore.addKey(url, newKey))
-        );
-        return newKey;
-      }
-      throw error;
+    return this.getKey(url).catch(async (error) => {
+      if (!(error instanceof KeyNotFoundException)) throw error;
+
+      const newKey = this.encryptionService.generateNewKey();
+      await this.addKeyToKeystores(url, newKey);
+      return newKey;
     });
   }
 
-  async getResponsibleKeystore(url: string): Promise<Keystore> {
-    return this.findKeystore((keystore) => keystore.handlesKeyForUrl(url));
+  /**
+   * Add a key for an url to all responsible keystores
+   */
+  private async addKeyToKeystores(url: string, key: string): Promise<void> {
+    const keystores = await this.findAllKeystores((keystore) =>
+      keystore.handlesKeyForUrl(url)
+    );
+    await Promise.all(keystores.map((keystore) => keystore.addKey(url, key)));
   }
 
   async addKeystore(keystore: Keystore): Promise<void> {
@@ -59,18 +70,7 @@ export class KeystoreService {
     await this.saveKeystores();
   }
 
-  private async findKeystore(
-    callback: (keystore: Keystore) => boolean
-  ): Promise<Keystore> {
-    let keystore = this.keystores?.find(callback);
-    if (keystore) return keystore;
-    await this.loadKeystores();
-    keystore = this.keystores?.find(callback);
-    if (keystore) return keystore;
-    throw new KeystoreNotFoundException('Could not find keystore');
-  }
-
-  private async findKeystoreAll(
+  private async findAllKeystores(
     callback: (keystore: Keystore) => boolean
   ): Promise<Keystore[]> {
     await this.loadKeystores();
