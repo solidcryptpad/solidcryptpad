@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
+import { SolidPermissionService } from '../../services/solid-permission/solid-permission.service';
 
 @Component({
   selector: 'app-file-preview',
@@ -13,22 +14,24 @@ export class FilePreviewComponent implements OnInit {
   fileType = '';
   errorMsg = '';
   imageUrl: string | ArrayBuffer | null | undefined;
-  key = '';
-  keyInUrl: boolean;
-  group = '';
+  isWriteable: boolean | undefined;
+  loading = false;
 
   constructor(
     private fileEncryptionService: FileEncryptionService,
     private route: ActivatedRoute,
-    private router: Router
-  ) {
-    this.keyInUrl = false;
-  }
+    private router: Router,
+    private permissionService: SolidPermissionService
+  ) {}
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    this.loading = true;
     this.setupFilenameFromParams();
-    // this.loadFile();
-    this.loadDecryptedFile();
+    await this.loadDecryptedFile();
+    this.isWriteable = await this.permissionService.hasWritePermissions(
+      this.fileUrl
+    );
+    this.loading = false;
   }
 
   setupFilenameFromParams(): void {
@@ -42,34 +45,14 @@ export class FilePreviewComponent implements OnInit {
         console.debug('no filename given');
         //Redirect to files
       }
-
-      if (params['key']) {
-        this.keyInUrl = true;
-        this.key = params['key'];
-      }
-
-      if (params['group']) {
-        this.group = params['group'];
-      }
     });
   }
 
   /**
    * loads the current file and decrypted the File
    */
-  loadDecryptedFile(): void {
-    let readFile;
-
-    if (this.keyInUrl) {
-      readFile = this.fileEncryptionService.readAndDecryptFileWithKey(
-        this.fileUrl,
-        atob(this.key)
-      );
-    } else {
-      readFile = this.fileEncryptionService.readAndDecryptFile(this.fileUrl);
-    }
-
-    readFile.then(
+  async loadDecryptedFile(): Promise<void> {
+    await this.fileEncryptionService.readAndDecryptFile(this.fileUrl).then(
       (blob) => {
         this.fileType = blob.type;
         if (this.fileType.includes('text')) {
@@ -110,13 +93,5 @@ export class FilePreviewComponent implements OnInit {
 
   open(link: string) {
     this.router.navigateByUrl(`/editor?file=${link}`);
-  }
-
-  isWriteable() {
-    if (this.group != '') {
-      return this.group.includes('WRITE');
-    }
-
-    return true;
   }
 }

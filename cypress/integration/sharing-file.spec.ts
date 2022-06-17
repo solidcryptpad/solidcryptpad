@@ -37,9 +37,10 @@ describe('File sharing', function () {
     cy.contains(fileContent);
 
     cy.contains('Share').click();
+    cy.contains('Create Link').click();
     cy.contains('freshly baked');
 
-    // Share
+    // save link for later
     cy.get('code')
       .then((el) => {
         const link = el.contents().text();
@@ -54,5 +55,8 @@ describe('File sharing', function () {
       cy.visit(link as string);
     });
     cy.contains(fileContent);
+    cy.contains('You can not edit this file');
   });
+
+  it('can edit file after sharing read-write link');
 });

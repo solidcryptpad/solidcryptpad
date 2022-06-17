@@ -77,7 +77,7 @@ describe('KeystoreStorageService', () => {
   it('serialize stores the encryption key', () => {
     const storage = service.createSecureStorage('encryption key');
 
-    const serialization = storage.serialize();
+    const serialization = storage.serializeMetadata();
 
     expect(serialization).toContain('encryption key');
   });
@@ -88,7 +88,7 @@ describe('KeystoreStorageService', () => {
     loadKeystoreSpy.and.resolveTo('keystore');
 
     const newStorage = service.deserializeSecureStorage(
-      originalStorage.serialize()
+      originalStorage.serializeMetadata()
     );
     const res = await newStorage.loadSecure('https://example.org');
 

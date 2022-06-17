@@ -2,7 +2,7 @@ export interface Keystore extends Serializable {
   /**
    * Return true if this keystore is intented to store the key for this url.
    */
-  handlesKeyForUrl(url: string): boolean;
+  handlesKeyForUrl(url: string): Promise<boolean>;
 
   /**
    * Return the key for this url.
@@ -30,6 +30,11 @@ export interface Keystore extends Serializable {
    * Return the storage of this keystore.
    */
   getStorage(): SecureRemoteStorage;
+
+  /**
+   * Return the type of the keystore instance.
+   */
+  getKeystoreType(): KeystoreType;
 }
 
 export interface SecureRemoteStorage extends Serializable {
@@ -38,5 +43,7 @@ export interface SecureRemoteStorage extends Serializable {
 }
 
 export interface Serializable {
-  serialize(): string;
+  serializeMetadata(): string;
 }
+
+export type KeystoreType = 'file' | 'folder';

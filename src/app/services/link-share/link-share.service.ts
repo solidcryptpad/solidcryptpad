@@ -29,18 +29,13 @@ export class LinkShareService {
   private readonly groupsFolderPath = 'solidcryptpad/groups/';
 
   /**
-   * Creates a READ ONLY share link for the given file.
+   * Creates a share link for the given file with the given permissons.
    * Access is granted by adding the recipient to a group
-   * which has permissions to view the file. Such a group
-   * has to be prepended by its permission (currently, READ-...)
-   * followed by a cryptographically random string.
-   * @param fileURL
+   * which has permissions to view the file.
+   * @param fileUrl path to the file
+   * @param grantedPermissions set of permissions for the file
    */
-  async createReadOnlyShareLink(fileURL: string): Promise<string> {
-    return this.createFileSharingLink(fileURL, { read: true });
-  }
-
-  private async createFileSharingLink(
+  public async createFileSharingLink(
     fileUrl: string,
     grantedPermissions: Partial<SolidPermissions>
   ): Promise<string> {
@@ -64,7 +59,7 @@ export class LinkShareService {
   }
 
   /**
-   * Creates a share link for for the given folder with the given permissions.
+   * Creates a share link for the given folder with the given permissions.
    */
   public async createFolderSharingLink(
     folderURL: string,

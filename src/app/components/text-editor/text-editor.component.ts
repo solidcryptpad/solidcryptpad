@@ -18,7 +18,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NotFoundException } from '../../exceptions/not-found-exception';
 import { LinkShareService } from 'src/app/services/link-share/link-share.service';
 import { MatDialog } from '@angular/material/dialog';
-import { LinkShareComponent } from '../dialogs/link-share/link-share.component';
+import { FileShareComponent } from '../dialogs/file-share/file-share.component';
 import { DomSanitizer } from '@angular/platform-browser';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -213,13 +213,11 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     this.router.navigate(['/editor'], { queryParams: { filename: '' } });
   }
 
-  async shareFileReadOnly() {
-    const link = await this.linkShareService.createReadOnlyShareLink(
-      this.fileUrl
-    );
-    console.log(link);
-    this.dialog.open(LinkShareComponent, {
-      data: link,
+  async shareFile() {
+    this.dialog.open(FileShareComponent, {
+      data: {
+        fileUrl: this.fileUrl,
+      },
     });
   }
 
