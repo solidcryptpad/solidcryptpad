@@ -10,6 +10,7 @@ import { FilePreviewComponent } from './file-preview.component';
 import { ActivatedRoute, Router, Routes } from '@angular/router';
 import { of } from 'rxjs';
 import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
+import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
 
 describe('FilePreviewComponent', () => {
   let component: FilePreviewComponent;
@@ -18,6 +19,10 @@ describe('FilePreviewComponent', () => {
   let fileEncryptionServiceSpy: jasmine.SpyObj<FileEncryptionService>;
 
   beforeEach(async () => {
+    const authenticationSpy = jasmine.createSpyObj(
+      'SolidAuthenticationService',
+      ['getWebId']
+    );
     const routes = [{ path: 'editor', component: {} }] as Routes;
     const fileHandlerSpy = jasmine.createSpyObj('FileEncryptionService', [
       'readAndDecryptFile',
@@ -27,6 +32,7 @@ describe('FilePreviewComponent', () => {
       imports: [RouterTestingModule.withRoutes(routes)],
       providers: [
         FilePreviewComponent,
+        { provide: SolidAuthenticationService, useValue: authenticationSpy },
         {
           provide: FileEncryptionService,
           useValue: fileHandlerSpy,

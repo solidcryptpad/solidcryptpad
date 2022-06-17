@@ -5,7 +5,7 @@
       Preview from <i>{{ fileUrl }} </i>!
     </h3>
     <button
-      *ngIf="fileType.includes('text') && isWriteable()"
+      *ngIf="fileType.includes('text') && isWriteable"
       (click)="this.open(fileUrl)"
     >
       open in Editor
@@ -18,7 +18,11 @@
     <div class="previewText" *ngIf="fileType.includes('text')">
       <markdown [data]="textFileContent"> </markdown>
     </div>
-    <h3 *ngIf="!isWriteable()" style="color: #0074d9">
+    <mat-progress-bar
+      *ngIf="this.loading"
+      mode="indeterminate"
+    ></mat-progress-bar>
+    <h3 *ngIf="!isWriteable && !loading" style="color: #0074d9">
       You can not edit this file.
     </h3>
   </div>

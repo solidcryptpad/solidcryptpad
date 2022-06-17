@@ -47,7 +47,7 @@ import {
 } from './services/authentication/solid-authentication.service.mock';
 import { SolidAuthenticationService } from './services/authentication/solid-authentication.service';
 import { SimpleSolidAuthenticationService } from './services/authentication/simple-solid-authentication.service';
-import { LinkShareComponent } from './components/dialogs/link-share/link-share.component';
+import { FileShareComponent } from './components/dialogs/file-share/file-share.component';
 import { FolderShareComponent } from './components/dialogs/folder-share/folder-share.component';
 import { ShareComponent } from './components/share/share.component';
 import { ClipboardModule } from '@angular/cdk/clipboard';
@@ -72,7 +72,7 @@ import { ChangePasswordComponent } from './components/dialogs/change-password/ch
     FileCreateComponent,
     DragAndDropDirective,
     SetMasterPasswordComponent,
-    LinkShareComponent,
+    FileShareComponent,
     FolderShareComponent,
     ShareComponent,
     ChangePasswordComponent,

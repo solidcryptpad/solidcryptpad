@@ -23,9 +23,13 @@ export class ShareComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe(async (params) => {
       if (params['file']) {
-        this.processShareFile(params['file'], params['key'], params['group']);
+        await this.processShareFile(
+          params['file'],
+          params['key'],
+          params['group']
+        );
       } else if (params['group']) {
-        this.processShareFolder(
+        await this.processShareFolder(
           params['folder'],
           params['group'],
           params['keystore'],
@@ -41,8 +45,11 @@ export class ShareComponent implements OnInit {
   private async processShareFile(fileUrl: string, key: string, group: string) {
     await this.linkShareService.addWebIdToGroup(group);
 
+    const sharedFilesKeystore =
+      await this.keystoreService.getSharedFilesKeystore();
+    await sharedFilesKeystore.addKey(fileUrl, atob(key));
     await this.router.navigate(['preview'], {
-      queryParams: { url: fileUrl, key, group },
+      queryParams: { url: fileUrl },
     });
   }
 

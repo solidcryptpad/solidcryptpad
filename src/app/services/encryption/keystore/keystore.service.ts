@@ -5,9 +5,11 @@ import { MasterPasswordService } from '../master-password/master-password.servic
 import { KeyNotFoundException } from 'src/app/exceptions/key-not-found-exception';
 import { FolderKeystore } from './folder-keystore.class';
 import { throwWithContext } from 'src/app/exceptions/error-options';
-import { Keystore } from './keystore.interface';
+import { Keystore, KeystoreType } from './keystore.interface';
 import { KeystoreStorageService } from './keystore-storage.service';
 import { SolidFileHandlerService } from '../../file-handler/solid-file-handler.service';
+import { FileKeystore } from './file-keystore.class';
+import { KeystoreNotFoundException } from '../../../exceptions/keystore-not-found-exception';
 
 @Injectable({
   providedIn: 'root',
@@ -71,10 +73,10 @@ export class KeystoreService {
   }
 
   private async findAllKeystores(
-    callback: (keystore: Keystore) => boolean
+    callback: (keystore: Keystore) => Promise<boolean>
   ): Promise<Keystore[]> {
     await this.loadKeystores();
-    return this.keystores?.filter(callback) || [];
+    return filterAsync(this.keystores || [], callback);
   }
 
   async getKeysInFolder(folderUrl: string): Promise<{ [url: string]: string }> {
@@ -107,22 +109,29 @@ export class KeystoreService {
         .then((res) => res.text());
       const masterPassword =
         await this.masterPasswordService.getMasterPassword();
-      const keystoresJSON = await this.encryptionService.decryptString(
+      const keystoresJSON = this.encryptionService.decryptString(
         keystoresEncrypted,
         masterPassword
       );
       const keystoresSerialized: KeystoreSerialization[] =
         JSON.parse(keystoresJSON);
       const keystores: Keystore[] = keystoresSerialized.map(
-        ({ keystoreSerialized, storageSerialized }) => {
+        ({ type, keystoreSerialized, storageSerialized }) => {
           const storage =
             this.keystoreStorageService.deserializeSecureStorage(
               storageSerialized
             );
-          return FolderKeystore.deserialize(keystoreSerialized, storage);
+
+          switch (type) {
+            case 'file':
+              return FileKeystore.deserialize(keystoreSerialized, storage);
+            case 'folder':
+              return FolderKeystore.deserialize(keystoreSerialized, storage);
+          }
         }
       );
       this.keystores = keystores;
+      console.log(keystores);
     } catch (error) {
       throw throwWithContext(
         'Could not load information about encryption keys'
@@ -136,9 +145,9 @@ export class KeystoreService {
     const masterPassword = await this.masterPasswordService.getMasterPassword();
     const keystoresSerialized: KeystoreSerialization[] = this.keystores.map(
       (keystore) => ({
-        type: 'folder',
-        keystoreSerialized: keystore.serialize(),
-        storageSerialized: keystore.getStorage().serialize(),
+        type: keystore.getKeystoreType(),
+        keystoreSerialized: keystore.serializeMetadata(),
+        storageSerialized: keystore.getStorage().serializeMetadata(),
       })
     );
     const keystoresJSON = JSON.stringify(keystoresSerialized);
@@ -146,7 +155,6 @@ export class KeystoreService {
       keystoresJSON,
       masterPassword
     );
-
     await this.fileService.writeFile(
       new Blob([encryptedKeystores], { type: 'text/plain' }),
       keystoresUrl
@@ -154,7 +162,7 @@ export class KeystoreService {
   }
 
   /**
-   * Check if the keystores folder is setup.
+   * Check if the keystores folder is set up.
    * If not, create it with appropriate permissions and ask for master password to secure it
    */
   private async ensureKeystoresFolderSetup() {
@@ -180,14 +188,39 @@ export class KeystoreService {
   private async setupKeystoresFolder() {
     const podRoot = (await this.profileService.getPodUrls())[0];
     const keystoresFolder = await this.getKeystoresFolderUrl();
-    const encryptionKey = this.encryptionService.generateNewKey();
+    const encryptionKeyForSharedFolders =
+      this.encryptionService.generateNewKey();
+    const encryptionKeyForSharedFiles = this.encryptionService.generateNewKey();
     const ownPodKeystore = new FolderKeystore(
       keystoresFolder + 'root.json.enc',
       podRoot,
-      this.keystoreStorageService.createSecureStorage(encryptionKey)
+      this.keystoreStorageService.createSecureStorage(
+        encryptionKeyForSharedFolders
+      )
     );
-    this.keystores = [ownPodKeystore];
+
+    const sharedLinksKeystore = new FileKeystore(
+      this.keystoreStorageService.createSecureStorage(
+        encryptionKeyForSharedFiles
+      ),
+      keystoresFolder + 'shared-files.json.enc'
+    );
+
+    this.keystores = [ownPodKeystore, sharedLinksKeystore];
     await this.saveKeystores();
+  }
+
+  async getSharedFilesKeystore(): Promise<FileKeystore> {
+    await this.loadKeystores();
+    const keystore = this.keystores?.find(
+      (element) => element instanceof FileKeystore
+    ) as FileKeystore;
+
+    if (!keystore) {
+      throw new KeystoreNotFoundException('Nopeeeee');
+    }
+
+    return keystore;
   }
 
   private async getKeystoresListUrl(): Promise<string> {
@@ -201,7 +234,22 @@ export class KeystoreService {
 }
 
 type KeystoreSerialization = {
-  type: 'folder';
+  type: KeystoreType;
   keystoreSerialized: string;
   storageSerialized: string;
 };
+
+function mapAsync<T, U>(
+  array: T[],
+  callbackfn: (value: T, index: number, array: T[]) => Promise<U>
+): Promise<U[]> {
+  return Promise.all(array.map(callbackfn));
+}
+
+async function filterAsync<T>(
+  array: T[],
+  callbackfn: (value: T, index: number, array: T[]) => Promise<boolean>
+): Promise<T[]> {
+  const filterMap = await mapAsync(array, callbackfn);
+  return array.filter((value, index) => filterMap[index]);
+}

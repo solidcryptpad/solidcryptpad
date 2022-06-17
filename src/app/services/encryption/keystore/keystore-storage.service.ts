@@ -17,7 +17,7 @@ export class KeystoreStorageService {
     return {
       loadSecure: (url) => this.loadKeystore(url, encryptionKey),
       saveSecure: (url, data) => this.saveKeystore(url, data, encryptionKey),
-      serialize: () => JSON.stringify({ encryptionKey }),
+      serializeMetadata: () => JSON.stringify({ encryptionKey }),
     };
   }
 
