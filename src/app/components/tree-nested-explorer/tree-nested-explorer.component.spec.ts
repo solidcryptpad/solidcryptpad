@@ -20,6 +20,7 @@ import { ProfileService } from 'src/app/services/profile/profile.service';
 import { NotificationService } from 'src/app/services/notification/notification.service';
 import { LinkShareService } from 'src/app/services/link-share/link-share.service';
 import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
+import { SolidPermissionService } from 'src/app/services/solid-permission/solid-permission.service';
 
 describe('TreeNestedExplorerComponent', () => {
   let component: TreeNestedExplorerComponent;
@@ -82,6 +83,14 @@ describe('TreeNestedExplorerComponent', () => {
         {
           provide: ProfileService,
           useValue: profileServiceSpyObj,
+        },
+        {
+          provide: SolidPermissionService,
+          useValue: {
+            hasWritePermissions: async () => {
+              return Promise.resolve(true);
+            },
+          },
         },
         {
           provide: ActivatedRoute,
