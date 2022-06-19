@@ -1,6 +1,9 @@
 describe('File-Explorer Test', function () {
   beforeEach(function () {
-    cy.createRandomAccount().then(cy.loginMocked).as('user');
+    cy.createRandomAccount()
+      .then(cy.loginMocked)
+      .then(cy.storeMasterPassword)
+      .as('user');
   });
 
   it('Open podUrl and show root folder', function () {
