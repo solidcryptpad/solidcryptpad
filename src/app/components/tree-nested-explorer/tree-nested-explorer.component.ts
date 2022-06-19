@@ -2,7 +2,6 @@ import { FlatTreeControl } from '@angular/cdk/tree';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
-import { LinkShareService } from 'src/app/services/link-share/link-share.service';
 import { MatDialog } from '@angular/material/dialog';
 import { FileUploadComponent } from '../dialogs/file-upload/file-upload.component';
 import { FolderCreateComponent } from '../dialogs/folder-create/folder-create.component';
@@ -14,6 +13,7 @@ import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-
 import { firstValueFrom } from 'rxjs';
 import { FolderShareComponent } from '../dialogs/folder-share/folder-share.component';
 import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
+import { SolidPermissionService } from 'src/app/services/solid-permission/solid-permission.service';
 
 /**
  * represents an element in the tree
@@ -32,11 +32,11 @@ export class TreeNestedExplorerComponent implements OnInit {
     private solidFileHandlerService: SolidFileHandlerService,
     private fileEncryptionService: FileEncryptionService,
     private profileService: ProfileService,
-    private linkShareService: LinkShareService,
     private route: ActivatedRoute,
     private router: Router,
     private dialog: MatDialog,
-    private notification: NotificationService
+    private notification: NotificationService,
+    private permissionService: SolidPermissionService
   ) {}
 
   ngOnInit(): void {
@@ -71,6 +71,7 @@ export class TreeNestedExplorerComponent implements OnInit {
       this.dataSource = new FolderDataSource(
         this.treeControl,
         this.solidFileHandlerService,
+        this.permissionService,
         this.rootPath
       );
     });

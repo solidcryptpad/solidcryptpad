@@ -25,7 +25,7 @@
 
       <span class="spacer"></span>
 
-      <div class="menu" data-cy="folder-menu">
+      <div *ngIf="node.canWrite" class="menu" data-cy="folder-menu">
         <button
           mat-icon-button
           style="color: gray"
@@ -76,19 +76,39 @@
         </button>
         <mat-menu #menu="matMenu">
           <button mat-menu-item (click)="this.open(node)">Open Folder</button>
-          <button mat-menu-item (click)="this.upload(node)">
+          <button
+            *ngIf="node.canWrite"
+            mat-menu-item
+            (click)="this.upload(node)"
+          >
             Upload Files
           </button>
-          <button mat-menu-item (click)="this.shareFolder(node)">
+          <button
+            *ngIf="node.canWrite"
+            mat-menu-item
+            (click)="this.shareFolder(node)"
+          >
             Share Folder
           </button>
-          <button mat-menu-item (click)="this.createFolder(node)">
+          <button
+            *ngIf="node.canWrite"
+            mat-menu-item
+            (click)="this.createFolder(node)"
+          >
             Create Folder
           </button>
-          <button mat-menu-item (click)="this.createFile(node)">
+          <button
+            *ngIf="node.canWrite"
+            mat-menu-item
+            (click)="this.createFile(node)"
+          >
             Create File
           </button>
-          <button mat-menu-item (click)="this.deleteFolder(node)">
+          <button
+            *ngIf="node.canWrite"
+            mat-menu-item
+            (click)="this.deleteFolder(node)"
+          >
             Delete Folder
           </button>
         </mat-menu>

@@ -7,6 +7,7 @@ import { FlatTreeControl } from '@angular/cdk/tree';
 import { BehaviorSubject, Observable, merge, map } from 'rxjs';
 import { throwWithContext } from 'src/app/exceptions/error-options';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
+import { SolidPermissionService } from 'src/app/services/solid-permission/solid-permission.service';
 
 /**
  * represents an element in the tree
@@ -17,6 +18,7 @@ export class Node {
     public shortName: string, // name displayed in the frontend
     public level: number, // how deep is it from root
     public expandable: boolean, // is it a folder and therefor can it be opened
+    public canWrite: boolean = true, //sets if user has permission to write to this folder
     public isLoading = false // is that object currently busy loading data
   ) {}
 }
@@ -31,6 +33,7 @@ export class FolderDataSource implements DataSource<Node> {
   constructor(
     private treeControl: FlatTreeControl<Node>,
     private solidFileHandlerService: SolidFileHandlerService,
+    private permissionService: SolidPermissionService,
     private root: string
   ) {}
 
@@ -38,15 +41,16 @@ export class FolderDataSource implements DataSource<Node> {
    * registers the event handler that takes care of opening and closing folders
    */
   connect(collectionViewer: CollectionViewer): Observable<Node[]> {
-    this.treeControl.expansionModel.changed.subscribe((event) => {
+    this.treeControl.expansionModel.changed.subscribe(async (event) => {
       // if the event is not supposed to open/close anything, event will hold an empty list in event.added or event.removed
       this.openFolder(event);
       this.closeFolder(event);
     });
 
-    const rootNode = this.createNode(this.root);
-    this.dataChange.next([rootNode]);
-    this.treeControl.expand(rootNode);
+    this.createNode(this.root).then((rootNode) => {
+      this.dataChange.next([rootNode]);
+      this.treeControl.expand(rootNode);
+    });
 
     return merge(collectionViewer.viewChange, this.dataChange).pipe(
       map(() => this.data)
@@ -75,20 +79,27 @@ export class FolderDataSource implements DataSource<Node> {
     const childUrls = await this.solidFileHandlerService.getContainerContent(
       node.link
     );
-    const childNodes = childUrls
+    const childNodePromises = childUrls
       .filter(
         (childUrl) => !this.solidFileHandlerService.isHiddenFile(childUrl)
       )
       .map((childUrl) => this.createNode(childUrl, node.level + 1));
+
+    const childNodes: Node[] = [];
+
+    for (const i of childNodePromises) {
+      childNodes.push(await i);
+    }
 
     const index = this.data.indexOf(node);
     this.data.splice(index + 1, 0, ...childNodes);
     this.dataChange.next(this.data);
   }
 
-  private createNode(url: string, level = 1): Node {
+  private async createNode(url: string, level = 1): Promise<Node> {
     const isContainer = this.solidFileHandlerService.isContainer(url);
-    return new Node(url, this.toDisplayName(url), level, isContainer);
+    const canWrite = await this.permissionService.hasWritePermissions(url);
+    return new Node(url, this.toDisplayName(url), level, isContainer, canWrite);
   }
 
   /**
