@@ -12,7 +12,7 @@ describe('File sharing', function () {
     const fileName = 'test.txt';
     const fileContent = 'some file content';
     cy.contains('Files').click();
-    cy.contains('Folder URL');
+    cy.contains('solidcryptpad');
     cy.get('mat-tree-node')
       .contains('solidcryptpad')
       .closest('[data-cy=tree-node]')

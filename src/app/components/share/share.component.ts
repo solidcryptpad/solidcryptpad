@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UnknownException } from 'src/app/exceptions/unknown-exception';
 import { FolderKeystore } from 'src/app/services/encryption/keystore/folder-keystore.class';
 import { KeystoreStorageService } from 'src/app/services/encryption/keystore/keystore-storage.service';
 import { KeystoreService } from 'src/app/services/encryption/keystore/keystore.service';
 import { LinkShareService } from '../../services/link-share/link-share.service';
+import { InvalidSharingLinkException } from '../../exceptions/invalid-sharing-link-exception';
 
 @Component({
   selector: 'app-share',
@@ -19,6 +19,8 @@ export class ShareComponent implements OnInit {
     private keystoreService: KeystoreService,
     private keystoreStorageService: KeystoreStorageService
   ) {}
+
+  error = false;
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(async (params) => {
@@ -36,8 +38,10 @@ export class ShareComponent implements OnInit {
           params['keystoreEncryptionKey']
         );
       } else {
-        // TODO: appropriate exception
-        throw new UnknownException('Invalid sharing link');
+        this.error = true;
+        throw new InvalidSharingLinkException(
+          'Your link is incomplete or corrupted. Please check with the owner of the file.'
+        );
       }
     });
   }

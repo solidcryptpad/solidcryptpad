@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatLabel } from '@angular/material/form-field';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
@@ -18,7 +18,7 @@ describe('FolderCreateComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [FormsModule],
+      imports: [FormsModule, ReactiveFormsModule],
       declarations: [FolderCreateComponent, MatLabel],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: {} },
@@ -43,6 +43,7 @@ describe('FolderCreateComponent', () => {
   });
 
   it('createFolder should call writeContainer', async () => {
+    component.folderCreateFormControl.setValue('myFolder');
     await component.createFolder();
     expect(solidFileHandlerServiceSpy.writeContainer).toHaveBeenCalled();
   });

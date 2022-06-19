@@ -4,7 +4,7 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatLabel } from '@angular/material/form-field';
 import { Router, Routes } from '@angular/router';
@@ -20,7 +20,11 @@ describe('FileCreateComponent', () => {
   beforeEach(async () => {
     const routes = [{ path: 'editor', component: {} }] as Routes;
     await TestBed.configureTestingModule({
-      imports: [RouterTestingModule.withRoutes(routes), FormsModule],
+      imports: [
+        RouterTestingModule.withRoutes(routes),
+        FormsModule,
+        ReactiveFormsModule,
+      ],
       declarations: [FileCreateComponent, MatLabel],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: {} },
@@ -41,6 +45,7 @@ describe('FileCreateComponent', () => {
     expect(component).toBeTruthy();
   });
   it('createFile redirects to editor', fakeAsync(() => {
+    component.fileCreateFormControl.setValue('file.txt');
     fixture.nativeElement.querySelector('#create').click();
     tick();
 
