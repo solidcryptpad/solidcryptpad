@@ -34,6 +34,9 @@
           <mat-icon class="mat-icon" title="Options">more_horiz</mat-icon>
         </button>
         <mat-menu #folder_menu="matMenu">
+          <button mat-menu-item (click)="this.downloadFile(node)">
+            Download
+          </button>
           <button mat-menu-item (click)="this.deleteFile(node)">
             Delete File
           </button>
@@ -75,6 +78,9 @@
           <mat-icon class="mat-icon" title="Options">more_horiz</mat-icon>
         </button>
         <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="this.downloadFolder(node)">
+            Download
+          </button>
           <button mat-menu-item (click)="this.open(node)">Open Folder</button>
           <button
             *ngIf="node.canWrite"

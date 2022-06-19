@@ -13,6 +13,7 @@ import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-
 import { firstValueFrom } from 'rxjs';
 import { FolderShareComponent } from '../dialogs/folder-share/folder-share.component';
 import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
+import * as JSZip from 'jszip';
 import { SolidPermissionService } from 'src/app/services/solid-permission/solid-permission.service';
 
 /**
@@ -95,6 +96,88 @@ export class TreeNestedExplorerComponent implements OnInit {
     } else {
       this.router.navigate(['preview'], { queryParams: { url: node.link } });
     }
+  }
+
+  /**
+   * Downloads blob as file
+   *
+   * Source: https://dev.to/nombrekeff/download-file-from-blob-21ho
+   *
+   * @param blob
+   * @param name filename
+   */
+  downloadBlob(blob: Blob, name = 'file') {
+    // Convert your blob into a Blob URL (a special url that points to an object in the browser's memory)
+    const blobUrl = URL.createObjectURL(blob);
+
+    // Create a link element
+    const link = document.createElement('a');
+
+    // Set link's href to point to the Blob URL
+    link.href = blobUrl;
+    link.download = name;
+
+    // Append link to the body
+    document.body.appendChild(link);
+
+    // Dispatch click event on the link
+    // This is necessary as link.click() does not work on the latest firefox
+    link.dispatchEvent(
+      new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+      })
+    );
+
+    // Remove link from body
+    document.body.removeChild(link);
+  }
+
+  async downloadFile(node: Node) {
+    const encryptedBlob = await this.solidFileHandlerService.readFile(
+      node.link
+    );
+    const decryptedBlob = await this.fileEncryptionService.decryptFile(
+      encryptedBlob,
+      node.link
+    );
+    this.downloadBlob(decryptedBlob);
+  }
+
+  async getFilesInFolder(nodeLink: string): Promise<string[]> {
+    let filelist: string[] = [];
+    const containerContent =
+      await this.solidFileHandlerService.getContainerContent(nodeLink);
+    for (const element of containerContent) {
+      if (this.solidFileHandlerService.isContainer(element)) {
+        filelist = filelist.concat(await this.getFilesInFolder(element));
+      } else {
+        filelist.push(element);
+      }
+    }
+    return filelist;
+  }
+
+  async downloadFolder(node: Node) {
+    const foldername = node.link.split('/')[node.link.split('/').length - 2];
+    const allFiles = await this.getFilesInFolder(node.link);
+    const zip = new JSZip();
+
+    for (const element of allFiles) {
+      if (!this.solidFileHandlerService.isContainer(element)) {
+        const encryptedBlob = await this.solidFileHandlerService.readFile(
+          element
+        );
+        const decryptedBlob = await this.fileEncryptionService.decryptFile(
+          encryptedBlob,
+          element
+        );
+        const filename = foldername + element.split(foldername)[1];
+        zip.file(filename, decryptedBlob);
+      }
+    }
+    this.downloadBlob(await zip.generateAsync({ type: 'blob' }), foldername);
   }
 
   async upload(node: Node) {

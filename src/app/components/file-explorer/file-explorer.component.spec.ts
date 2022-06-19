@@ -1,8 +1,4 @@
-import {
-  ComponentFixture,
-  fakeAsync,
-  TestBed,
-} from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
 
 import { FileExplorerComponent } from './file-explorer.component';
 import { FormsModule } from '@angular/forms';
