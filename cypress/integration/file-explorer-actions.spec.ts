@@ -5,7 +5,7 @@ describe('FileExplorer menu actions', function () {
       .then(cy.storeMasterPassword)
       .as('user');
     cy.contains('Files').click();
-    cy.contains('Folder URL');
+    cy.contains('solidcryptpad');
   });
 
   it('can upload files to folder', function () {

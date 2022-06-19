@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 import { ProfileService } from 'src/app/services/profile/profile.service';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-file-explorer',
@@ -10,7 +11,9 @@ import { ProfileService } from 'src/app/services/profile/profile.service';
 })
 export class FileExplorerComponent implements OnInit {
   public currentUrl = '';
-  public moveUrl = '';
+  public directoryFullPathSplitBySlash: string[] = [];
+  changeDirectoryToFormControl = new FormControl(this.currentUrl);
+  changingDirectory = false;
 
   constructor(
     private router: Router,
@@ -26,10 +29,22 @@ export class FileExplorerComponent implements OnInit {
         this.currentUrl =
           this.fileEncryptionService.getDefaultCryptoDirectoryUrl(baseUrl);
       }
+      this.updateUrlSplit(this.currentUrl);
     });
   }
 
   async goToFolder(link: string): Promise<void> {
-    this.router.navigateByUrl(`files?url=${link}`);
+    await this.router.navigateByUrl(`files?url=${link}`);
+    this.updateUrlSplit(link);
+    this.toggleChangingDirectory();
+  }
+
+  private updateUrlSplit(url: string) {
+    const offset = url.includes('https') ? 8 : 7;
+    this.directoryFullPathSplitBySlash = url.substring(offset).split('/');
+  }
+
+  toggleChangingDirectory() {
+    this.changingDirectory = !this.changingDirectory;
   }
 }

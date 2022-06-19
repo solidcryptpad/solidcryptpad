@@ -1,1 +1,19 @@
-<p>share works!</p>
+<div class="box">
+  <div *ngIf="!error">
+    <h1>Please wait, we are redirecting you to your file.</h1>
+
+    <mat-progress-bar
+      mode="indeterminate"
+      style="width: 400px"
+    ></mat-progress-bar>
+  </div>
+
+  <div *ngIf="error">
+    <div class="icon-container">
+      <mat-icon class="large-icon">warning</mat-icon>
+    </div>
+    <h1>Something went wrong.</h1>
+    <h4>Your link seems to be incomplete, corrupted or invalid.</h4>
+    <h4>Please contact the owner.</h4>
+  </div>
+</div>

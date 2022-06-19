@@ -96,6 +96,7 @@ describe('Folder sharing', function () {
     cy.contains('Share Folder').click();
     cy.contains('Write').click();
     cy.contains('Create Link').click();
+    cy.wait(1000); // creating link sometimes takes longer on certain machines
     cy.contains('freshly baked');
 
     cy.get('code')
