@@ -36,17 +36,7 @@ describe('Folder sharing', function () {
     cy.explorerOpenNode(fileName);
     cy.url().as('filePreviewUrl');
     cy.contains(fileContent);
-
-    const fileUrl = `${this.owner.podUrl}/solidcryptpad/${folderName}/${fileName}`;
-    const newFileContent = 'Goodbye World!';
-    cy.intercept('PUT', fileUrl).as('savedFile');
-    cy.contains('open in Editor').click();
-    cy.contains('You are editing');
-    cy.contains(fileContent);
-    cy.get('ngx-editor').clear().type(newFileContent);
-    cy.wait('@savedFile');
-
-    cy.contains('Permission denied');
+    cy.contains('You can not edit this file');
   });
 
   // testing, because the logic is complex to give access to files which already have an ACL file
@@ -106,6 +96,7 @@ describe('Folder sharing', function () {
     cy.contains('Share Folder').click();
     cy.contains('Write').click();
     cy.contains('Create Link').click();
+    cy.wait(1000); // creating link sometimes takes longer on certain machines
     cy.contains('freshly baked');
 
     cy.get('code')

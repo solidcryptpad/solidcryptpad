@@ -8,7 +8,7 @@ describe('File-Preview Test', function () {
 
   it('can upload text file to folder and show preview', function () {
     cy.contains('Files').click();
-    cy.contains('Folder URL');
+    cy.contains('solidcryptpad');
     const fileName = 'test.txt';
     const fileContent = 'some file content';
     cy.explorerUploadFileIn('solidcryptpad', fileName, new Blob([fileContent]));
@@ -21,7 +21,7 @@ describe('File-Preview Test', function () {
 
   it('can upload markdown file to folder and show preview', function () {
     cy.contains('Files').click();
-    cy.contains('Folder URL');
+    cy.contains('solidcryptpad');
     const fileName = 'mdTest.md';
     const fileContent = '## some file content\n1. hallo\n2. test';
     cy.explorerUploadFileIn('solidcryptpad', fileName, new Blob([fileContent]));

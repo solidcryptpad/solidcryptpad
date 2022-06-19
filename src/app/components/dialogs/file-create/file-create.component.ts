@@ -1,8 +1,8 @@
-import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Component, HostListener, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { FolderCreateComponent } from '../folder-create/folder-create.component';
 import { Node } from '../../tree-nested-explorer/folder-data-source.class';
+import { FormControl, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-file-create',
@@ -10,19 +10,22 @@ import { Node } from '../../tree-nested-explorer/folder-data-source.class';
   styleUrls: ['./file-create.component.scss'],
 })
 export class FileCreateComponent {
-  file_name = '';
+  fileCreateFormControl = new FormControl('', [Validators.required]);
 
   constructor(
     @Inject(MAT_DIALOG_DATA) private node: Node,
     private router: Router,
-    private dialogRef: MatDialogRef<FolderCreateComponent>
+    private dialogRef: MatDialogRef<FileCreateComponent>
   ) {}
 
+  @HostListener('window:keyup.Enter')
   async createFile(): Promise<void> {
-    this.router.navigateByUrl(
-      `/editor?file=${this.node.link}${this.file_name}`
-    );
-    this.close();
+    if (this.fileCreateFormControl.value) {
+      await this.router.navigateByUrl(
+        `/editor?file=${this.node.link}${this.fileCreateFormControl.value}`
+      );
+      this.close();
+    }
   }
 
   close(): void {

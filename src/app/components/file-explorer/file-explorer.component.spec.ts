@@ -1,14 +1,9 @@
-import {
-  ComponentFixture,
-  fakeAsync,
-  TestBed,
-  tick,
-} from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
 
 import { FileExplorerComponent } from './file-explorer.component';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ActivatedRoute, Router, Routes } from '@angular/router';
+import { ActivatedRoute, Routes } from '@angular/router';
 import { of } from 'rxjs';
 import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
@@ -24,7 +19,6 @@ class MockTreeExplorerComponent {}
 describe('FileExplorerComponent', () => {
   let component: FileExplorerComponent;
   let fixture: ComponentFixture<FileExplorerComponent>;
-  let router: Router;
 
   beforeEach(async () => {
     const routes = [{ path: 'files', component: {} }] as Routes;
@@ -65,7 +59,6 @@ describe('FileExplorerComponent', () => {
         },
       ],
     }).compileComponents();
-    router = TestBed.inject(Router);
   });
 
   beforeEach(() => {
@@ -78,10 +71,9 @@ describe('FileExplorerComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should navigate to files when clicked', fakeAsync(() => {
+  it('should toggle view when clicked', fakeAsync(() => {
+    spyOn(component, 'toggleChangingDirectory').and.callThrough();
     fixture.nativeElement.querySelector('button').click();
-    tick();
-
-    expect(router.url).toBe('/files?url=');
+    expect(component.toggleChangingDirectory).toHaveBeenCalled();
   }));
 });

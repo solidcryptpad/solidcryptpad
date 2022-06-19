@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UnknownException } from 'src/app/exceptions/unknown-exception';
 import { FolderKeystore } from 'src/app/services/encryption/keystore/folder-keystore.class';
 import { KeystoreStorageService } from 'src/app/services/encryption/keystore/keystore-storage.service';
 import { KeystoreService } from 'src/app/services/encryption/keystore/keystore.service';
 import { LinkShareService } from '../../services/link-share/link-share.service';
+import { InvalidSharingLinkException } from '../../exceptions/invalid-sharing-link-exception';
 
 @Component({
   selector: 'app-share',
@@ -20,20 +20,28 @@ export class ShareComponent implements OnInit {
     private keystoreStorageService: KeystoreStorageService
   ) {}
 
+  error = false;
+
   ngOnInit(): void {
     this.route.queryParams.subscribe(async (params) => {
       if (params['file']) {
-        this.processShareFile(params['file'], params['key'], params['group']);
+        await this.processShareFile(
+          params['file'],
+          params['key'],
+          params['group']
+        );
       } else if (params['group']) {
-        this.processShareFolder(
+        await this.processShareFolder(
           params['folder'],
           params['group'],
           params['keystore'],
           params['keystoreEncryptionKey']
         );
       } else {
-        // TODO: appropriate exception
-        throw new UnknownException('Invalid sharing link');
+        this.error = true;
+        throw new InvalidSharingLinkException(
+          'Your link is incomplete or corrupted. Please check with the owner of the file.'
+        );
       }
     });
   }
@@ -41,8 +49,11 @@ export class ShareComponent implements OnInit {
   private async processShareFile(fileUrl: string, key: string, group: string) {
     await this.linkShareService.addWebIdToGroup(group);
 
+    const sharedFilesKeystore =
+      await this.keystoreService.getSharedFilesKeystore();
+    await sharedFilesKeystore.addKey(fileUrl, atob(key));
     await this.router.navigate(['preview'], {
-      queryParams: { url: fileUrl, key, group },
+      queryParams: { url: fileUrl },
     });
   }
 

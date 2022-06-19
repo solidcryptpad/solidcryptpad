@@ -145,6 +145,19 @@ export class SolidPermissionService {
     return hasResourceAcl(resourceWithAcl);
   }
 
+  async hasWritePermissions(resourceUrl: string): Promise<boolean> {
+    const response = await this.authService.authenticatedFetch(resourceUrl, {
+      method: 'HEAD',
+    });
+    const permissionString = response.headers.get('wac-allow');
+
+    if (permissionString) {
+      return permissionString.split(',')[0].includes('write');
+    }
+
+    return false;
+  }
+
   private async saveAcl(
     itemWithAcl: WithAccessibleAcl<WithServerResourceInfo>,
     acl: AclDataset

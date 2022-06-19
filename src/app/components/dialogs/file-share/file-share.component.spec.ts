@@ -1,36 +1,40 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LinkShareComponent } from './link-share.component';
+import { FileShareComponent } from './file-share.component';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { SolidAuthenticationService } from '../../../services/authentication/solid-authentication.service';
+import { LinkShareService } from '../../../services/link-share/link-share.service';
+import { FormBuilder } from '@angular/forms';
 
 describe('LinkShareComponent', () => {
-  let component: LinkShareComponent;
-  let fixture: ComponentFixture<LinkShareComponent>;
+  let component: FileShareComponent;
+  let fixture: ComponentFixture<FileShareComponent>;
 
   beforeEach(async () => {
-    const authenticationSpy = jasmine.createSpyObj(
-      'SolidAuthenticationService',
-      ['getWebId']
-    );
+    const linkShareSpy = jasmine.createSpyObj('LinkShareService', [
+      'createFolderSharingLink',
+      'createFileSharingLink',
+    ]);
+
     await TestBed.configureTestingModule({
       imports: [NoopAnimationsModule, MatDialogModule],
-      declarations: [LinkShareComponent],
+      declarations: [FileShareComponent],
       providers: [
         { provide: MatDialogRef, useValue: {} },
         { provide: MAT_DIALOG_DATA, useValue: {} },
-        { provide: SolidAuthenticationService, useValue: authenticationSpy },
+        { provide: LinkShareService, useValue: linkShareSpy },
+        FormBuilder,
       ],
     }).compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(LinkShareComponent);
+    fixture = TestBed.createComponent(FileShareComponent);
+
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

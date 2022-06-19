@@ -18,6 +18,10 @@ export class EncryptionService {
     return cryptoJS.AES.encrypt(data, key).toString();
   }
 
+  /**
+   * Careful: If key is wrong then <empty string> is returned, no exception is thrown.
+   * Thanks cryptoJS :-)
+   */
   decryptString(ciphertext: string, key: string): string {
     return cryptoJS.AES.decrypt(ciphertext, key).toString(cryptoJS.enc.Utf8);
   }
@@ -34,7 +38,10 @@ export class EncryptionService {
    * Decrypts a ciphertext of a previously encrypted blob
    */
   async decryptAsBlob(ciphertext: string, key: string): Promise<Blob> {
+    console.log('cipher', ciphertext);
+
     const dataURL = this.decryptString(ciphertext, key);
+    console.log('dataUrl', dataURL);
     return this.dataURLtoBlob(dataURL);
   }
 
@@ -55,6 +62,7 @@ export class EncryptionService {
   }
 
   private dataURLtoBlob(dataUrl: string): Promise<Blob> {
+    console.log('dataUrlToBlob', dataUrl);
     if (!dataUrl.startsWith('data:'))
       throw new InvalidContentException(
         'Encrypted file is in unexpected format'

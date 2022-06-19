@@ -12,7 +12,7 @@ describe('File sharing', function () {
     const fileName = 'test.txt';
     const fileContent = 'some file content';
     cy.contains('Files').click();
-    cy.contains('Folder URL');
+    cy.contains('solidcryptpad');
     cy.get('mat-tree-node')
       .contains('solidcryptpad')
       .closest('[data-cy=tree-node]')
@@ -37,9 +37,10 @@ describe('File sharing', function () {
     cy.contains(fileContent);
 
     cy.contains('Share').click();
+    cy.contains('Create Link').click();
     cy.contains('freshly baked');
 
-    // Share
+    // save link for later
     cy.get('code')
       .then((el) => {
         const link = el.contents().text();
@@ -54,5 +55,8 @@ describe('File sharing', function () {
       cy.visit(link as string);
     });
     cy.contains(fileContent);
+    cy.contains('You can not edit this file');
   });
+
+  it('can edit file after sharing read-write link');
 });

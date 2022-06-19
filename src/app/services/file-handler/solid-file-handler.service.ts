@@ -295,4 +295,31 @@ export class SolidFileHandlerService {
       cause: error,
     });
   }
+
+  /**
+   * checks if a file should be hidden from user
+   * if hides all files/folders starting with a . and the groups folder
+   * but it does not hide anything if it is a child of those folders
+   * @param url the file to check
+   * @returns if the file should be hidden
+   */
+  isHiddenFile(url: string): boolean {
+    // the groups folder is hidden
+    if (url.endsWith('/solidcryptpad/groups/')) {
+      return true;
+    }
+
+    // prepare for further checks
+    if (url.endsWith('/')) {
+      url = url.slice(0, url.length - 1);
+    }
+
+    // files starting with . should be hidden
+    const url_parts = url.split('/');
+    if (url_parts[url_parts.length - 1].startsWith('.')) {
+      return true;
+    }
+
+    return false;
+  }
 }
