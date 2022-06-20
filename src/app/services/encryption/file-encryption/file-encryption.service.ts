@@ -83,7 +83,9 @@ export class FileEncryptionService {
    * if the file already exists then it is overwritten
    * if the file does not exist then a new one is created
    *
+   * @param file the file being written
    * @param fileURL the url to write to
+   * @param fileName the fileName
    * @returns a promise for the saved file
    * @throws InvalidUrlException if the given url is not considered valid
    * @throws PermissionException if the given url cannot be written to cause of missing permissions
@@ -95,6 +97,7 @@ export class FileEncryptionService {
     fileURL: string,
     fileName = 'unnamed'
   ): Promise<Blob> {
+    fileURL = fileURL.replace(/ /g, '');
     // TODO: check if this is used anywhere or can be removed
     if (this.fileService.isContainer(fileURL)) {
       fileURL = fileURL + '' + fileName;

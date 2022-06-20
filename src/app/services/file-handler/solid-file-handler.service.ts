@@ -53,7 +53,9 @@ export class SolidFileHandlerService {
    * if the file already exists then it is overwritten
    * if the file does not exist then a new one is created
    *
+   * @param file the file being written
    * @param fileURL the url to write to
+   * @param fileName the fileName
    * @returns a promise for the saved file
    * @throws InvalidUrlException if the given url is not considered valid
    * @throws PermissionException if the given url cannot be written to cause of missing permissions
@@ -65,6 +67,8 @@ export class SolidFileHandlerService {
     fileURL: string,
     fileName = 'unnamed'
   ): Promise<Blob> {
+    fileURL = fileURL.replace(/ /g, '');
+
     if (this.isContainer(fileURL)) {
       fileURL = fileURL + '' + fileName;
     }
@@ -94,6 +98,8 @@ export class SolidFileHandlerService {
   async writeContainer(
     containerURL: string
   ): Promise<SolidDataset & WithServerResourceInfo> {
+    containerURL = containerURL.replace(/ /g, '');
+
     if (!this.isContainer(containerURL)) {
       containerURL = containerURL + '/';
     }
