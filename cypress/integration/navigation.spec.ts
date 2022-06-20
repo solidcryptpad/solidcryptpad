@@ -1,6 +1,9 @@
 describe('can navigate with navbar as logged in user', () => {
   beforeEach(() => {
-    cy.createRandomAccount().then(cy.loginMocked).as('user');
+    cy.createRandomAccount()
+      .then(cy.loginMocked)
+      .then(cy.storeMasterPassword)
+      .as('user');
   });
 
   it('can navigate all links in navbar as logged in user', function () {

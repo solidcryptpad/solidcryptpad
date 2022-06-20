@@ -52,6 +52,9 @@ import { FolderShareComponent } from './components/dialogs/folder-share/folder-s
 import { ShareComponent } from './components/share/share.component';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { ChangePasswordComponent } from './components/dialogs/change-password/change-password.component';
+import { SharedWithMeComponent } from './components/shared-with-me/shared-with-me.component';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 @NgModule({
   declarations: [
@@ -76,6 +79,7 @@ import { ChangePasswordComponent } from './components/dialogs/change-password/ch
     FolderShareComponent,
     ShareComponent,
     ChangePasswordComponent,
+    SharedWithMeComponent,
   ],
   imports: [
     MatInputModule,
@@ -107,6 +111,8 @@ import { ChangePasswordComponent } from './components/dialogs/change-password/ch
     MatMenuModule,
     MarkdownModule.forRoot(),
     ClipboardModule,
+    MatTableModule,
+    MatPaginatorModule,
   ],
   providers: [
     {
