@@ -6,6 +6,10 @@
         You are editing <i>{{ fileUrl }}</i
         >!
       </h3>
+      <small style="color: #e38c45" *ngIf="sharedFile"
+        >This file has been shared with you by another user.</small
+      >
+
       <div class="editor">
         <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
         <ngx-editor
@@ -29,12 +33,13 @@
         type="button"
         class="editor-button"
         (click)="shareFile()"
+        *ngIf="!sharedFile"
       >
         Share
       </button>
       <mat-slide-toggle class="editor-button" [(ngModel)]="autoSave"
-        >Auto-Save</mat-slide-toggle
-      >
+        >Auto-Save
+      </mat-slide-toggle>
       <button
         *ngIf="!autoSave"
         color="warn"
