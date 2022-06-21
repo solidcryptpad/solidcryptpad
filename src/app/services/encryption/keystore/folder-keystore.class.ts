@@ -29,8 +29,7 @@ export class FolderKeystore implements Keystore {
   }
 
   async getKey(url: string) {
-    console.log(`getKey(${url})`);
-    return this.keys[url] ?? this.getRemoteKey(url);
+    return this.getCachedKey(url) ?? this.getRemoteKey(url);
   }
 
   async getKeysAll() {
@@ -39,12 +38,10 @@ export class FolderKeystore implements Keystore {
   }
 
   async addKey(url: string, key: string) {
-    console.log(`addKey(${url}, ${key})`);
     // a race condition can happen if in two tabs we add a key at the same time
     await this.loadKeys();
     this.keys[url] = key;
     await this.saveKeys();
-    console.log(`addKey(${url}, ${key}) done`);
   }
 
   async addKeys(keys: { [url: string]: string }): Promise<void> {
@@ -54,6 +51,10 @@ export class FolderKeystore implements Keystore {
       ...keys,
     };
     await this.saveKeys();
+  }
+
+  private getCachedKey(url: string): string | undefined {
+    return this.keys[url];
   }
 
   private async getRemoteKey(url: string): Promise<string> {
