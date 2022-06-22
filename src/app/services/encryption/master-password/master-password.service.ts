@@ -29,6 +29,10 @@ export class MasterPasswordService {
     }
   }
 
+  clearMasterPassword(): void {
+    this.userLocalStorage.removeItem(this.masterPasswordHashKey);
+  }
+
   async getMasterPassword(): Promise<string> {
     if (!this.userLocalStorage.getItem(this.masterPasswordHashKey)) {
       this.setMasterPassword(await this.openMasterPasswordDialog());
