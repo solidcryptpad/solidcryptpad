@@ -6,6 +6,8 @@ import { InvalidContentException } from 'src/app/exceptions/invalid-content';
   providedIn: 'root',
 })
 export class EncryptionService {
+  private fetch = window.fetch;
+
   generateNewKey(): string {
     const salt = cryptoJS.lib.WordArray.random(128 / 8);
     const secret = cryptoJS.lib.WordArray.random(256 / 8);
@@ -38,10 +40,7 @@ export class EncryptionService {
    * Decrypts a ciphertext of a previously encrypted blob
    */
   async decryptAsBlob(ciphertext: string, key: string): Promise<Blob> {
-    console.log('cipher', ciphertext);
-
     const dataURL = this.decryptString(ciphertext, key);
-    console.log('dataUrl', dataURL);
     return this.dataURLtoBlob(dataURL);
   }
 
@@ -62,11 +61,10 @@ export class EncryptionService {
   }
 
   private dataURLtoBlob(dataUrl: string): Promise<Blob> {
-    console.log('dataUrlToBlob', dataUrl);
     if (!dataUrl.startsWith('data:'))
       throw new InvalidContentException(
         'Encrypted file is in unexpected format'
       );
-    return window.fetch(dataUrl).then((res) => res.blob());
+    return this.fetch(dataUrl).then((res) => res.blob());
   }
 }
