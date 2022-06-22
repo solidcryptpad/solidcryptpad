@@ -429,6 +429,27 @@ describe('SolidFileHandlerService', () => {
       service.isHiddenFile('example.url.com/solidcryptpad/groups/test')
     ).toBeFalse();
   });
+
+  it('traverseContainerContentsRecursively calls callback with all contained resources', async () => {
+    const urls = {
+      base: 'https://example.org/folder/',
+      baseFile: 'https://example.org/folder/file.txt',
+      nested: 'https://example.org/folder/nested/',
+      nestedFile: 'https://example.org/folder/nested/nested.txt',
+    };
+    const callback = jasmine.createSpy('callback');
+    const containerContentSpy = spyOn(service, 'getContainerContent');
+    containerContentSpy
+      .withArgs(urls.base)
+      .and.resolveTo([urls.baseFile, urls.nested, urls.nestedFile]);
+    containerContentSpy.withArgs(urls.nested).and.resolveTo([urls.nestedFile]);
+
+    await service.traverseContainerContentsRecursively(urls.base, callback);
+
+    expect(callback).toHaveBeenCalledWith(urls.baseFile);
+    expect(callback).toHaveBeenCalledWith(urls.nested);
+    expect(callback).toHaveBeenCalledWith(urls.nestedFile);
+  });
 });
 
 /**

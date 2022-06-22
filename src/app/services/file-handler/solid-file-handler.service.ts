@@ -226,8 +226,8 @@ export class SolidFileHandlerService {
     const fileUrls = contents.filter((url) => !this.isContainer(url));
 
     await Promise.all([
-      ...fileUrls.map(urlHandler),
-      ...containerUrls.map(urlHandler),
+      ...fileUrls.map((url) => urlHandler(url)),
+      ...containerUrls.map((url) => urlHandler(url)),
       ...containerUrls.map((url) =>
         this.traverseContainerContentsRecursively(url, urlHandler)
       ),
