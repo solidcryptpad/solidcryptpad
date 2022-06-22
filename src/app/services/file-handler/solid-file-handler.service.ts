@@ -118,33 +118,19 @@ export class SolidFileHandlerService {
       .catch((err: any) => this.convertError(err));
   }
 
-  /**
-   * checks if a container exists
-   * @param containerURL the container to check
-   * @returns true or false depending on if it exists
-   */
-  async containerExists(containerURL: string): Promise<boolean> {
-    try {
-      await this.getContainer(containerURL);
-    } catch (error: any) {
-      if (error instanceof NotFoundException) {
-        return false;
-      }
-      throw error;
+  async resourceExists(resourceUrl: string): Promise<boolean> {
+    const response = await this.authService.authenticatedFetch(resourceUrl, {
+      method: 'HEAD',
+    });
+    if (response.status === 404) return false;
+    if (response.ok === false) {
+      throw this.convertError(
+        new FetchError(
+          `Could not check if ${resourceUrl} exists`,
+          response as Response & { ok: false }
+        )
+      );
     }
-    return true;
-  }
-
-  async fileExists(fileURL: string): Promise<boolean> {
-    try {
-      await this.readFile(fileURL);
-    } catch (error: any) {
-      if (error instanceof NotFoundException) {
-        return false;
-      }
-      throw error;
-    }
-
     return true;
   }
 
@@ -153,7 +139,7 @@ export class SolidFileHandlerService {
    * @returns true if the folder has been created
    */
   async ensureContainerExists(containerUrl: string): Promise<boolean> {
-    if (!(await this.containerExists(containerUrl))) {
+    if (!(await this.resourceExists(containerUrl))) {
       await this.writeContainer(containerUrl).catch(
         throwWithContext(`Could not create directory ${containerUrl}`)
       );

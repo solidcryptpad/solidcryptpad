@@ -167,7 +167,7 @@ export class KeystoreService {
    */
   private async ensureKeystoresFolderSetup() {
     const keystoresUrl = await this.getKeystoresListUrl();
-    if (!(await this.fileService.fileExists(keystoresUrl))) {
+    if (!(await this.fileService.resourceExists(keystoresUrl))) {
       await this.setupMasterPassword();
       await this.setupKeystoresFolder();
     }

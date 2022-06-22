@@ -120,7 +120,7 @@ export class LinkShareService {
   ): Promise<string> {
     const keystoreUrl = folderUrl + '.keystore';
     // assume that it already is known and contains keys if it already exists
-    if (await this.fileService.fileExists(keystoreUrl)) {
+    if (await this.fileService.resourceExists(keystoreUrl)) {
       return keystoreUrl;
     }
     const storage =
@@ -141,7 +141,7 @@ export class LinkShareService {
    */
   async ensureGroupsFolderExists() {
     const groupsFolderUrl = await this.getGroupsFolderUrl();
-    if (!(await this.fileService.containerExists(groupsFolderUrl))) {
+    if (!(await this.fileService.resourceExists(groupsFolderUrl))) {
       await this.createSecretFolder(groupsFolderUrl);
     }
   }
