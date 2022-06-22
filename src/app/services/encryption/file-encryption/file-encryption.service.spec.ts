@@ -74,11 +74,7 @@ describe('FileEncryptionService', () => {
 
     await expectAsync(service.writeAndEncryptFile(file, url)).toBeResolved();
 
-    expect(fileServiceSpy.writeFile).toHaveBeenCalledWith(
-      encryptedFile,
-      url,
-      'unnamed'
-    );
+    expect(fileServiceSpy.writeFile).toHaveBeenCalledWith(encryptedFile, url);
     expect(encryptFileSpy).toHaveBeenCalledWith(file, url);
   });
 

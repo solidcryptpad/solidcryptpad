@@ -49,29 +49,19 @@ export class SolidFileHandlerService {
 
   /**
    * writes a file to an url
-   * if the given link is a directory the fileName is appended
    * if the file already exists then it is overwritten
    * if the file does not exist then a new one is created
    *
    * @param file the file being written
    * @param fileURL the url to write to
-   * @param fileName the fileName
    * @returns a promise for the saved file
    * @throws InvalidUrlException if the given url is not considered valid
    * @throws PermissionException if the given url cannot be written to cause of missing permissions
    * @throws UnknownException on all errors that are not explicitly caught
    * @throws AlreadyExistsException if the file cannot be overwritten
    */
-  async writeFile(
-    file: Blob,
-    fileURL: string,
-    fileName = 'unnamed'
-  ): Promise<Blob> {
+  async writeFile(file: Blob, fileURL: string): Promise<Blob> {
     fileURL = fileURL.replace(/ /g, '');
-
-    if (this.isContainer(fileURL)) {
-      fileURL = fileURL + '' + fileName;
-    }
 
     try {
       return await this.solidClientService.overwriteFile(fileURL, file, {
@@ -86,7 +76,7 @@ export class SolidFileHandlerService {
   /**
    * creates the folder at the given url
    * if a folder/file already exists then it is overwritten
-   * if the file does not exist then a new one is created
+   * if the folder does not exist then a new one is created
    *
    * @param containerURL the url the container should be created
    * @returns a promise with a soliddataset of the container

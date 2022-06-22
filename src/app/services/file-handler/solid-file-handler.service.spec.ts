@@ -122,22 +122,6 @@ describe('SolidFileHandlerService', () => {
     expect(solidClientServiceSpy.overwriteFile).toHaveBeenCalled();
   });
 
-  it('writeFile appends fileName if path is container', async () => {
-    const url = 'https://real.url.com/';
-    const blob = new Blob(['blob']) as Blob & WithResourceInfo;
-
-    solidClientServiceSpy.overwriteFile.and.returnValue(Promise.resolve(blob));
-    solidClientServiceSpy.isContainer.and.returnValue(true);
-
-    await service.writeFile(blob, url, 'name');
-
-    expect(solidClientServiceSpy.overwriteFile).toHaveBeenCalledWith(
-      url + 'name',
-      blob,
-      jasmine.anything()
-    );
-  });
-
   it('writeFile calls convertError on error', async () => {
     const url = 'https://real.url.com';
     const file = new Blob(['blob']);
