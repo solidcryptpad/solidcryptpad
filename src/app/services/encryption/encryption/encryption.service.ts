@@ -6,7 +6,7 @@ import { InvalidContentException } from 'src/app/exceptions/invalid-content';
   providedIn: 'root',
 })
 export class EncryptionService {
-  private fetch = window.fetch;
+  private fetch = window.fetch.bind(window);
 
   generateNewKey(): string {
     const salt = cryptoJS.lib.WordArray.random(128 / 8);
