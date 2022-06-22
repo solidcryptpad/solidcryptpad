@@ -1,21 +1,12 @@
 import { Injectable } from '@angular/core';
 import {
   AclDataset,
-  createAclFromFallbackAcl,
-  getFileWithAcl,
-  getResourceAcl,
-  hasAccessibleAcl,
-  hasFallbackAcl,
-  hasResourceAcl,
-  saveAclFor,
-  setGroupDefaultAccess,
-  setGroupResourceAccess,
-  setPublicResourceAccess,
   WithAccessibleAcl,
   WithServerResourceInfo,
 } from '@inrupt/solid-client';
 import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
+import { SolidClientService } from '../module-wrappers/solid-client/solid-client.service';
 
 export interface SolidPermissions {
   read: boolean;
@@ -35,7 +26,10 @@ const noPermissions = {
   providedIn: 'root',
 })
 export class SolidPermissionService {
-  constructor(private authService: SolidAuthenticationService) {}
+  constructor(
+    private solidClient: SolidClientService,
+    private authService: SolidAuthenticationService
+  ) {}
 
   /**
    * Sets the permissions of a group for a specific resource
@@ -49,7 +43,7 @@ export class SolidPermissionService {
     grantedPermissions: Partial<SolidPermissions>
   ) {
     await this.updateAcl(resourceUrl, (acl) =>
-      setGroupResourceAccess(
+      this.solidClient.setGroupResourceAccess(
         acl,
         groupUrl,
         this.extendWithFalsePermissions(grantedPermissions)
@@ -69,7 +63,7 @@ export class SolidPermissionService {
     grantedPermissions: Partial<SolidPermissions>
   ) {
     await this.updateAcl(folderUrl, (acl) =>
-      setGroupDefaultAccess(
+      this.solidClient.setGroupDefaultAccess(
         acl,
         groupUrl,
         this.extendWithFalsePermissions(grantedPermissions)
@@ -77,12 +71,15 @@ export class SolidPermissionService {
     );
   }
 
+  /**
+   * Set the permissions everyone has for a file or folder
+   */
   async setResourcePublicPermissions(
     url: string,
     grantedPermissions: Partial<SolidPermissions>
   ): Promise<void> {
     await this.updateAcl(url, (acl) =>
-      setPublicResourceAccess(
+      this.solidClient.setPublicResourceAccess(
         acl,
         this.extendWithFalsePermissions(grantedPermissions)
       )
@@ -90,41 +87,53 @@ export class SolidPermissionService {
   }
 
   /**
-   * Fetches the acl, updates the acl with the callback, and saves the new acl
+   * Fetch the acl, update the acl with the callback, and save the new acl
    */
   private async updateAcl(
     resourceUrl: string,
     callback: (acl: AclDataset) => AclDataset
   ) {
-    const [resourceAcl, myFileWithAcl] = await this.getResourceOrFallbackAcl(
+    const { resourceAcl, resourceInfo } = await this.getResourceOrFallbackAcl(
       resourceUrl
     );
     const updatedAcl = callback(resourceAcl);
-    await this.saveAcl(myFileWithAcl, updatedAcl);
+    await this.saveAcl(resourceInfo, updatedAcl);
   }
 
   /**
-   * Returns the acl of the resource, and the resource itself.
+   * Return the acl of the resource, and the info about the resource itself.
    * If the resource does not have an acl then it returns one based on the fallback acl.
    */
-  async getResourceOrFallbackAcl(resourceUrl: string) {
-    const resourceWithAcl = await getFileWithAcl(resourceUrl, {
-      fetch: this.authService.authenticatedFetch.bind(this.authService),
-    });
+  async getResourceOrFallbackAcl(
+    resourceUrl: string
+  ): Promise<{ resourceAcl: AclDataset; resourceInfo: WithAccessibleAcl }> {
+    const resourceWithAcl = await this.solidClient.getResourceInfoWithAcl(
+      resourceUrl,
+      {
+        fetch: this.authService.authenticatedFetch.bind(this.authService),
+      }
+    );
 
-    if (hasResourceAcl(resourceWithAcl)) {
-      return [getResourceAcl(resourceWithAcl), resourceWithAcl] as const;
+    if (this.solidClient.hasResourceAcl(resourceWithAcl)) {
+      return {
+        resourceAcl: this.solidClient.getResourceAcl(resourceWithAcl),
+        resourceInfo: resourceWithAcl,
+      };
     } else {
-      if (!hasAccessibleAcl(resourceWithAcl)) {
-        throw new Error('Acl file is inaccessible');
+      if (!this.solidClient.hasAccessibleAcl(resourceWithAcl)) {
+        throw new PermissionException(
+          `You don't have permission to change access rights of ${resourceUrl}`
+        );
       }
-      if (!hasFallbackAcl(resourceWithAcl)) {
-        throw new Error('Current user does not have permission to load acl');
+      if (!this.solidClient.hasFallbackAcl(resourceWithAcl)) {
+        throw new PermissionException(
+          `You don't have permission to see the access rights of ${resourceUrl}`
+        );
       }
-      return [
-        createAclFromFallbackAcl(resourceWithAcl),
-        resourceWithAcl,
-      ] as const;
+      return {
+        resourceAcl: this.solidClient.createAclFromFallbackAcl(resourceWithAcl),
+        resourceInfo: resourceWithAcl,
+      };
     }
   }
 
@@ -134,15 +143,18 @@ export class SolidPermissionService {
    * @throws PermissionException if the current user has no control access
    */
   async hasAcl(resourceUrl: string): Promise<boolean> {
-    const resourceWithAcl = await getFileWithAcl(resourceUrl, {
-      fetch: this.authService.authenticatedFetch.bind(this.authService),
-    });
+    const resourceWithAcl = await this.solidClient.getResourceInfoWithAcl(
+      resourceUrl,
+      {
+        fetch: this.authService.authenticatedFetch.bind(this.authService),
+      }
+    );
 
-    if (!hasAccessibleAcl(resourceWithAcl))
+    if (!this.solidClient.hasAccessibleAcl(resourceWithAcl))
       throw new PermissionException(
         `You don't seem to have control access to ${resourceUrl}`
       );
-    return hasResourceAcl(resourceWithAcl);
+    return this.solidClient.hasResourceAcl(resourceWithAcl);
   }
 
   async hasWritePermissions(resourceUrl: string): Promise<boolean> {
@@ -162,7 +174,7 @@ export class SolidPermissionService {
     itemWithAcl: WithAccessibleAcl<WithServerResourceInfo>,
     acl: AclDataset
   ) {
-    await saveAclFor(itemWithAcl, acl, {
+    await this.solidClient.saveAclFor(itemWithAcl, acl, {
       fetch: this.authService.authenticatedFetch.bind(this.authService),
     });
   }

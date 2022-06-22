@@ -30,7 +30,7 @@ export abstract class SolidAuthenticationService {
    * @param init
    */
   abstract authenticatedFetch(
-    url: RequestInfo,
+    url: RequestInfo | URL,
     init?: RequestInit
   ): Promise<Response>;
 
