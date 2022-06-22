@@ -7,6 +7,7 @@ import {
 import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { SolidClientService } from '../module-wrappers/solid-client/solid-client.service';
+import { throwWithContext } from 'src/app/exceptions/error-options';
 
 export interface SolidPermissions {
   read: boolean;
@@ -37,7 +38,7 @@ export class SolidPermissionService {
    * @param groupUrl group for which the permissions are set
    * @param grantedPermissions new permissions of the group
    */
-  async setGroupResourcePermissions(
+  async setGroupPermissions(
     resourceUrl: string,
     groupUrl: string,
     grantedPermissions: Partial<SolidPermissions>
@@ -74,11 +75,11 @@ export class SolidPermissionService {
   /**
    * Set the permissions everyone has for a file or folder
    */
-  async setResourcePublicPermissions(
-    url: string,
+  async setPublicPermissions(
+    resourceUrl: string,
     grantedPermissions: Partial<SolidPermissions>
   ): Promise<void> {
-    await this.updateAcl(url, (acl) =>
+    await this.updateAcl(resourceUrl, (acl) =>
       this.solidClient.setPublicResourceAccess(
         acl,
         this.extendWithFalsePermissions(grantedPermissions)
@@ -97,14 +98,16 @@ export class SolidPermissionService {
       resourceUrl
     );
     const updatedAcl = callback(resourceAcl);
-    await this.saveAcl(resourceInfo, updatedAcl);
+    await this.saveAcl(resourceInfo, updatedAcl).catch(
+      throwWithContext(`Could not update permissions of ${resourceUrl}`)
+    );
   }
 
   /**
    * Return the acl of the resource, and the info about the resource itself.
    * If the resource does not have an acl then it returns one based on the fallback acl.
    */
-  async getResourceOrFallbackAcl(
+  private async getResourceOrFallbackAcl(
     resourceUrl: string
   ): Promise<{ resourceAcl: AclDataset; resourceInfo: WithAccessibleAcl }> {
     const resourceWithAcl = await this.solidClient.getResourceInfoWithAcl(
@@ -171,16 +174,16 @@ export class SolidPermissionService {
   }
 
   private async saveAcl(
-    itemWithAcl: WithAccessibleAcl<WithServerResourceInfo>,
+    resourceInfo: WithAccessibleAcl<WithServerResourceInfo>,
     acl: AclDataset
   ) {
-    await this.solidClient.saveAclFor(itemWithAcl, acl, {
+    await this.solidClient.saveAclFor(resourceInfo, acl, {
       fetch: this.authService.authenticatedFetch.bind(this.authService),
     });
   }
 
   /**
-   * Takes a subset of permissions, and sets all other permissions to false
+   * Take a subset of permissions, and set all other permissions to false
    */
   private extendWithFalsePermissions(
     permissions: Partial<SolidPermissions>
