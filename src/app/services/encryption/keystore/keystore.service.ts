@@ -132,10 +132,15 @@ export class KeystoreService {
       );
       this.keystores = keystores;
       console.log(keystores);
-    } catch (error) {
-      throw throwWithContext(
-        'Could not load information about encryption keys'
-      )(error as Error);
+    } catch (error: any) {
+      if (error.message == 'Malformed UTF-8 data') {
+        this.masterPasswordService.clearMasterPassword();
+        await this.loadKeystores();
+      } else {
+        throw throwWithContext(
+          'Could not load information about encryption keys'
+        )(error as Error);
+      }
     }
   }
 
