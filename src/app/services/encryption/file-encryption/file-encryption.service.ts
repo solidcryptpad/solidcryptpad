@@ -18,7 +18,7 @@ export class FileEncryptionService {
   ) {}
 
   /**
-   * Encrypts a file by using its FileURL to find the matching key from the keystore.
+   * Encrypts a file by using its url to find the matching key from the keystore.
    * If no matching key is found, a new one is generated.
    */
   async encryptFile(file: Blob, fileURL: string): Promise<Blob> {
@@ -32,13 +32,11 @@ export class FileEncryptionService {
   }
 
   /**
-   * Decrypts a file by using its FileURL to find the matching key from the keystore.
+   * Decrypts a file by using its url to find the matching key from the keystore.
    */
   async decryptFile(file: Blob, fileURL: string): Promise<Blob> {
     const key = await this.keystoreService.getKey(fileURL);
-    return this.encryptionService
-      .decryptAsBlob(await file.text(), key)
-      .catch(throwWithContext(`Could not decrypt ${file}`));
+    return this.decryptFileWithKey(file, key);
   }
 
   /**

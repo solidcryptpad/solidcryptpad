@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
 import { SolidFileHandlerService } from '../../file-handler/solid-file-handler.service';
+import { EncryptionService } from '../encryption/encryption.service';
 import { KeystoreService } from '../keystore/keystore.service';
 
 import { FileEncryptionService } from './file-encryption.service';
@@ -8,12 +9,25 @@ import { FileEncryptionService } from './file-encryption.service';
 describe('FileEncryptionService', () => {
   let service: FileEncryptionService;
   let keystoreServiceSpy: jasmine.SpyObj<KeystoreService>;
+  let encryptionServiceSpy: jasmine.SpyObj<EncryptionService>;
   let fileServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
+
+  const sampleTurtleBlob = new Blob(["I'm a turtle"], { type: 'text/turtle' });
+  const sampleEncryptedBlob = new Blob(["I'm a ciphertext"], {
+    type: 'text/plain',
+  });
+  const sampleCiphertext = "I'm a ciphertext";
+  const sampleFileUrl = 'https://example.org/solidcryptpad/file.txt';
 
   beforeEach(() => {
     const keystoreSpy = jasmine.createSpyObj('KeystoreService', [
       'getKey',
+      'getOrCreateKey',
       'storeKey',
+    ]);
+    const encryptionSpy = jasmine.createSpyObj('EncryptionService', [
+      'encryptBlob',
+      'decryptAsBlob',
     ]);
     const fileSpy = jasmine.createSpyObj('FileService', [
       'writeFile',
@@ -23,6 +37,7 @@ describe('FileEncryptionService', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: KeystoreService, useValue: keystoreSpy },
+        { provide: EncryptionService, useValue: encryptionSpy },
         {
           provide: SolidFileHandlerService,
           useValue: fileSpy,
@@ -31,10 +46,12 @@ describe('FileEncryptionService', () => {
     });
     service = TestBed.inject(FileEncryptionService);
 
-    // eslint-disable-next-line unused-imports/no-unused-vars
     keystoreServiceSpy = TestBed.inject(
       KeystoreService
     ) as jasmine.SpyObj<KeystoreService>;
+    encryptionServiceSpy = TestBed.inject(
+      EncryptionService
+    ) as jasmine.SpyObj<EncryptionService>;
     fileServiceSpy = TestBed.inject(
       SolidFileHandlerService
     ) as jasmine.SpyObj<SolidFileHandlerService>;
@@ -46,21 +63,88 @@ describe('FileEncryptionService', () => {
     expect(service).toBeTruthy();
   });
 
+  it('encryptFile encrypts blob with key from keystore', async () => {
+    keystoreServiceSpy.getOrCreateKey.and.resolveTo('the key');
+    encryptionServiceSpy.encryptBlob.and.resolveTo(sampleCiphertext);
+
+    const encryptedBlob = await service.encryptFile(
+      sampleTurtleBlob,
+      sampleFileUrl
+    );
+
+    expect(keystoreServiceSpy.getOrCreateKey).toHaveBeenCalledWith(
+      sampleFileUrl
+    );
+    expect(encryptionServiceSpy.encryptBlob).toHaveBeenCalledWith(
+      sampleTurtleBlob,
+      'the key'
+    );
+    expect(encryptedBlob).toEqual(
+      new Blob([sampleCiphertext], { type: 'text/plain' })
+    );
+  });
+
+  it('decryptFile gets key and calls decryptFileWithKey', async () => {
+    keystoreServiceSpy.getKey.and.resolveTo('the key');
+    const decryptFileWithKeySpy = spyOn(service, 'decryptFileWithKey');
+
+    await service.decryptFile(sampleEncryptedBlob, sampleFileUrl);
+
+    expect(keystoreServiceSpy.getKey).toHaveBeenCalledWith(sampleFileUrl);
+    expect(decryptFileWithKeySpy).toHaveBeenCalledWith(
+      sampleEncryptedBlob,
+      'the key'
+    );
+  });
+
+  it('decryptFileWithKey decrypts blob', async () => {
+    encryptionServiceSpy.decryptAsBlob.and.resolveTo(sampleTurtleBlob);
+
+    const blob = await service.decryptFileWithKey(
+      new Blob(['ciphertext']),
+      'the key'
+    );
+
+    expect(encryptionServiceSpy.decryptAsBlob).toHaveBeenCalledWith(
+      'ciphertext',
+      'the key'
+    );
+    expect(blob).toEqual(sampleTurtleBlob);
+  });
+
   it('readAndDecryptFile calls decryptFile with returned file', async () => {
     const url = 'https://example.com/solidcryptpad/test';
-    const encryptedFile = new Blob(['encrypted file']);
-    const decryptedFile = new Blob(['decrypted File']);
-    fileServiceSpy.readFile.and.resolveTo(encryptedFile);
+    fileServiceSpy.readFile.and.resolveTo(sampleEncryptedBlob);
     const decryptFileSpy = spyOn(service, 'decryptFile').and.resolveTo(
-      decryptedFile
+      sampleTurtleBlob
     );
 
     await expectAsync(service.readAndDecryptFile(url))
       .withContext('file was not decrypted')
-      .toBeResolvedTo(decryptedFile);
+      .toBeResolvedTo(sampleTurtleBlob);
 
     expect(fileServiceSpy.readFile).toHaveBeenCalledWith(url);
-    expect(decryptFileSpy).toHaveBeenCalledWith(encryptedFile, url);
+    expect(decryptFileSpy).toHaveBeenCalledWith(sampleEncryptedBlob, url);
+  });
+
+  it('readAndDecryptFileWithKey calls decryptFileWithKey with returned file', async () => {
+    fileServiceSpy.readFile.and.resolveTo(sampleTurtleBlob);
+    const decryptFileWithKeySpy = spyOn(service, 'decryptFileWithKey');
+
+    await service.readAndDecryptFileWithKey(sampleFileUrl, 'the key');
+
+    expect(decryptFileWithKeySpy).toHaveBeenCalledWith(
+      sampleTurtleBlob,
+      'the key'
+    );
+  });
+
+  it('readAndDecryptFileWithKey throws exception on url without solidcryptpad', async () => {
+    const url = 'https://example.org/test/';
+
+    await expectAsync(
+      service.readAndDecryptFileWithKey(url, 'the key')
+    ).toBeRejectedWithError(NotACryptpadUrlException);
   });
 
   it('writeAndEncryptFile calls writeFile and encryptFile', async () => {
