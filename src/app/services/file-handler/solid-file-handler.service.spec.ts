@@ -441,8 +441,9 @@ describe('SolidFileHandlerService', () => {
     const containerContentSpy = spyOn(service, 'getContainerContent');
     containerContentSpy
       .withArgs(urls.base)
-      .and.resolveTo([urls.baseFile, urls.nested, urls.nestedFile]);
+      .and.resolveTo([urls.baseFile, urls.nested]);
     containerContentSpy.withArgs(urls.nested).and.resolveTo([urls.nestedFile]);
+    spyOn(service, 'isContainer').and.callFake((url) => url.endsWith('/'));
 
     await service.traverseContainerContentsRecursively(urls.base, callback);
 
