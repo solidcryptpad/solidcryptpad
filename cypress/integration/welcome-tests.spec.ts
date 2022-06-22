@@ -18,7 +18,7 @@ describe('Welcome Page Tests', function () {
   });
 
   it('Can logout', function () {
-    cy.createRandomAccount().then(cy.loginViaUI);
+    cy.createRandomAccount().then(cy.storeMasterPassword).then(cy.loginViaUI);
 
     cy.get('[data-cy=nav-account-icon]').click();
     cy.contains('Logout').click();
