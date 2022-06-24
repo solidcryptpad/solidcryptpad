@@ -73,4 +73,18 @@ describe('ProfileService', () => {
 
     return expectAsync(service.getPodUrls()).toBeResolvedTo(podUrls);
   });
+
+  it('returns cached podurl if cached', async () => {
+    const pods = ['test'];
+    service.cachedPodUrl = pods;
+
+    return expectAsync(service.getPodUrls()).toBeResolvedTo(pods);
+  });
+
+  it('returns cached userName if cached', async () => {
+    const username = 'test';
+    service.cachedUserName = username;
+
+    return expectAsync(service.getUserName()).toBeResolvedTo(username);
+  });
 });
