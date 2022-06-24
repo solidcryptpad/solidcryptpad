@@ -344,10 +344,9 @@ describe('SolidFileHandlerService', () => {
   }));
 
   it('deleteFolder calls deleteContainer', async () => {
-
     spyOn(service, 'getContainerContent').and.resolveTo([]);
 
-    await service.deleteFolder(sampleFolderUrl);    
+    await service.deleteFolder(sampleFolderUrl);
 
     expect(solidClientServiceSpy.deleteContainer).toHaveBeenCalledWith(
       sampleFolderUrl,

@@ -11,6 +11,7 @@ import { SolidFileHandlerService } from '../../file-handler/solid-file-handler.s
 import { SharedFileKeystore } from './shared-file-keystore.class';
 import { KeystoreNotFoundException } from '../../../exceptions/keystore-not-found-exception';
 import { SharedFolderKeystore } from './shared-folder-keystore.class';
+import { LinksKeystore } from './created-links-keystore.class';
 
 @Injectable({
   providedIn: 'root',
@@ -138,6 +139,8 @@ export class KeystoreService {
                 keystoreSerialized,
                 storage
               );
+            case 'link':
+              return LinksKeystore.deserialize(keystoreSerialized, storage);
           }
         }
       );
@@ -212,17 +215,16 @@ export class KeystoreService {
   private async setupKeystoresFolder() {
     const podRoot = (await this.profileService.getPodUrls())[0];
     const keystoresFolder = await this.getKeystoresFolderUrl();
+    const encryptionKeyForFolders = this.encryptionService.generateNewKey();
     const encryptionKeyForSharedFolders =
       this.encryptionService.generateNewKey();
-    const encryptionKeyForSharedFolders2 =
-      this.encryptionService.generateNewKey();
     const encryptionKeyForSharedFiles = this.encryptionService.generateNewKey();
+    const encryptionKeyForCreatedLinks =
+      this.encryptionService.generateNewKey();
     const ownPodKeystore = new FolderKeystore(
       keystoresFolder + 'root.json.enc',
       podRoot,
-      this.keystoreStorageService.createSecureStorage(
-        encryptionKeyForSharedFolders
-      )
+      this.keystoreStorageService.createSecureStorage(encryptionKeyForFolders)
     );
 
     const sharedFileKeystore = new SharedFileKeystore(
@@ -236,11 +238,24 @@ export class KeystoreService {
       keystoresFolder + 'shared-folders.json.enc',
       keystoresFolder,
       this.keystoreStorageService.createSecureStorage(
-        encryptionKeyForSharedFolders2
+        encryptionKeyForSharedFolders
       )
     );
 
-    this.keystores = [ownPodKeystore, sharedFileKeystore, sharedFolderKeystore];
+    const createdLinksKeystore = new LinksKeystore(
+      this.keystoreStorageService.createSecureStorage(
+        encryptionKeyForCreatedLinks
+      ),
+      keystoresFolder + 'created-links.json.enc'
+    );
+
+    this.keystores = [
+      ownPodKeystore,
+      sharedFileKeystore,
+      sharedFolderKeystore,
+      createdLinksKeystore,
+    ];
+
     await this.saveKeystores();
   }
 
@@ -265,6 +280,19 @@ export class KeystoreService {
 
     if (!keystore) {
       throw new KeystoreNotFoundException('No keystore found!');
+    }
+
+    return keystore;
+  }
+
+  async getLinksKeystore(): Promise<LinksKeystore> {
+    await this.loadKeystores();
+    const keystore = this.keystores?.find(
+      (element) => element instanceof LinksKeystore
+    ) as LinksKeystore;
+
+    if (!keystore) {
+      throw new KeystoreNotFoundException('Could not find LinksKeystore.');
     }
 
     return keystore;
