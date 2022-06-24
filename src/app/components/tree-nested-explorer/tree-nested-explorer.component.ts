@@ -15,6 +15,7 @@ import { FolderShareComponent } from '../dialogs/folder-share/folder-share.compo
 import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 import * as JSZip from 'jszip';
 import { SolidPermissionService } from 'src/app/services/solid-permission/solid-permission.service';
+import { DeleteConfirmationComponent } from '../dialogs/delete-confirmation/delete-confirmation.component';
 
 /**
  * represents an element in the tree
@@ -205,13 +206,33 @@ export class TreeNestedExplorerComponent implements OnInit {
   }
 
   async deleteFolder(node: Node) {
-    await this.solidFileHandlerService.deleteFolder(node.link);
-    await this.dataSource.reloadNode(this.dataSource.getParent(node));
+    const dialogRef = this.dialog.open(DeleteConfirmationComponent, {
+      data: { type: 'folder', url: node.link },
+    });
+
+    const ret = await firstValueFrom(dialogRef.afterClosed());
+
+    if (ret) {
+      await this.solidFileHandlerService.deleteFolder(node.link);
+      await this.dataSource.reloadNode(this.dataSource.getParent(node));
+    } else {
+      this.notification.info({ title: 'delete', message: 'aborted' });
+    }
   }
 
   async deleteFile(node: Node) {
-    await this.solidFileHandlerService.deleteFile(node.link);
-    await this.dataSource.reloadNode(this.dataSource.getParent(node));
+    const dialogRef = this.dialog.open(DeleteConfirmationComponent, {
+      data: { type: 'file', url: node.link },
+    });
+
+    const ret = await firstValueFrom(dialogRef.afterClosed());
+
+    if (ret) {
+      await this.solidFileHandlerService.deleteFile(node.link);
+      await this.dataSource.reloadNode(this.dataSource.getParent(node));
+    } else {
+      this.notification.info({ title: 'delete', message: 'aborted' });
+    }
   }
 
   async shareFolder(node: Node) {

@@ -21,6 +21,7 @@ import { NotificationService } from 'src/app/services/notification/notification.
 import { LinkShareService } from 'src/app/services/link-share/link-share.service';
 import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 import { SolidPermissionService } from 'src/app/services/solid-permission/solid-permission.service';
+import { FolderShareComponent } from '../dialogs/folder-share/folder-share.component';
 
 describe('TreeNestedExplorerComponent', () => {
   let component: TreeNestedExplorerComponent;
@@ -31,6 +32,11 @@ describe('TreeNestedExplorerComponent', () => {
   let dialogSpy: jasmine.SpyObj<MatDialog>;
   let notificationSpy: jasmine.SpyObj<NotificationService>;
   let linkShareSpy: jasmine.SpyObj<LinkShareService>;
+
+  const getSampleNode = (
+    url = 'https://example.org/test/',
+    shortName = 'test'
+  ) => new Node(url, shortName, 1, true, true);
 
   beforeEach(async () => {
     const notificationServiceSpy = jasmine.createSpyObj('NotificationService', [
@@ -161,9 +167,7 @@ describe('TreeNestedExplorerComponent', () => {
       Promise.resolve(['example.url.com/solidcryptpad/root1/']),
       Promise.resolve(['example.url.com/solidcryptpad/root1/child.file'])
     );
-
-    // for some reason if this is set to true the elements are not added
-    fileHandlerServiceSpy.isContainer.and.returnValue(true);
+    fileHandlerServiceSpy.isContainer.and.callFake((url) => url.endsWith('/'));
 
     fixture.detectChanges();
     const loader = TestbedHarnessEnvironment.loader(fixture);
@@ -171,6 +175,7 @@ describe('TreeNestedExplorerComponent', () => {
     const tree = await loader.getHarness(MatTreeHarness);
     const nodes = await tree.getNodes();
     expect(nodes.length).toEqual(2);
+    expect(await nodes[1].getText()).toBe('root1');
     await nodes[1].expand();
 
     expect((await tree.getNodes()).length).toBe(3);
@@ -222,7 +227,13 @@ describe('TreeNestedExplorerComponent', () => {
     expect(nodes.length).toBe(1);
   });
 
-  it('create_folder opens correct dialog', async () => {
+  it('isExpandable returns true if node is expandable', () => {
+    const node = new Node('https://example.org/test/', 'test', 1, true, true);
+
+    expect(component.isExpandable(node)).toBeTrue();
+  });
+
+  it('createFolder opens correct dialog', async () => {
     dialogSpy.open.and.returnValue({ afterClosed: () => of('ret') } as any);
     component.dataSource = jasmine.createSpyObj('dataSource', [
       'reloadNode',
@@ -236,7 +247,7 @@ describe('TreeNestedExplorerComponent', () => {
     );
   });
 
-  it('create_file opens correct dialog', async () => {
+  it('createFile opens correct dialog', async () => {
     dialogSpy.open.and.returnValue({ afterClosed: () => of('ret') } as any);
 
     component.createFile(new Node('', '', 0, true));
@@ -246,6 +257,7 @@ describe('TreeNestedExplorerComponent', () => {
       jasmine.anything()
     );
   });
+
   it('opens upload dialog when calling upload', async () => {
     dialogSpy.open.and.returnValue({ afterClosed: () => of('ret') } as any);
     component.dataSource = jasmine.createSpyObj('dataSource', [
@@ -267,6 +279,52 @@ describe('TreeNestedExplorerComponent', () => {
         folder: {
           url: 'https://example.org/solidcryptpad/test/',
         },
+      },
+    });
+  });
+
+  it('deleteFolder deletes folder and reloads parent node if success', async () => {
+    const node = getSampleNode();
+
+    dialogSpy.open.and.returnValue({ afterClosed: () => of(true) } as any);
+
+    fileHandlerServiceSpy.deleteFolder.and.resolveTo();
+    component['dataSource'] = jasmine.createSpyObj('dataSource', [
+      'reloadNode',
+      'getParent',
+    ]);
+
+    await component.deleteFolder(node);
+
+    expect(fileHandlerServiceSpy.deleteFolder).toHaveBeenCalledWith(node.link);
+    expect(component['dataSource'].getParent).toHaveBeenCalledWith(node);
+  });
+
+  it('deleteFile deletes file and reloads parent node', async () => {
+    const node = getSampleNode();
+
+    dialogSpy.open.and.returnValue({ afterClosed: () => of(true) } as any);
+
+    fileHandlerServiceSpy.deleteFile.and.resolveTo();
+    component['dataSource'] = jasmine.createSpyObj('dataSource', [
+      'reloadNode',
+      'getParent',
+    ]);
+
+    await component.deleteFile(node);
+
+    expect(fileHandlerServiceSpy.deleteFile).toHaveBeenCalledWith(node.link);
+    expect(component['dataSource'].getParent).toHaveBeenCalledWith(node);
+  });
+
+  it('shareFolder opens FolderShare dialog', async () => {
+    const node = getSampleNode();
+
+    await component.shareFolder(node);
+
+    expect(dialogSpy.open).toHaveBeenCalledWith(FolderShareComponent, {
+      data: {
+        folderUrl: node.link,
       },
     });
   });

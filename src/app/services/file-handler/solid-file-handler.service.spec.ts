@@ -14,12 +14,13 @@ import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { AlreadyExistsException } from 'src/app/exceptions/already-exists-exception';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
 import { BaseException } from 'src/app/exceptions/base-exception';
-import { FolderNotEmptyException } from 'src/app/exceptions/folder-not-empty-exception';
 
 describe('SolidFileHandlerService', () => {
   let service: SolidFileHandlerService;
   let authenticationServiceSpy: jasmine.SpyObj<SolidAuthenticationService>;
   let solidClientServiceSpy: jasmine.SpyObj<SolidClientService>;
+
+  const sampleFolderUrl = 'https://example.org/folder/';
 
   beforeEach(() => {
     const authenticationSpy = jasmine.createSpyObj('SolidAuthenticationSpy', [
@@ -119,20 +120,8 @@ describe('SolidFileHandlerService', () => {
 
     await expectAsync(service.writeFile(blob, url)).toBeResolvedTo(blob);
 
-    expect(solidClientServiceSpy.overwriteFile).toHaveBeenCalled();
-  });
-
-  it('writeFile appends fileName if path is container', async () => {
-    const url = 'https://real.url.com/';
-    const blob = new Blob(['blob']) as Blob & WithResourceInfo;
-
-    solidClientServiceSpy.overwriteFile.and.returnValue(Promise.resolve(blob));
-    solidClientServiceSpy.isContainer.and.returnValue(true);
-
-    await service.writeFile(blob, url, 'name');
-
     expect(solidClientServiceSpy.overwriteFile).toHaveBeenCalledWith(
-      url + 'name',
+      url,
       blob,
       jasmine.anything()
     );
@@ -296,36 +285,57 @@ describe('SolidFileHandlerService', () => {
     expect(service.guessContentType('file.notexistingextension')).toBeNull();
   });
 
-  it('containerExists calls getContainer', async () => {
-    spyOn(service, 'getContainer');
+  it('resourceExists returns true if fetch returns status 200', async () => {
+    authenticationServiceSpy.authenticatedFetch.and.resolveTo(
+      new Response(undefined, { status: 200 })
+    );
 
-    service.containerExists('');
-    expect(service.getContainer).toHaveBeenCalled();
+    await expectAsync(service.resourceExists(sampleFolderUrl)).toBeResolvedTo(
+      true
+    );
+  });
+
+  it('resourceExists returns false if fetch returns status 404', async () => {
+    authenticationServiceSpy.authenticatedFetch.and.resolveTo(
+      new Response(undefined, { status: 404 })
+    );
+
+    await expectAsync(service.resourceExists(sampleFolderUrl)).toBeResolvedTo(
+      false
+    );
+  });
+
+  it('resourceExists throws PermissionException if fetch returns status 403', async () => {
+    authenticationServiceSpy.authenticatedFetch.and.resolveTo(
+      new Response(undefined, { status: 403 })
+    );
+
+    await expectAsync(
+      service.resourceExists(sampleFolderUrl)
+    ).toBeRejectedWithError(PermissionException);
   });
 
   it('ensureContainerExists creates container for non-existing container', fakeAsync(() => {
-    spyOn(service, 'containerExists').and.resolveTo(false);
+    spyOn(service, 'resourceExists').and.resolveTo(false);
     spyOn(service, 'writeContainer').and.resolveTo();
 
     let created = undefined;
     service
-      .ensureContainerExists('https://example.org/test/folder/')
+      .ensureContainerExists(sampleFolderUrl)
       .then((res) => (created = res));
     tick();
 
     expect(created).toBeTrue();
-    expect(service.writeContainer).toHaveBeenCalledWith(
-      'https://example.org/test/folder/'
-    );
+    expect(service.writeContainer).toHaveBeenCalledWith(sampleFolderUrl);
   }));
 
   it('ensureContainerExists does not create container, if it already exists', fakeAsync(() => {
-    spyOn(service, 'containerExists').and.resolveTo(true);
+    spyOn(service, 'resourceExists').and.resolveTo(true);
     spyOn(service, 'writeContainer').and.resolveTo();
 
     let created = undefined;
     service
-      .ensureContainerExists('https://example.org/test/folder/')
+      .ensureContainerExists(sampleFolderUrl)
       .then((res) => (created = res));
     tick();
 
@@ -334,20 +344,14 @@ describe('SolidFileHandlerService', () => {
   }));
 
   it('deleteFolder calls deleteContainer', async () => {
-    const url = 'https://real.url.com';
-    await service.deleteFolder(url);
-    expect(solidClientServiceSpy.deleteContainer).toHaveBeenCalled();
-  });
 
-  it('deleteFolder returns FolderNotEmptyException on 409', async () => {
-    const url = 'https://real.url.com';
+    spyOn(service, 'getContainerContent').and.resolveTo([]);
 
-    solidClientServiceSpy.deleteContainer.and.throwError(
-      createFetchMock(url, 409)
-    );
+    await service.deleteFolder(sampleFolderUrl);    
 
-    await expectAsync(service.deleteFolder(url)).toBeRejectedWithError(
-      FolderNotEmptyException
+    expect(solidClientServiceSpy.deleteContainer).toHaveBeenCalledWith(
+      sampleFolderUrl,
+      jasmine.anything()
     );
   });
 
@@ -415,6 +419,28 @@ describe('SolidFileHandlerService', () => {
     expect(
       service.isHiddenFile('example.url.com/solidcryptpad/groups/test')
     ).toBeFalse();
+  });
+
+  it('traverseContainerContentsRecursively calls callback with all contained resources', async () => {
+    const urls = {
+      base: 'https://example.org/folder/',
+      baseFile: 'https://example.org/folder/file.txt',
+      nested: 'https://example.org/folder/nested/',
+      nestedFile: 'https://example.org/folder/nested/nested.txt',
+    };
+    const callback = jasmine.createSpy('callback');
+    const containerContentSpy = spyOn(service, 'getContainerContent');
+    containerContentSpy
+      .withArgs(urls.base)
+      .and.resolveTo([urls.baseFile, urls.nested]);
+    containerContentSpy.withArgs(urls.nested).and.resolveTo([urls.nestedFile]);
+    spyOn(service, 'isContainer').and.callFake((url) => url.endsWith('/'));
+
+    await service.traverseContainerContentsRecursively(urls.base, callback);
+
+    expect(callback).toHaveBeenCalledWith(urls.baseFile);
+    expect(callback).toHaveBeenCalledWith(urls.nested);
+    expect(callback).toHaveBeenCalledWith(urls.nestedFile);
   });
 });
 

@@ -15,7 +15,6 @@ import { NotFoundException } from 'src/app/exceptions/not-found-exception';
 import * as mime from 'mime';
 import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
 import { throwWithContext } from 'src/app/exceptions/error-options';
-import { FolderNotEmptyException } from 'src/app/exceptions/folder-not-empty-exception';
 import { SolidPodException } from 'src/app/exceptions/solid-pod-exception';
 
 @Injectable({
@@ -49,29 +48,19 @@ export class SolidFileHandlerService {
 
   /**
    * writes a file to an url
-   * if the given link is a directory the fileName is appended
    * if the file already exists then it is overwritten
    * if the file does not exist then a new one is created
    *
    * @param file the file being written
    * @param fileURL the url to write to
-   * @param fileName the fileName
    * @returns a promise for the saved file
    * @throws InvalidUrlException if the given url is not considered valid
    * @throws PermissionException if the given url cannot be written to cause of missing permissions
    * @throws UnknownException on all errors that are not explicitly caught
    * @throws AlreadyExistsException if the file cannot be overwritten
    */
-  async writeFile(
-    file: Blob,
-    fileURL: string,
-    fileName = 'unnamed'
-  ): Promise<Blob> {
+  async writeFile(file: Blob, fileURL: string): Promise<Blob> {
     fileURL = fileURL.replace(/ /g, '');
-
-    if (this.isContainer(fileURL)) {
-      fileURL = fileURL + '' + fileName;
-    }
 
     try {
       return await this.solidClientService.overwriteFile(fileURL, file, {
@@ -86,7 +75,7 @@ export class SolidFileHandlerService {
   /**
    * creates the folder at the given url
    * if a folder/file already exists then it is overwritten
-   * if the file does not exist then a new one is created
+   * if the folder does not exist then a new one is created
    *
    * @param containerURL the url the container should be created
    * @returns a promise with a soliddataset of the container
@@ -128,33 +117,19 @@ export class SolidFileHandlerService {
       .catch((err: any) => this.convertError(err));
   }
 
-  /**
-   * checks if a container exists
-   * @param containerURL the container to check
-   * @returns true or false depending on if it exists
-   */
-  async containerExists(containerURL: string): Promise<boolean> {
-    try {
-      await this.getContainer(containerURL);
-    } catch (error: any) {
-      if (error instanceof NotFoundException) {
-        return false;
-      }
-      throw error;
+  async resourceExists(resourceUrl: string): Promise<boolean> {
+    const response = await this.authService.authenticatedFetch(resourceUrl, {
+      method: 'HEAD',
+    });
+    if (response.status === 404) return false;
+    if (response.ok === false) {
+      throw this.convertError(
+        new FetchError(
+          `Could not check if ${resourceUrl} exists`,
+          response as Response & { ok: false }
+        )
+      );
     }
-    return true;
-  }
-
-  async fileExists(fileURL: string): Promise<boolean> {
-    try {
-      await this.readFile(fileURL);
-    } catch (error: any) {
-      if (error instanceof NotFoundException) {
-        return false;
-      }
-      throw error;
-    }
-
     return true;
   }
 
@@ -163,7 +138,7 @@ export class SolidFileHandlerService {
    * @returns true if the folder has been created
    */
   async ensureContainerExists(containerUrl: string): Promise<boolean> {
-    if (!(await this.containerExists(containerUrl))) {
+    if (!(await this.resourceExists(containerUrl))) {
       await this.writeContainer(containerUrl).catch(
         throwWithContext(`Could not create directory ${containerUrl}`)
       );
@@ -210,16 +185,20 @@ export class SolidFileHandlerService {
    */
   async deleteFolder(url: string): Promise<void> {
     try {
+      const content = await this.getContainerContent(url);
+
+      for (const i of content) {
+        if (this.isContainer(i)) {
+          await this.deleteFolder(i);
+        } else {
+          await this.deleteFile(i);
+        }
+      }
+
       await this.solidClientService.deleteContainer(url, {
         fetch: this.authService.authenticatedFetch.bind(this.authService),
       });
     } catch (error: any) {
-      //is checked here because message doesn't make sense for most cases
-      if (error instanceof FetchError && error.statusCode == 409) {
-        throw new FolderNotEmptyException(
-          'folder has to be empty to be deleted'
-        );
-      }
       this.convertError(error);
     }
   }
@@ -250,8 +229,8 @@ export class SolidFileHandlerService {
     const fileUrls = contents.filter((url) => !this.isContainer(url));
 
     await Promise.all([
-      ...fileUrls.map(urlHandler),
-      ...containerUrls.map(urlHandler),
+      ...fileUrls.map((url) => urlHandler(url)),
+      ...containerUrls.map((url) => urlHandler(url)),
       ...containerUrls.map((url) =>
         this.traverseContainerContentsRecursively(url, urlHandler)
       ),

@@ -13,12 +13,12 @@ describe('File-Explorer Test', function () {
 
   it('creates /solidcryptpad folder if root is not given and /solidcryptpad does not exist', function () {
     const solidcryptpadUrl = `${this.user.podUrl}/solidcryptpad/`;
-    cy.intercept('GET', solidcryptpadUrl).as('getSolidcryptpadFolder');
+    cy.intercept('HEAD', solidcryptpadUrl).as('headSolidcryptpadFolder');
     cy.intercept('PUT', solidcryptpadUrl).as('putSolidcryptpadFolder');
 
     // checks if it does exist and creates it
     cy.contains('Files').click();
-    cy.wait('@getSolidcryptpadFolder')
+    cy.wait('@headSolidcryptpadFolder')
       .its('response.statusCode')
       .should('eq', 404);
     cy.wait('@putSolidcryptpadFolder')

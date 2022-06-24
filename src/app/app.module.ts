@@ -55,6 +55,7 @@ import { ChangePasswordComponent } from './components/dialogs/change-password/ch
 import { SharedWithMeComponent } from './components/shared-with-me/shared-with-me.component';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { DeleteConfirmationComponent } from './components/dialogs/delete-confirmation/delete-confirmation.component';
 
 @NgModule({
   declarations: [
@@ -80,6 +81,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
     ShareComponent,
     ChangePasswordComponent,
     SharedWithMeComponent,
+    DeleteConfirmationComponent,
   ],
   imports: [
     MatInputModule,

@@ -45,7 +45,7 @@ export class LinkShareService {
     await this.ensureGroupsFolderExists();
     const groupUrl = await this.createNewRandomGroup();
 
-    await this.permissionService.setGroupResourcePermissions(
+    await this.permissionService.setGroupPermissions(
       fileUrl,
       groupUrl,
       grantedPermissions
@@ -80,7 +80,7 @@ export class LinkShareService {
       groupUrl,
       grantedPermissions
     );
-    await this.permissionService.setGroupResourcePermissions(
+    await this.permissionService.setGroupPermissions(
       folderURL,
       groupUrl,
       grantedPermissions
@@ -97,7 +97,7 @@ export class LinkShareService {
               groupUrl,
               grantedPermissions
             );
-          await this.permissionService.setGroupResourcePermissions(
+          await this.permissionService.setGroupPermissions(
             resourceUrl,
             groupUrl,
             grantedPermissions
@@ -120,7 +120,7 @@ export class LinkShareService {
   ): Promise<string> {
     const keystoreUrl = folderUrl + '.keystore';
     // assume that it already is known and contains keys if it already exists
-    if (await this.fileService.fileExists(keystoreUrl)) {
+    if (await this.fileService.resourceExists(keystoreUrl)) {
       return keystoreUrl;
     }
     const storage =
@@ -141,7 +141,7 @@ export class LinkShareService {
    */
   async ensureGroupsFolderExists() {
     const groupsFolderUrl = await this.getGroupsFolderUrl();
-    if (!(await this.fileService.containerExists(groupsFolderUrl))) {
+    if (!(await this.fileService.resourceExists(groupsFolderUrl))) {
       await this.createSecretFolder(groupsFolderUrl);
     }
   }
@@ -152,7 +152,7 @@ export class LinkShareService {
   async createSecretFolder(folderUrl: string) {
     await this.fileService.writeContainer(folderUrl);
     // TODO: consider creating ACL from scratch, to prevent inheriting bad defaults
-    await this.permissionService.setResourcePublicPermissions(folderUrl, {});
+    await this.permissionService.setPublicPermissions(folderUrl, {});
   }
 
   /**
@@ -165,7 +165,7 @@ export class LinkShareService {
       new Blob([], { type: 'text/turtle' }),
       groupFileUrl
     );
-    await this.permissionService.setResourcePublicPermissions(groupFileUrl, {
+    await this.permissionService.setPublicPermissions(groupFileUrl, {
       read: true,
       append: true,
     });
