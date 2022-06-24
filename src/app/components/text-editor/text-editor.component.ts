@@ -41,6 +41,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   provider!: WebrtcProvider;
   ydoc!: Y.Doc;
   autoSave = true;
+  sharedFile = false;
 
   constructor(
     private profileService: ProfileService,
@@ -61,6 +62,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       this.baseUrl = podUrls[0];
       this.setupSharedFileKey();
       this.setupFilenameFromParams();
+      this.setSharedFile();
     });
   }
 
@@ -264,6 +266,10 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       content = '';
     }
     return content;
+  }
+
+  setSharedFile(): void {
+    this.sharedFile = !this.fileUrl.includes(this.baseUrl);
   }
 
   ngOnDestroy(): void {

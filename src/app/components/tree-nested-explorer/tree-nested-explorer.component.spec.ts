@@ -283,8 +283,11 @@ describe('TreeNestedExplorerComponent', () => {
     });
   });
 
-  it('deleteFolder deletes folder and reloads parent node', async () => {
+  it('deleteFolder deletes folder and reloads parent node if success', async () => {
     const node = getSampleNode();
+
+    dialogSpy.open.and.returnValue({ afterClosed: () => of(true) } as any);
+
     fileHandlerServiceSpy.deleteFolder.and.resolveTo();
     component['dataSource'] = jasmine.createSpyObj('dataSource', [
       'reloadNode',
@@ -299,6 +302,9 @@ describe('TreeNestedExplorerComponent', () => {
 
   it('deleteFile deletes file and reloads parent node', async () => {
     const node = getSampleNode();
+
+    dialogSpy.open.and.returnValue({ afterClosed: () => of(true) } as any);
+
     fileHandlerServiceSpy.deleteFile.and.resolveTo();
     component['dataSource'] = jasmine.createSpyObj('dataSource', [
       'reloadNode',

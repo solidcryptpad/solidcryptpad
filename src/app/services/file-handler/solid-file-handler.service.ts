@@ -15,7 +15,6 @@ import { NotFoundException } from 'src/app/exceptions/not-found-exception';
 import * as mime from 'mime';
 import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
 import { throwWithContext } from 'src/app/exceptions/error-options';
-import { FolderNotEmptyException } from 'src/app/exceptions/folder-not-empty-exception';
 import { SolidPodException } from 'src/app/exceptions/solid-pod-exception';
 
 @Injectable({
@@ -186,16 +185,20 @@ export class SolidFileHandlerService {
    */
   async deleteFolder(url: string): Promise<void> {
     try {
+      const content = await this.getContainerContent(url);
+
+      for (const i of content) {
+        if (this.isContainer(i)) {
+          await this.deleteFolder(i);
+        } else {
+          await this.deleteFile(i);
+        }
+      }
+
       await this.solidClientService.deleteContainer(url, {
         fetch: this.authService.authenticatedFetch.bind(this.authService),
       });
     } catch (error: any) {
-      //is checked here because message doesn't make sense for most cases
-      if (error instanceof FetchError && error.statusCode == 409) {
-        throw new FolderNotEmptyException(
-          'folder has to be empty to be deleted'
-        );
-      }
       this.convertError(error);
     }
   }
