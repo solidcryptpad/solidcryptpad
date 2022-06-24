@@ -1,17 +1,8 @@
-<div class="left-half">
-  <div class="box">
-    <h2 *ngIf="name$; else noUser">Hello {{ name$ | async }}</h2>
-    <ng-template #noUser>
-      <h2>Hello User!</h2>
-    </ng-template>
-    <h2>Welcome to your personal area.</h2>
-  </div>
-</div>
-
-<div class="right-half">
-  <div class="box">
-    <h3>Check out files shared with you</h3>
-
-    <app-shared-with-me></app-shared-with-me>
-  </div>
+<div class="box">
+  <h2 *ngIf="name$; else noUser">Hello {{ name$ | async }}</h2>
+  <ng-template #noUser>
+    <h2>Hello User!</h2>
+  </ng-template>
+  <h2>Welcome to your personal area.</h2>
+  <app-shared-with-me></app-shared-with-me>
 </div>

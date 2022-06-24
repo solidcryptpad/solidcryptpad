@@ -16,6 +16,7 @@ import { FileEncryptionService } from 'src/app/services/encryption/file-encrypti
 import * as JSZip from 'jszip';
 import { SolidPermissionService } from 'src/app/services/solid-permission/solid-permission.service';
 import { DeleteConfirmationComponent } from '../dialogs/delete-confirmation/delete-confirmation.component';
+import { FileShareComponent } from '../dialogs/file-share/file-share.component';
 
 /**
  * represents an element in the tree
@@ -239,6 +240,14 @@ export class TreeNestedExplorerComponent implements OnInit {
     await this.dialog.open(FolderShareComponent, {
       data: {
         folderUrl: node.link,
+      },
+    });
+  }
+
+  async shareFile(node: Node) {
+    await this.dialog.open(FileShareComponent, {
+      data: {
+        fileUrl: node.link,
       },
     });
   }

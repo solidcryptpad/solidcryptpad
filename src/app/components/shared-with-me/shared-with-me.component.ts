@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { KeystoreService } from '../../services/encryption/keystore/keystore.service';
-import { SharedFile } from './shared-file';
+import { SharedWithMe } from './shared-with-me';
 import { Router } from '@angular/router';
 
 @Component({
@@ -9,35 +9,85 @@ import { Router } from '@angular/router';
   styleUrls: ['./shared-with-me.component.scss'],
 })
 export class SharedWithMeComponent implements OnInit {
-  filesSharedWithMe: SharedFile[] = [];
+  filesSharedWithMe: SharedWithMe[] = [];
+  foldersSharedWithMe: SharedWithMe[] = [];
 
   constructor(
     private keystoreService: KeystoreService,
     private router: Router
   ) {}
-  displayedColumns: string[] = ['fileName', 'owner'];
+  displayedColumns: string[] = ['isFolder', 'fileName', 'owner'];
+  loading = false;
 
   async ngOnInit(): Promise<void> {
-    const sharedFilesKeystore =
-      await this.keystoreService.getSharedFilesKeystore();
+    await this.keystoreService.loadKeystores();
 
-    const allKeysArray = Object.entries(await sharedFilesKeystore.getKeysAll());
+    this.loading = true;
 
-    allKeysArray.map((row) => {
-      const offset = row[0].includes('https') ? 8 : 7;
-      const splitUrlString = row[0].substring(offset).split('/');
-      this.filesSharedWithMe.push({
-        ownerPod: splitUrlString[0],
-        fileName: splitUrlString[splitUrlString.length - 1],
-        url: row[0],
-        key: row[1],
+    if (await this.keystoreService.sharedFilesKeystoreExists()) {
+      const sharedFilesKeystore =
+        await this.keystoreService.getSharedFilesKeystore();
+      const sharedFilesAllKeys = Object.entries(
+        await sharedFilesKeystore.getKeysAll()
+      );
+
+      this.mapKeysToObjects(sharedFilesAllKeys);
+    }
+
+    if (await this.keystoreService.sharedFoldersKeystoreExists()) {
+      const sharedFoldersKeystore =
+        await this.keystoreService.getSharedFoldersKeystore();
+
+      const sharedFoldersAllKeys = Object.entries(
+        await sharedFoldersKeystore.getKeysAll()
+      );
+
+      this.mapKeysToObjects(sharedFoldersAllKeys, true);
+    }
+
+    this.loading = false;
+  }
+
+  private mapKeysToObjects(
+    sharedFilesAllKeys: [string, string][],
+    isFolder = false
+  ) {
+    sharedFilesAllKeys.map((row) => {
+      console.log(row);
+      const url = row[0];
+      const key = row[1];
+
+      const offset = url.includes('https') ? 8 : 7;
+
+      const splitUrlString = url.substring(offset).split('/');
+      const ownerPod = splitUrlString[0];
+
+      const fileNameIndex = isFolder
+        ? splitUrlString.length - 2
+        : splitUrlString.length - 1;
+      const resourceName = splitUrlString[fileNameIndex];
+
+      (isFolder ? this.foldersSharedWithMe : this.filesSharedWithMe).push({
+        ownerPod: ownerPod,
+        resourceName: resourceName,
+        url: url,
+        key: key,
+        isFolder: isFolder,
       });
     });
   }
 
-  async openFile(fileUrl: string) {
-    await this.router.navigate(['preview'], {
-      queryParams: { url: fileUrl },
-    });
+  async handleClick(url: string, isFolder: boolean) {
+    if (isFolder) {
+      await this.router.navigate(['files'], {
+        queryParams: {
+          url: url,
+        },
+      });
+    } else {
+      await this.router.navigate(['preview'], {
+        queryParams: { url: url },
+      });
+    }
   }
 }

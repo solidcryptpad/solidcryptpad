@@ -70,6 +70,11 @@ export class ShareComponent implements OnInit {
     await this.keystoreService.addKeystore(
       new FolderKeystore(keystoreUrl, folderUrl, storage)
     );
+
+    const sharedFoldersKeystore =
+      await this.keystoreService.getSharedFoldersKeystore();
+    await sharedFoldersKeystore.addKey(folderUrl, keystoreEncryptionKey);
+
     await this.router.navigate(['files'], {
       queryParams: {
         url: folderUrl,
