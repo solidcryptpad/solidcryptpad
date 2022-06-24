@@ -18,7 +18,7 @@ export class FileEncryptionService {
   ) {}
 
   /**
-   * Encrypts a file by using its FileURL to find the matching key from the keystore.
+   * Encrypts a file by using its url to find the matching key from the keystore.
    * If no matching key is found, a new one is generated.
    */
   async encryptFile(file: Blob, fileURL: string): Promise<Blob> {
@@ -32,13 +32,11 @@ export class FileEncryptionService {
   }
 
   /**
-   * Decrypts a file by using its FileURL to find the matching key from the keystore.
+   * Decrypts a file by using its url to find the matching key from the keystore.
    */
   async decryptFile(file: Blob, fileURL: string): Promise<Blob> {
     const key = await this.keystoreService.getKey(fileURL);
-    return this.encryptionService
-      .decryptAsBlob(await file.text(), key)
-      .catch(throwWithContext(`Could not decrypt ${file}`));
+    return this.decryptFileWithKey(file, key);
   }
 
   /**
@@ -79,10 +77,10 @@ export class FileEncryptionService {
 
   /**
    * encrypts a file and writes it to an url
-   * if the given link is a directory the fileName is appended
    * if the file already exists then it is overwritten
    * if the file does not exist then a new one is created
    *
+   * @param file the file being written
    * @param fileURL the url to write to
    * @returns a promise for the saved file
    * @throws InvalidUrlException if the given url is not considered valid
@@ -90,21 +88,14 @@ export class FileEncryptionService {
    * @throws UnknownException on all errors that are not explicitly caught
    * @throws AlreadyExistsException if the file cannot be overwritten
    */
-  async writeAndEncryptFile(
-    file: Blob,
-    fileURL: string,
-    fileName = 'unnamed'
-  ): Promise<Blob> {
-    // TODO: check if this is used anywhere or can be removed
-    if (this.fileService.isContainer(fileURL)) {
-      fileURL = fileURL + '' + fileName;
-    }
+  async writeAndEncryptFile(file: Blob, fileURL: string): Promise<Blob> {
+    fileURL = fileURL.replace(/ /g, '');
     if (!this.isCryptoDirectory(fileURL)) {
       throw new NotACryptpadUrlException('file is not in a valid directory');
     }
     const encryptedFile = await this.encryptFile(file, fileURL);
 
-    return this.fileService.writeFile(encryptedFile, fileURL, fileName);
+    return this.fileService.writeFile(encryptedFile, fileURL);
   }
 
   /**

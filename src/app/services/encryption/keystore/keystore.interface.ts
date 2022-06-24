@@ -17,12 +17,12 @@ export interface Keystore extends Serializable {
   getKeysAll(): Promise<{ [url: string]: string }>;
 
   /**
-   * Add a key for url to this keystore.
+   * Add a key for an url to this keystore and save it to the storage.
    */
   addKey(url: string, key: string): Promise<void>;
 
   /**
-   * Add multiple keys to this keystore.
+   * Add multiple keys to this keystore and save them to the storage.
    */
   addKeys(keys: { [url: string]: string }): Promise<void>;
 
