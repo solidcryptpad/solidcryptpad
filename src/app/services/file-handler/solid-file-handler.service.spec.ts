@@ -14,7 +14,6 @@ import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { AlreadyExistsException } from 'src/app/exceptions/already-exists-exception';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
 import { BaseException } from 'src/app/exceptions/base-exception';
-import { FolderNotEmptyException } from 'src/app/exceptions/folder-not-empty-exception';
 
 describe('SolidFileHandlerService', () => {
   let service: SolidFileHandlerService;
@@ -345,22 +344,14 @@ describe('SolidFileHandlerService', () => {
   }));
 
   it('deleteFolder calls deleteContainer', async () => {
-    await service.deleteFolder(sampleFolderUrl);
+
+    spyOn(service, 'getContainerContent').and.resolveTo([]);
+
+    await service.deleteFolder(sampleFolderUrl);    
+
     expect(solidClientServiceSpy.deleteContainer).toHaveBeenCalledWith(
       sampleFolderUrl,
       jasmine.anything()
-    );
-  });
-
-  it('deleteFolder returns FolderNotEmptyException on 409', async () => {
-    const url = 'https://real.url.com';
-
-    solidClientServiceSpy.deleteContainer.and.throwError(
-      createFetchMock(url, 409)
-    );
-
-    await expectAsync(service.deleteFolder(url)).toBeRejectedWithError(
-      FolderNotEmptyException
     );
   });
 
