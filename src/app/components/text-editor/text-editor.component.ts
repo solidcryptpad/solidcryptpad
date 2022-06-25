@@ -222,6 +222,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    * closes the current file with saving it
    */
   async closeFile(saveFile: boolean): Promise<void> {
+    this.fileLoaded = false;
     this.readyForSave = false;
     if (saveFile) {
       await this.saveFile();
