@@ -25,7 +25,8 @@ export class KeystoreService {
     private keystoreStorageService: KeystoreStorageService
   ) {}
 
-  private readonly keystoresFolderPath: string = 'solidcryptpad-keystores/';
+  private readonly keystoresFolderPath: string =
+    'solidcryptpad-data/keystores/';
 
   /**
    * Search through all responsible keystores. Return the first found key for this url

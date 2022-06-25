@@ -26,7 +26,8 @@ export class LinkShareService {
     private permissionService: SolidPermissionService
   ) {}
 
-  private readonly groupsFolderPath = 'solidcryptpad/groups/';
+  private readonly groupsFolderPath = 'solidcryptpad-data/groups/';
+  private readonly keystoreFolderPath = 'solidcryptpad-data/keystores/';
 
   /**
    * Creates a share link for the given file with the given permissons.
@@ -118,7 +119,12 @@ export class LinkShareService {
     folderUrl: string,
     encryptionKey: string
   ): Promise<string> {
-    const keystoreUrl = folderUrl + '.keystore';
+    const keystoreUrl =
+      (await this.profileService.getPodUrls())[0] +
+      this.keystoreFolderPath +
+      this.encryptionService.SHA256Salted(folderUrl) +
+      '.keystore';
+    console.log(keystoreUrl);
     // assume that it already is known and contains keys if it already exists
     if (await this.fileService.resourceExists(keystoreUrl)) {
       return keystoreUrl;
