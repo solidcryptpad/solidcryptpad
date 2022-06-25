@@ -52,28 +52,10 @@
       </button>
     </div>
     <div *ngIf="!fileUrl">
-      <h3>No filename given. Open an example file:</h3>
-      <a
-        mat-raised-button
-        class="editor-button"
-        [routerLink]="['/editor']"
-        [queryParams]="{ file: getExampleUrl('ExampleFile0.txt') }"
-        >Open <b>ExampleFile0.txt</b></a
-      >
-      <a
-        mat-raised-button
-        class="editor-button"
-        [routerLink]="['/editor']"
-        [queryParams]="{ file: getExampleUrl('ExampleFile1.txt') }"
-        >Open <b>ExampleFile1.txt</b></a
-      >
-      <a
-        mat-raised-button
-        class="editor-button"
-        [routerLink]="['/editor']"
-        [queryParams]="{ file: getExampleUrl('ExampleFile2.txt') }"
-        >Open <b>ExampleFile2.txt</b></a
-      >
+      <h3>
+        No filename given. Go to <a [routerLink]="['/files']">Files</a> to
+        select an file to edit.
+      </h3>
     </div>
   </div>
 </div>
