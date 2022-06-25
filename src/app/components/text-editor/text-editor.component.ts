@@ -23,7 +23,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import ColorHash from 'color-hash';
-import { ToastrService } from 'ngx-toastr';
+import { NotificationService } from '../../services/notification/notification.service';
 
 @Component({
   selector: 'app-text-editor',
@@ -53,7 +53,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     private router: Router,
     private dialog: MatDialog,
     private sanitizer: DomSanitizer,
-    private toastr: ToastrService
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -88,7 +88,10 @@ export class TextEditorComponent implements OnInit, OnDestroy {
         this.fileUrl === ''
       ) {
         this.closeEditor();
-        this.toastr.error('No Filename given. Select an file to edit it.');
+        this.notificationService.error({
+          title: '',
+          message: 'No Filename given. Select an file to edit it.',
+        });
         this.router.navigate(['/files']);
       } else {
         this.setupEditor();
@@ -226,7 +229,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     this.readyForSave = false;
     if (saveFile) {
       await this.saveFile();
-      this.toastr.success('File saved!');
+      this.notificationService.success({ title: '', message: 'File saved!' });
     }
     this.closeEditor();
     this.html = '';
