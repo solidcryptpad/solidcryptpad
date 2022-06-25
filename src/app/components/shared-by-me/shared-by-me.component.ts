@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { SharedFile } from '../shared-with-me/shared-file';
+import { SharedResource } from '../../models/shared-resource';
 import { KeystoreService } from '../../services/encryption/keystore/keystore.service';
 import { Router } from '@angular/router';
 import { Clipboard } from '@angular/cdk/clipboard';
@@ -11,7 +11,7 @@ import { ToastrService } from 'ngx-toastr';
   styleUrls: ['./shared-by-me.component.scss'],
 })
 export class SharedByMeComponent implements OnInit {
-  filesSharedWithMe: SharedFile[] = [];
+  resourcesSharedByMe: SharedResource[] = [];
 
   constructor(
     private keystoreService: KeystoreService,
@@ -39,13 +39,15 @@ export class SharedByMeComponent implements OnInit {
       console.log(data);
       const offset = data.object.includes('https') ? 8 : 7;
       const splitUrlString = data.object.substring(offset).split('/');
-      this.filesSharedWithMe.push({
+
+      this.resourcesSharedByMe.push({
         ownerPod: splitUrlString[0],
-        fileName:
+        resourceName:
           splitUrlString[splitUrlString.length - 1] ||
           splitUrlString[splitUrlString.length - 2],
         url: data.url,
         key: data.type,
+        isFolder: data.object.substring(offset).endsWith('/'),
       });
     });
   }

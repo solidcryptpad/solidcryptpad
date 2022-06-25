@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { KeystoreService } from '../../services/encryption/keystore/keystore.service';
-import { SharedWithMe } from './shared-with-me';
+import { SharedResource } from '../../models/shared-resource';
 import { Router } from '@angular/router';
 
 @Component({
@@ -9,8 +9,8 @@ import { Router } from '@angular/router';
   styleUrls: ['./shared-with-me.component.scss'],
 })
 export class SharedWithMeComponent implements OnInit {
-  filesSharedWithMe: SharedWithMe[] = [];
-  foldersSharedWithMe: SharedWithMe[] = [];
+  filesSharedWithMe: SharedResource[] = [];
+  foldersSharedWithMe: SharedResource[] = [];
 
   constructor(
     private keystoreService: KeystoreService,

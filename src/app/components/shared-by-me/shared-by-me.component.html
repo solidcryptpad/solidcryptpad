@@ -2,11 +2,11 @@
   <h3>Shared Links created by you.</h3>
   <h4>Click to copy the link.</h4>
   <div
-    *ngIf="filesSharedWithMe.length > 0"
+    *ngIf="resourcesSharedByMe.length > 0"
     class="mat-elevation-z8"
     style="width: 100%"
   >
-    <table mat-table [dataSource]="this.filesSharedWithMe">
+    <table mat-table [dataSource]="this.resourcesSharedByMe">
       <ng-container matColumnDef="key">
         <th mat-header-cell *matHeaderCellDef>Type</th>
         <td mat-cell *matCellDef="let element">{{ element.key }}</td>
