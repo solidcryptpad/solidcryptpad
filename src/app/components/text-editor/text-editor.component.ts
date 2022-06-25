@@ -43,6 +43,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   ydoc!: Y.Doc;
   autoSave = true;
   sharedFile = false;
+  fileLoaded = false;
 
   constructor(
     private profileService: ProfileService,
@@ -164,6 +165,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     blob.text().then((text) => {
       this.html = this.sanitizeHtmlContent(text);
       this.readyForSave = true;
+      this.fileLoaded = true;
       this.editor.commands.focus().exec();
     });
   }
@@ -223,11 +225,12 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     this.readyForSave = false;
     if (saveFile) {
       await this.saveFile();
+      this.toastr.success('File saved!');
     }
     this.closeEditor();
     this.html = '';
     //this.router.navigate(['/editor'], { queryParams: { filename: '' } });
-    this.router.navigate(['/files']);
+    this.router.navigate(['/preview'], { queryParams: { url: this.fileUrl } });
   }
 
   async shareFile() {
