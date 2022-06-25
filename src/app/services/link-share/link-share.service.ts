@@ -67,13 +67,15 @@ export class LinkShareService {
     grantedPermissions: Partial<SolidPermissions>
   ): Promise<string> {
     const encryptionKey = this.encryptionService.generateNewKey();
+    const groupUrl = await this.createNewRandomGroup();
+
     const keystoreUrl = await this.setupKeystoreForFolder(
       folderURL,
-      encryptionKey
+      encryptionKey,
+      groupUrl
     );
 
     await this.ensureGroupsFolderExists();
-    const groupUrl = await this.createNewRandomGroup();
 
     // give access to the folder and all items in it without an acl file
     await this.permissionService.setGroupDefaultPermissions(
@@ -117,13 +119,15 @@ export class LinkShareService {
 
   private async setupKeystoreForFolder(
     folderUrl: string,
-    encryptionKey: string
+    encryptionKey: string,
+    groupUrl: string
   ): Promise<string> {
     const keystoreUrl =
       (await this.profileService.getPodUrls())[0] +
       this.keystoreFolderPath +
       this.encryptionService.SHA256Salted(folderUrl) +
       '.keystore';
+
     console.log(keystoreUrl);
     // assume that it already is known and contains keys if it already exists
     if (await this.fileService.resourceExists(keystoreUrl)) {
@@ -139,6 +143,11 @@ export class LinkShareService {
     const keys = await this.keystoreService.getKeysInFolder(folderUrl);
     await keystore.addKeys(keys);
     await this.keystoreService.addKeystore(keystore);
+    await this.permissionService.setGroupPermissions(keystoreUrl, groupUrl, {
+      read: true,
+      write: false,
+      append: false,
+    });
     return keystoreUrl;
   }
 
