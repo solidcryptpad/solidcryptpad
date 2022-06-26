@@ -10,18 +10,12 @@
       *matTreeNodeDef="let node"
       matTreeNodePadding="2px"
     >
-      <button mat-icon-button disabled></button>
-      {{ node.shortName }}
-
-      <button
-        mat-icon-button
-        (click)="this.open(node)"
-        style="margin-left: 20px"
-      >
-        <mat-icon class="mat-icon" data-cy="open-node" title="Open"
-          >open_in_new</mat-icon
-        >
+      <button mat-icon-button (click)="this.open(node)">
+        <mat-icon class="mat-icon" data-cy="open-node">{{
+          getFileIcon(node)
+        }}</mat-icon>
       </button>
+      {{ node.shortName }}
 
       <span class="spacer"></span>
 

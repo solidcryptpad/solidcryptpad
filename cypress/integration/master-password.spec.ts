@@ -3,11 +3,11 @@ import { UserConfig } from '../support/commands';
 describe('MasterPassword', () => {
   beforeEach(() => {
     cy.createRandomAccount().then(cy.loginMocked).as('user');
-    cy.get('@user').then((user) =>
-      cy
-        .intercept('PUT', `${user.podUrl}/solidcryptpad-keystores/*`)
-        .as('savedKeystore')
-    );
+    cy.get('@user').then((user) => {
+      cy.intercept('PUT', `${user.podUrl}/solidcryptpad-data/keystores/*`).as(
+        'savedKeystore'
+      );
+    });
   });
 
   it('requires password confirmation on decryption attempt', function () {

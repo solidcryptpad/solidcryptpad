@@ -402,24 +402,6 @@ describe('SolidFileHandlerService', () => {
     ).toBeFalse();
   });
 
-  it('isHiddenFile file works on groups folder', () => {
-    expect(
-      service.isHiddenFile('example.url.com/solidcryptpad/groups/')
-    ).toBeTrue();
-  });
-
-  it('isHiddenFile file works on groups folder', () => {
-    expect(
-      service.isHiddenFile('example.url.com/solidcryptpad/groups/')
-    ).toBeTrue();
-  });
-
-  it('isHiddenFile file works inside groups folder', () => {
-    expect(
-      service.isHiddenFile('example.url.com/solidcryptpad/groups/test')
-    ).toBeFalse();
-  });
-
   it('traverseContainerContentsRecursively calls callback with all contained resources', async () => {
     const urls = {
       base: 'https://example.org/folder/',

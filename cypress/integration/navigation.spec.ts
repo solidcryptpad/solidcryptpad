@@ -13,7 +13,7 @@ describe('can navigate with navbar as logged in user', () => {
     cy.contains('Files').click();
     cy.url().should('include', 'files');
 
-    cy.contains('Editor').click();
-    cy.url().should('include', 'editor');
+    cy.contains('FAQ').click();
+    cy.url().should('include', 'faq');
   });
 });

@@ -11,7 +11,7 @@ import { LinkShareService } from '../../../services/link-share/link-share.servic
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
-describe('LinkShareComponent', () => {
+describe('FileShareComponent', () => {
   let component: FileShareComponent;
   let fixture: ComponentFixture<FileShareComponent>;
   let linkShareServiceSpy: jasmine.SpyObj<LinkShareService>;

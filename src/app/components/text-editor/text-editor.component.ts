@@ -13,16 +13,17 @@ import { keymap } from 'prosemirror-keymap';
 import { ProfileService } from '../../services/profile/profile.service';
 import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 import { YXmlFragment } from 'yjs/dist/src/types/YXmlFragment';
-import { fromEvent, debounceTime } from 'rxjs';
+import { fromEvent, debounceTime, filter } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotFoundException } from '../../exceptions/not-found-exception';
-import { LinkShareService } from 'src/app/services/link-share/link-share.service';
 import { MatDialog } from '@angular/material/dialog';
 import { FileShareComponent } from '../dialogs/file-share/file-share.component';
 import { DomSanitizer } from '@angular/platform-browser';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import ColorHash from 'color-hash';
+import { NotificationService } from '../../services/notification/notification.service';
+import { KeystoreService } from 'src/app/services/encryption/keystore/keystore.service';
 
 @Component({
   selector: 'app-text-editor',
@@ -42,15 +43,17 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   ydoc!: Y.Doc;
   autoSave = true;
   sharedFile = false;
+  fileLoaded = false;
 
   constructor(
     private profileService: ProfileService,
     private fileEncryptionService: FileEncryptionService,
-    private linkShareService: LinkShareService,
+    private keystoreService: KeystoreService,
     private route: ActivatedRoute,
     private router: Router,
     private dialog: MatDialog,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -67,14 +70,22 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   }
 
   setupFilenameFromParams(): void {
-    this.route.queryParams.subscribe((params) => {
+    this.route.queryParams.subscribe(async (params) => {
       this.fileUrl = params['file'];
-      if (
-        this.fileUrl === null ||
-        this.fileUrl === undefined ||
-        this.fileUrl === ''
-      ) {
+
+      const fileToCreate = params['fileToCreate'];
+      if (fileToCreate) {
+        this.fileUrl = fileToCreate;
+        await this.saveFile();
+      }
+
+      if (!this.fileUrl) {
         this.closeEditor();
+        this.notificationService.error({
+          title: '',
+          message: 'No Filename given. Select a file to edit it.',
+        });
+        this.router.navigate(['/files']);
       } else {
         this.setupEditor();
       }
@@ -87,7 +98,6 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       if (key) {
         this.sharedKey = atob(key);
       }
-      console.log(this.sharedKey); // TEMP
     });
   }
 
@@ -95,13 +105,13 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    * prepares the editor for the current file
    * https://github.com/yjs/y-prosemirror#utilities
    */
-  setupEditor(): void {
+  async setupEditor(): Promise<void> {
     this.closeEditor();
     this.ydoc = new Y.Doc();
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     this.provider = new WebrtcProvider(this.getRoomName(), this.ydoc, {
-      password: this.getRoomPassword(),
+      password: await this.getRoomPassword(),
     });
 
     this.profileService.getUserName().then((value) => {
@@ -124,14 +134,12 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       ],
     });
 
-    const updateYdoc = fromEvent(this.ydoc, 'update');
-    const result = updateYdoc.pipe(debounceTime(1000));
-    result.subscribe(() => {
-      if (!this.readyForSave || !this.autoSave) {
-        return;
-      }
-      this.saveFile();
-    });
+    fromEvent(this.ydoc, 'update')
+      .pipe(
+        debounceTime(1000),
+        filter(() => this.readyForSave && this.autoSave)
+      )
+      .subscribe(() => this.saveFile());
 
     this.loadFile();
   }
@@ -150,6 +158,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     blob.text().then((text) => {
       this.html = this.sanitizeHtmlContent(text);
       this.readyForSave = true;
+      this.fileLoaded = true;
       this.editor.commands.focus().exec();
     });
   }
@@ -206,13 +215,16 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    * closes the current file with saving it
    */
   async closeFile(saveFile: boolean): Promise<void> {
+    this.fileLoaded = false;
     this.readyForSave = false;
     if (saveFile) {
       await this.saveFile();
+      this.notificationService.success({ title: '', message: 'File saved!' });
     }
     this.closeEditor();
     this.html = '';
-    this.router.navigate(['/editor'], { queryParams: { filename: '' } });
+    //this.router.navigate(['/editor'], { queryParams: { filename: '' } });
+    this.router.navigate(['/preview'], { queryParams: { url: this.fileUrl } });
   }
 
   async shareFile() {
@@ -234,15 +246,6 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * adds the default example directory
-   * @param filename the file it should use
-   * @returns string with the example directory addes to the beginning
-   */
-  getExampleUrl(filename: string): string {
-    return this.baseUrl + 'solidcryptpad/' + filename;
-  }
-
-  /**
    * @return the room name for the current opened file
    */
   getRoomName(): string {
@@ -252,8 +255,8 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   /**
    * @return the room pw for the current opened file
    */
-  getRoomPassword(): string {
-    return 'pw-' + this.fileUrl; //TODO generate room pw
+  getRoomPassword(): Promise<string> {
+    return this.keystoreService.getKey(this.fileUrl);
   }
 
   /**

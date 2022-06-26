@@ -3,7 +3,7 @@ import { SharedResource } from '../../models/shared-resource';
 import { KeystoreService } from '../../services/encryption/keystore/keystore.service';
 import { Router } from '@angular/router';
 import { Clipboard } from '@angular/cdk/clipboard';
-import { ToastrService } from 'ngx-toastr';
+import { NotificationService } from '../../services/notification/notification.service';
 
 @Component({
   selector: 'app-shared-by-me',
@@ -17,7 +17,7 @@ export class SharedByMeComponent implements OnInit {
     private keystoreService: KeystoreService,
     private router: Router,
     private clipboard: Clipboard,
-    private toastr: ToastrService
+    private notificationService: NotificationService
   ) {}
   displayedColumns: string[] = ['key', 'fileName', 'url'];
 
@@ -54,6 +54,9 @@ export class SharedByMeComponent implements OnInit {
 
   async copyUrl(fileUrl: string, filename: string) {
     this.clipboard.copy(fileUrl);
-    this.toastr.success('Copied url for ' + filename);
+    this.notificationService.success({
+      title: '',
+      message: 'Copied url for ' + filename,
+    });
   }
 }

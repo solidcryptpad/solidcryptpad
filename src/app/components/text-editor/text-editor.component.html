@@ -9,71 +9,60 @@
       <small style="color: #e38c45" *ngIf="sharedFile"
         >This file has been shared with you by another user.</small
       >
-
-      <div class="editor">
-        <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
-        <ngx-editor
-          [editor]="editor"
-          [(ngModel)]="html"
-          [disabled]="false"
-          [placeholder]="'Type here...'"
-        ></ngx-editor>
+      <mat-progress-bar
+        *ngIf="!fileLoaded"
+        mode="indeterminate"
+      ></mat-progress-bar>
+      <div *ngIf="fileLoaded">
+        <div class="editor">
+          <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
+          <ngx-editor
+            [editor]="editor"
+            [(ngModel)]="html"
+            [disabled]="false"
+            [placeholder]="'Type here...'"
+          ></ngx-editor>
+        </div>
+        <br />
+        <button
+          mat-raised-button
+          type="button"
+          class="editor-button"
+          color="accent"
+          (click)="closeFile(true)"
+        >
+          Save and close file
+        </button>
+        <button
+          mat-raised-button
+          type="button"
+          color="primary"
+          class="editor-button"
+          (click)="shareFile()"
+          *ngIf="!sharedFile"
+        >
+          Share
+        </button>
+        <mat-slide-toggle class="editor-button" [(ngModel)]="autoSave"
+          >Auto-Save
+        </mat-slide-toggle>
+        <button
+          *ngIf="!autoSave"
+          color="warn"
+          mat-raised-button
+          type="button"
+          class="editor-button"
+          (click)="closeFile(false)"
+        >
+          Close file without saving.
+        </button>
       </div>
-      <br />
-      <button
-        mat-raised-button
-        type="button"
-        class="editor-button"
-        (click)="closeFile(true)"
-      >
-        Save and close file
-      </button>
-      <button
-        mat-raised-button
-        type="button"
-        class="editor-button"
-        (click)="shareFile()"
-        *ngIf="!sharedFile"
-      >
-        Share
-      </button>
-      <mat-slide-toggle class="editor-button" [(ngModel)]="autoSave"
-        >Auto-Save
-      </mat-slide-toggle>
-      <button
-        *ngIf="!autoSave"
-        color="warn"
-        mat-raised-button
-        type="button"
-        class="editor-button"
-        (click)="closeFile(false)"
-      >
-        Close file without saving.
-      </button>
     </div>
     <div *ngIf="!fileUrl">
-      <h3>No filename given. Open an example file:</h3>
-      <a
-        mat-raised-button
-        class="editor-button"
-        [routerLink]="['/editor']"
-        [queryParams]="{ file: getExampleUrl('ExampleFile0.txt') }"
-        >Open <b>ExampleFile0.txt</b></a
-      >
-      <a
-        mat-raised-button
-        class="editor-button"
-        [routerLink]="['/editor']"
-        [queryParams]="{ file: getExampleUrl('ExampleFile1.txt') }"
-        >Open <b>ExampleFile1.txt</b></a
-      >
-      <a
-        mat-raised-button
-        class="editor-button"
-        [routerLink]="['/editor']"
-        [queryParams]="{ file: getExampleUrl('ExampleFile2.txt') }"
-        >Open <b>ExampleFile2.txt</b></a
-      >
+      <h3>
+        No filename given. Go to <a [routerLink]="['/files']">Files</a> to
+        select an file to edit.
+      </h3>
     </div>
   </div>
 </div>

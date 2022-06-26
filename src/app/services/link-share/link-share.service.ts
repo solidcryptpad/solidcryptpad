@@ -26,7 +26,8 @@ export class LinkShareService {
     private permissionService: SolidPermissionService
   ) {}
 
-  private readonly groupsFolderPath = 'solidcryptpad/groups/';
+  private readonly groupsFolderPath = 'solidcryptpad-data/groups/';
+  private readonly keystoreFolderPath = 'solidcryptpad-data/keystores/';
 
   /**
    * Creates a share link for the given file with the given permissons.
@@ -72,15 +73,17 @@ export class LinkShareService {
     grantedPermissions: Partial<SolidPermissions>
   ): Promise<string> {
     const encryptionKey = this.encryptionService.generateNewKey();
+    const groupUrl = await this.createNewRandomGroup();
+
     const keystoreUrl = await this.setupKeystoreForFolder(
       folderURL,
-      encryptionKey
+      encryptionKey,
+      groupUrl
     );
 
     const linksKeystore = await this.keystoreService.getLinksKeystore();
 
     await this.ensureGroupsFolderExists();
-    const groupUrl = await this.createNewRandomGroup();
 
     // give access to the folder and all items in it without an acl file
     await this.permissionService.setGroupDefaultPermissions(
@@ -130,9 +133,16 @@ export class LinkShareService {
 
   private async setupKeystoreForFolder(
     folderUrl: string,
-    encryptionKey: string
+    encryptionKey: string,
+    groupUrl: string
   ): Promise<string> {
-    const keystoreUrl = folderUrl + '.keystore';
+    const keystoreUrl =
+      (await this.profileService.getPodUrls())[0] +
+      this.keystoreFolderPath +
+      this.encryptionService.SHA256Salted(folderUrl) +
+      '.keystore';
+
+    console.log(keystoreUrl);
     // assume that it already is known and contains keys if it already exists
     if (await this.fileService.resourceExists(keystoreUrl)) {
       return keystoreUrl;
@@ -147,6 +157,11 @@ export class LinkShareService {
     const keys = await this.keystoreService.getKeysInFolder(folderUrl);
     await keystore.addKeys(keys);
     await this.keystoreService.addKeystore(keystore);
+    await this.permissionService.setGroupPermissions(keystoreUrl, groupUrl, {
+      read: true,
+      write: false,
+      append: false,
+    });
     return keystoreUrl;
   }
 

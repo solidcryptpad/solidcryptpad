@@ -33,7 +33,7 @@ describe('File sharing', function () {
     cy.get('[data-cy="open-node"]').click();
     cy.contains('Preview from ');
     cy.contains(fileName);
-    cy.contains('open in Editor').click();
+    cy.contains('Open in editor').click();
     cy.contains(fileContent);
 
     cy.contains('Share').click();
