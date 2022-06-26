@@ -255,11 +255,11 @@ export class SolidFileHandlerService {
         case 401:
         case 403:
           throw new PermissionException(
-            'you do not have the permission needed for this file',
+            `You do not have permissions for ${error.response.url}`,
             { cause: error }
           );
         case 404:
-          throw new NotFoundException('the requested file was not found', {
+          throw new NotFoundException(`Could not find ${error.response.url}`, {
             cause: error,
           });
         case 405:
@@ -289,12 +289,7 @@ export class SolidFileHandlerService {
    * @returns if the file should be hidden
    */
   isHiddenFile(url: string): boolean {
-    // the groups folder is hidden
-    if (url.endsWith('/solidcryptpad/groups/')) {
-      return true;
-    }
-
-    // prepare for further checks
+    // prepare for checks
     if (url.endsWith('/')) {
       url = url.slice(0, url.length - 1);
     }

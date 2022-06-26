@@ -53,6 +53,10 @@ export class EncryptionService {
   }
 
   private blobToDataURL(blob: Blob): Promise<string> {
+    // chromium returns data: which fails for our conversion back
+    if (blob.size === 0) {
+      return Promise.resolve(`data:${blob.type};base64,`);
+    }
     const reader = new FileReader();
     return new Promise((resolve) => {
       reader.onload = () => resolve(reader.result as string);
