@@ -11,6 +11,8 @@ import { ActivatedRoute, Router, Routes } from '@angular/router';
 import { of } from 'rxjs';
 import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
+import { MatIcon } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 describe('FilePreviewComponent', () => {
   let component: FilePreviewComponent;
@@ -28,8 +30,8 @@ describe('FilePreviewComponent', () => {
       'readAndDecryptFile',
     ]);
     await TestBed.configureTestingModule({
-      declarations: [FilePreviewComponent],
-      imports: [RouterTestingModule.withRoutes(routes)],
+      declarations: [FilePreviewComponent, MatIcon],
+      imports: [RouterTestingModule.withRoutes(routes), MatProgressBarModule],
       providers: [
         FilePreviewComponent,
         { provide: SolidAuthenticationService, useValue: authenticationSpy },

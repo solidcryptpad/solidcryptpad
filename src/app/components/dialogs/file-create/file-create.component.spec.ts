@@ -6,7 +6,9 @@ import {
 } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatLabel } from '@angular/material/form-field';
+import { MatFormFieldModule, MatLabel } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Router, Routes } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 
@@ -24,6 +26,9 @@ describe('FileCreateComponent', () => {
         RouterTestingModule.withRoutes(routes),
         FormsModule,
         ReactiveFormsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        NoopAnimationsModule,
       ],
       declarations: [FileCreateComponent, MatLabel],
       providers: [

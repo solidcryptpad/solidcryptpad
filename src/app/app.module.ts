@@ -109,7 +109,6 @@ import { SharedByMeComponent } from './components/shared-by-me/shared-by-me.comp
     MatFormFieldModule,
     MatInputModule,
     MatSlideToggleModule,
-    MatIconModule,
     ReactiveFormsModule,
     MatListModule,
     MatMenuModule,

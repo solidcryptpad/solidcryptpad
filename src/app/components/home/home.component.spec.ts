@@ -4,6 +4,10 @@ import { HomeComponent } from './home.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ProfileService } from '../../services/profile/profile.service';
 import { firstValueFrom } from 'rxjs';
+import { Component } from '@angular/core';
+
+@Component({ selector: 'app-shared-with-me', template: '' })
+class StubSharedWithMeComponent {}
 
 describe('HomeComponent', () => {
   let component: HomeComponent;
@@ -15,7 +19,7 @@ describe('HomeComponent', () => {
       'getUserName',
     ]);
     await TestBed.configureTestingModule({
-      declarations: [HomeComponent],
+      declarations: [HomeComponent, StubSharedWithMeComponent],
       imports: [RouterTestingModule],
       providers: [
         {

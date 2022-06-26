@@ -105,7 +105,6 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       if (key) {
         this.sharedKey = atob(key);
       }
-      console.log(this.sharedKey); // TEMP
     });
   }
 
