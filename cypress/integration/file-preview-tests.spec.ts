@@ -15,7 +15,7 @@ describe('File-Preview Test', function () {
     cy.get('[data-cy="open-node"]').click();
     cy.contains('Preview from ');
     cy.contains(fileName);
-    cy.contains('open in Editor');
+    cy.contains('Open in editor');
     cy.contains(fileContent);
   });
 
@@ -29,7 +29,7 @@ describe('File-Preview Test', function () {
     cy.get('[data-cy="open-node"]').click();
     cy.contains('Preview from ');
     cy.contains(fileName);
-    cy.contains('open in Editor');
+    cy.contains('Open in editor');
     cy.contains('some file content');
     cy.contains('hallo');
     cy.contains('test');
@@ -63,7 +63,7 @@ describe('File-Preview Test', function () {
     cy.get('[data-cy="open-node"]').click();
     cy.contains('Preview from ');
     cy.contains(fileName);
-    cy.contains('open in Editor');
+    cy.contains('Open in editor');
     cy.contains(fileContent);
   });
 });

@@ -242,4 +242,15 @@ export class TreeNestedExplorerComponent implements OnInit {
       },
     });
   }
+
+  /**
+   * returns which icon to display for a file
+   * @param node the file node
+   * @returns the icon
+   */
+  getFileIcon(node: Node): string {
+    if (node.shortName.endsWith('.config')) return 'settings';
+    if (node.shortName.endsWith('.zip')) return 'folder_zip';
+    return 'description';
+  }
 }
