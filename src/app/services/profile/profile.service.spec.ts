@@ -76,7 +76,7 @@ describe('ProfileService', () => {
 
   it('returns cached podurl if cached', async () => {
     const pods = ['test'];
-    service.cachedPodUrl = pods;
+    service.cachedPodUrls = pods;
 
     return expectAsync(service.getPodUrls()).toBeResolvedTo(pods);
   });

@@ -12,7 +12,7 @@ import { AttributeNotFoundException } from '../../exceptions/attribute-not-found
 export class ProfileService {
   cachedUserName: string | null = null;
 
-  cachedPodUrl: string[] | null = null;
+  cachedPodUrls: string[] | null = null;
 
   constructor(
     private authService: SolidAuthenticationService,
@@ -54,14 +54,14 @@ export class ProfileService {
    * Retrieves all Pod Urls connected to the logged in webId.
    */
   async getPodUrls(): Promise<string[]> {
-    if (this.cachedPodUrl != undefined) {
-      return this.cachedPodUrl;
+    if (this.cachedPodUrls) {
+      return this.cachedPodUrls;
     }
 
-    this.cachedPodUrl = await this.solidClientService.getPodUrlAll(
+    this.cachedPodUrls = await this.solidClientService.getPodUrlAll(
       await this.getWebId()
     );
-    return this.cachedPodUrl;
+    return this.cachedPodUrls;
   }
 
   /**
