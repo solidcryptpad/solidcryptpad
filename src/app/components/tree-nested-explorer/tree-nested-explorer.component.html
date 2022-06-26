@@ -11,7 +11,9 @@
       matTreeNodePadding="2px"
     >
       <button mat-icon-button (click)="this.open(node)">
-        <mat-icon class="mat-icon">{{ getFileIcon(node) }}</mat-icon>
+        <mat-icon class="mat-icon" data-cy="open-node">{{
+          getFileIcon(node)
+        }}</mat-icon>
       </button>
       {{ node.shortName }}
 
