@@ -90,7 +90,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
         this.closeEditor();
         this.notificationService.error({
           title: '',
-          message: 'No Filename given. Select an file to edit it.',
+          message: 'No Filename given. Select a file to edit it.',
         });
         this.router.navigate(['/files']);
       } else {
