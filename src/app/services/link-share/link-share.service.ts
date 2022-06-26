@@ -11,6 +11,7 @@ import {
 import { Keystore } from '../encryption/keystore/keystore.interface';
 import { FolderKeystore } from '../encryption/keystore/folder-keystore.class';
 import { KeystoreStorageService } from '../encryption/keystore/keystore-storage.service';
+import { SharedByMeService } from '../shared-by-me/shared-by-me.service';
 
 @Injectable({
   providedIn: 'root',
@@ -23,7 +24,8 @@ export class LinkShareService {
     private authService: SolidAuthenticationService,
     private fileService: SolidFileHandlerService,
     private profileService: ProfileService,
-    private permissionService: SolidPermissionService
+    private permissionService: SolidPermissionService,
+    private sharedByMeService: SharedByMeService
   ) {}
 
   private readonly groupsFolderPath = 'solidcryptpad-data/groups/';
@@ -40,7 +42,6 @@ export class LinkShareService {
     fileUrl: string,
     grantedPermissions: Partial<SolidPermissions>
   ): Promise<string> {
-    const linksKeystore = await this.keystoreService.getLinksKeystore();
     const key = await this.keystoreService.getKey(fileUrl);
     const encodedKey = btoa(key);
 
@@ -58,10 +59,11 @@ export class LinkShareService {
       key: encodedKey,
       group: groupUrl,
     });
-    await linksKeystore.addKey(
-      JSON.stringify({ object: fileUrl, url: link, type: 'Link' }),
-      ''
-    );
+
+    const fileName = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
+    console.log('hih', fileName);
+    await this.sharedByMeService.addLink(fileName, link);
+
     return link;
   }
 
@@ -80,8 +82,6 @@ export class LinkShareService {
       encryptionKey,
       groupUrl
     );
-
-    const linksKeystore = await this.keystoreService.getLinksKeystore();
 
     await this.ensureGroupsFolderExists();
 
@@ -117,18 +117,12 @@ export class LinkShareService {
       }
     );
 
-    const link = this.toSharingLink({
+    return this.toSharingLink({
       folder: folderURL,
       group: groupUrl,
       keystore: keystoreUrl,
       keystoreEncryptionKey: encryptionKey,
     });
-
-    await linksKeystore.addKey(
-      JSON.stringify({ object: folderURL, url: link, type: 'Folder' }),
-      ''
-    );
-    return link;
   }
 
   private async setupKeystoreForFolder(
@@ -241,5 +235,10 @@ _:addAccess a solid:InsertDeletePatch;
   private toSharingLink(data: Record<string, string>): string {
     const urlParams = new URLSearchParams(data);
     return `${window.location.origin}/share?${urlParams.toString()}`;
+  }
+
+  deactivateLink(link: string) {
+    const groupUrl = new URLSearchParams(link).get('group') as string;
+    this.fileService.deleteFile(groupUrl);
   }
 }

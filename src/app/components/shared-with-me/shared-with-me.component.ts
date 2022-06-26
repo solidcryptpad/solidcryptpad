@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { KeystoreService } from '../../services/encryption/keystore/keystore.service';
 import { SharedResource } from '../../models/shared-resource';
 import { Router } from '@angular/router';
+import { SharedFolderKeystore } from '../../services/encryption/keystore/shared-folder-keystore.class';
 
 @Component({
   selector: 'app-shared-with-me',
@@ -35,17 +36,27 @@ export class SharedWithMeComponent implements OnInit {
     }
 
     if (await this.keystoreService.sharedFoldersKeystoreExists()) {
-      const sharedFoldersKeystore =
+      const sharedFoldersKeystores =
         await this.keystoreService.getSharedFoldersKeystore();
 
-      const sharedFoldersAllKeys = Object.entries(
-        await sharedFoldersKeystore.getKeysAll()
-      );
-
-      this.mapKeysToObjects(sharedFoldersAllKeys, true);
+      this.mapSharedFoldersToObjects(sharedFoldersKeystores);
     }
-
     this.loading = false;
+  }
+
+  private mapSharedFoldersToObjects(
+    sharedFoldersKeystores: SharedFolderKeystore[]
+  ) {
+    sharedFoldersKeystores.map((row) => {
+      console.log(row);
+      this.foldersSharedWithMe.push({
+        ownerPod: 'huuhu',
+        resourceName: row
+          .getFolderUrl()
+          .substring(row.getFolderUrl().lastIndexOf('/')),
+        url: row.getFolderUrl(),
+      });
+    });
   }
 
   private mapKeysToObjects(
@@ -55,7 +66,6 @@ export class SharedWithMeComponent implements OnInit {
     sharedFilesAllKeys.map((row) => {
       console.log(row);
       const url = row[0];
-      const key = row[1];
 
       const offset = url.includes('https') ? 8 : 7;
 
@@ -71,8 +81,6 @@ export class SharedWithMeComponent implements OnInit {
         ownerPod: ownerPod,
         resourceName: resourceName,
         url: url,
-        key: key,
-        isFolder: isFolder,
       });
     });
   }

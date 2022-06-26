@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FolderKeystore } from 'src/app/services/encryption/keystore/folder-keystore.class';
 import { KeystoreStorageService } from 'src/app/services/encryption/keystore/keystore-storage.service';
 import { KeystoreService } from 'src/app/services/encryption/keystore/keystore.service';
 import { LinkShareService } from '../../services/link-share/link-share.service';
 import { InvalidSharingLinkException } from '../../exceptions/invalid-sharing-link-exception';
+import { SharedFolderKeystore } from '../../services/encryption/keystore/shared-folder-keystore.class';
 
 @Component({
   selector: 'app-share',
@@ -68,12 +68,8 @@ export class ShareComponent implements OnInit {
       keystoreEncryptionKey
     );
     await this.keystoreService.addKeystore(
-      new FolderKeystore(keystoreUrl, folderUrl, storage)
+      new SharedFolderKeystore(keystoreUrl, folderUrl, storage)
     );
-
-    const sharedFoldersKeystore =
-      await this.keystoreService.getSharedFoldersKeystore();
-    await sharedFoldersKeystore.addKey(folderUrl, keystoreEncryptionKey);
 
     await this.router.navigate(['files'], {
       queryParams: {

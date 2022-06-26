@@ -7,14 +7,16 @@
     style="width: 100%"
   >
     <table mat-table [dataSource]="this.resourcesSharedByMe">
-      <ng-container matColumnDef="key">
+      <ng-container matColumnDef="type">
         <th mat-header-cell *matHeaderCellDef>Type</th>
-        <td mat-cell *matCellDef="let element">{{ element.key }}</td>
+        <td mat-cell *matCellDef="let element">
+          {{ element.url.endsWith("/") ? "Folder" : "File" }}
+        </td>
       </ng-container>
 
       <ng-container matColumnDef="fileName">
         <th mat-header-cell *matHeaderCellDef>Name</th>
-        <td mat-cell *matCellDef="let element">{{ element.fileName }}</td>
+        <td mat-cell *matCellDef="let element">{{ element.resourceName }}</td>
       </ng-container>
       <!--
       <ng-container matColumnDef="owner">
@@ -29,12 +31,30 @@
         </td>
       </ng-container>
 
+      <ng-container matColumnDef="deactivate">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td class="" mat-cell *matCellDef="let element">
+          <button
+            mat-icon-button
+            style="color: gray"
+            [matMenuTriggerFor]="folder_menu"
+          >
+            <mat-icon class="mat-icon" title="Options">more_horiz</mat-icon>
+          </button>
+          <mat-menu #folder_menu="matMenu">
+            <button
+              mat-menu-item
+              (click)="copyUrl(element.url, element.resourceName)"
+            >
+              Copy URL
+            </button>
+            <button mat-menu-item>Deactivate</button>
+          </mat-menu>
+        </td>
+      </ng-container>
+
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr
-        mat-row
-        (click)="copyUrl(row.url, row.fileName)"
-        *matRowDef="let row; columns: displayedColumns"
-      ></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
 
     <mat-paginator [pageSizeOptions]="[5, 10]" aria-label="Select page">

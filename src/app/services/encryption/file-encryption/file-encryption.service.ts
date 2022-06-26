@@ -10,6 +10,7 @@ import { KeystoreService } from '../keystore/keystore.service';
 })
 export class FileEncryptionService {
   private readonly cryptoDirectoryName = 'solidcryptpad';
+  private readonly solidCryptpadDataDirectoryName = 'solidcryptpad-data';
 
   constructor(
     private keystoreService: KeystoreService,
@@ -104,7 +105,10 @@ export class FileEncryptionService {
    * @returns if it contains the wanted directoryname
    */
   isCryptoDirectory(url: string): boolean {
-    return url.includes('/' + this.cryptoDirectoryName + '/');
+    return (
+      url.includes('/' + this.cryptoDirectoryName + '/') ||
+      url.includes('/' + this.solidCryptpadDataDirectoryName + '/')
+    );
   }
 
   /**

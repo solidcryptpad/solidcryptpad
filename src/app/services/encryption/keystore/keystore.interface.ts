@@ -46,4 +46,4 @@ export interface Serializable {
   serializeMetadata(): string;
 }
 
-export type KeystoreType = 'folder' | 'sharedFile' | 'sharedFolder' | 'link';
+export type KeystoreType = 'folder' | 'sharedFile' | 'sharedFolder';
