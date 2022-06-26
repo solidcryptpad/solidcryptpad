@@ -15,7 +15,7 @@ describe('File-Preview Test', function () {
     cy.get('[data-cy="open-node"]').click();
     cy.contains('Preview from ');
     cy.contains(fileName);
-    cy.contains('open in Editor');
+    cy.contains('Open in editor');
     cy.contains(fileContent);
   });
 
@@ -29,21 +29,19 @@ describe('File-Preview Test', function () {
     cy.get('[data-cy="open-node"]').click();
     cy.contains('Preview from ');
     cy.contains(fileName);
-    cy.contains('open in Editor');
+    cy.contains('Open in editor');
     cy.contains('some file content');
     cy.contains('hallo');
     cy.contains('test');
   });
 
-  it('Open ExampleFile in Editor and show it in Preview', function () {
-    const fileName = 'ExampleFile1.txt';
+  it('Create file in Editor and show it in Preview', function () {
+    const fileName = 'example.txt';
     const fileContent = 'some file content';
     const fileUrl = this.user.podUrl + '/solidcryptpad/' + fileName;
     cy.intercept('PUT', fileUrl).as('savedExample');
 
-    cy.contains('Editor').click();
-
-    cy.contains(fileName).click();
+    cy.openNewFileInEditor(fileUrl);
 
     cy.get('ngx-editor').type(fileContent);
 
@@ -57,13 +55,12 @@ describe('File-Preview Test', function () {
     cy.url().should('not.include', 'Example');
 
     cy.contains('Files').click();
-    //cy.get('#solidcryptpad_expand').click();
 
     cy.contains(fileName);
     cy.get('[data-cy="open-node"]').click();
     cy.contains('Preview from ');
     cy.contains(fileName);
-    cy.contains('open in Editor');
+    cy.contains('Open in editor');
     cy.contains(fileContent);
   });
 });

@@ -48,6 +48,7 @@ declare global {
 
       /**
        * Create a file at given url using user credentials
+       * Note that this will NOT add the keys for it
        */
       givenFile(
         user: UserConfig,
@@ -80,6 +81,9 @@ declare global {
         fileName: string,
         content: Blob
       ): Chainable<void>;
+
+      openFileInEditor(fileUrl: string): Chainable<void>;
+      openNewFileInEditor(fileUrl: string): Chainable<void>;
     }
   }
   interface Window {

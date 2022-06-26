@@ -34,6 +34,25 @@ Cypress.Commands.add(
   }
 );
 
+Cypress.Commands.add('openNewFileInEditor', (fileUrl) => {
+  cy.visit('/editor', {
+    qs: {
+      fileToCreate: fileUrl,
+    },
+  });
+  // creating file and switching page can take a lot of time
+  cy.contains(fileUrl, { timeout: 30000 });
+});
+
+Cypress.Commands.add('openFileInEditor', (fileUrl) => {
+  cy.visit('/editor', {
+    qs: {
+      file: fileUrl,
+    },
+  });
+  cy.contains(fileUrl, { timeout: 30000 });
+});
+
 Cypress.Commands.add(
   'createRandomAccount',
   function (): Cypress.Chainable<UserConfig> {

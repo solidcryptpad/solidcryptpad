@@ -21,9 +21,11 @@ export class FileCreateComponent {
   @HostListener('window:keyup.Enter')
   async createFile(): Promise<void> {
     if (this.fileCreateFormControl.value) {
-      await this.router.navigateByUrl(
-        `/editor?file=${this.node.link}${this.fileCreateFormControl.value}`
-      );
+      await this.router.navigate(['editor'], {
+        queryParams: {
+          fileToCreate: this.node.link + this.fileCreateFormControl.value,
+        },
+      });
       this.close();
     }
   }

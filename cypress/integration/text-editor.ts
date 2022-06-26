@@ -4,7 +4,6 @@ describe('Text-Editor Test', function () {
       .then(cy.loginMocked)
       .then(cy.storeMasterPassword)
       .as('user');
-    //cy.contains('Editor').click();
 
     cy.intercept('GET', '*/solidcryptpad/ExampleFile0.txt').as(
       'fetchedExample0'
@@ -30,11 +29,9 @@ describe('Text-Editor Test', function () {
    Open a example file and check the correct state of editor.
    **/
   it('open example file and display editor', function () {
-    cy.visit('/editor', {
-      qs: {
-        fileToCreate: 'ExampleFile0.txt',
-      },
-    });
+    cy.openNewFileInEditor(
+      this.user.podUrl + '/solidcryptpad/ExampleFile0.txt'
+    );
     cy.contains('solidcryptpad/ExampleFile0.txt');
     cy.contains('You are editing');
     cy.contains('Save and close');
@@ -45,22 +42,16 @@ describe('Text-Editor Test', function () {
   Then reopen the file and check the content.
    **/
   it('Edit file content and save it and reopen it', function () {
-    cy.visit('/editor', {
-      qs: {
-        fileToCreate: 'ExampleFile0.txt',
-      },
-    });
+    cy.openNewFileInEditor(
+      this.user.podUrl + '/solidcryptpad/ExampleFile0.txt'
+    );
     cy.contains('solidcryptpad/ExampleFile0.txt');
     cy.wait('@savedExample0');
     cy.get('.NgxEditor').type('Hello world!');
     cy.wait('@savedExample0');
     cy.contains('Save and close file').click();
     cy.wait('@savedExample0');
-    cy.visit('/editor', {
-      qs: {
-        fileToCreate: 'ExampleFile0.txt',
-      },
-    });
+    cy.openFileInEditor(this.user.podUrl + '/solidcryptpad/ExampleFile0.txt');
     cy.contains('Hello world!');
   });
 
@@ -69,22 +60,18 @@ describe('Text-Editor Test', function () {
    Then reopen the file and check that the file response is the same as before.
    **/
   it('Edit file content and save it and reopen it', function () {
-    cy.visit('/editor', {
-      qs: {
-        fileToCreate: 'ExampleFile0.txt',
-      },
-    });
+    cy.openNewFileInEditor(
+      this.user.podUrl + '/solidcryptpad/ExampleFile0.txt'
+    );
     cy.wait('@fetchedExample0').its('response.body').as('initialResponseBody');
     cy.contains('Auto-Save').click();
     cy.contains('solidcryptpad/ExampleFile0.txt');
     cy.get('.NgxEditor').type('ABCDEFG');
     cy.contains('Close file without saving').click();
 
-    cy.visit('/editor', {
-      qs: {
-        fileToCreate: 'ExampleFile0.txt',
-      },
-    });
+    cy.openNewFileInEditor(
+      this.user.podUrl + '/solidcryptpad/ExampleFile0.txt'
+    );
     cy.get('@initialResponseBody').then((initialResponseBody) =>
       cy
         .wait('@fetchedExample0')
