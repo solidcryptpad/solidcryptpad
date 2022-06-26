@@ -40,6 +40,7 @@ export class LinkShareService {
     fileUrl: string,
     grantedPermissions: Partial<SolidPermissions>
   ): Promise<string> {
+    const linksKeystore = await this.keystoreService.getLinksKeystore();
     const key = await this.keystoreService.getKey(fileUrl);
     const encodedKey = btoa(key);
 
@@ -52,11 +53,16 @@ export class LinkShareService {
       grantedPermissions
     );
 
-    return this.toSharingLink({
+    const link = this.toSharingLink({
       file: fileUrl,
       key: encodedKey,
       group: groupUrl,
     });
+    await linksKeystore.addKey(
+      JSON.stringify({ object: fileUrl, url: link, type: 'Link' }),
+      ''
+    );
+    return link;
   }
 
   /**
@@ -74,6 +80,8 @@ export class LinkShareService {
       encryptionKey,
       groupUrl
     );
+
+    const linksKeystore = await this.keystoreService.getLinksKeystore();
 
     await this.ensureGroupsFolderExists();
 
@@ -109,12 +117,18 @@ export class LinkShareService {
       }
     );
 
-    return this.toSharingLink({
+    const link = this.toSharingLink({
       folder: folderURL,
       group: groupUrl,
       keystore: keystoreUrl,
       keystoreEncryptionKey: encryptionKey,
     });
+
+    await linksKeystore.addKey(
+      JSON.stringify({ object: folderURL, url: link, type: 'Folder' }),
+      ''
+    );
+    return link;
   }
 
   private async setupKeystoreForFolder(

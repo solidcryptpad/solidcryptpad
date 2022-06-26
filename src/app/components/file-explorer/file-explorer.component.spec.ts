@@ -9,6 +9,7 @@ import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 import { ProfileService } from 'src/app/services/profile/profile.service';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
   selector: 'app-tree-nested-explorer',
@@ -34,7 +35,7 @@ describe('FileExplorerComponent', () => {
     ]);
     await TestBed.configureTestingModule({
       imports: [FormsModule, RouterTestingModule.withRoutes(routes)],
-      declarations: [FileExplorerComponent, MockTreeExplorerComponent],
+      declarations: [FileExplorerComponent, MockTreeExplorerComponent, MatIcon],
       providers: [
         FileExplorerComponent,
         {

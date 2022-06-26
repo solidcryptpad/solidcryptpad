@@ -10,6 +10,10 @@ import { AttributeNotFoundException } from '../../exceptions/attribute-not-found
   providedIn: 'root',
 })
 export class ProfileService {
+  cachedUserName: string | null = null;
+
+  cachedPodUrls: string[] | null = null;
+
   constructor(
     private authService: SolidAuthenticationService,
     private solidClientService: SolidClientService
@@ -19,6 +23,10 @@ export class ProfileService {
    * Retrieves the name of the logged in person.
    */
   async getUserName(): Promise<string> {
+    if (this.cachedUserName) {
+      return this.cachedUserName;
+    }
+
     const profile = this.solidClientService.getThing(
       await this.getProfileDataset(),
       await this.getWebId()
@@ -37,6 +45,8 @@ export class ProfileService {
       throw new AttributeNotFoundException(FOAF.name);
     }
 
+    this.cachedUserName = userName;
+
     return userName;
   }
 
@@ -44,7 +54,14 @@ export class ProfileService {
    * Retrieves all Pod Urls connected to the logged in webId.
    */
   async getPodUrls(): Promise<string[]> {
-    return this.solidClientService.getPodUrlAll(await this.getWebId());
+    if (this.cachedPodUrls) {
+      return this.cachedPodUrls;
+    }
+
+    this.cachedPodUrls = await this.solidClientService.getPodUrlAll(
+      await this.getWebId()
+    );
+    return this.cachedPodUrls;
   }
 
   /**

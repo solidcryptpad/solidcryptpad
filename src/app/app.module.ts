@@ -56,6 +56,7 @@ import { SharedWithMeComponent } from './components/shared-with-me/shared-with-m
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { DeleteConfirmationComponent } from './components/dialogs/delete-confirmation/delete-confirmation.component';
+import { SharedByMeComponent } from './components/shared-by-me/shared-by-me.component';
 
 @NgModule({
   declarations: [
@@ -82,6 +83,7 @@ import { DeleteConfirmationComponent } from './components/dialogs/delete-confirm
     ChangePasswordComponent,
     SharedWithMeComponent,
     DeleteConfirmationComponent,
+    SharedByMeComponent,
   ],
   imports: [
     MatInputModule,
@@ -107,7 +109,6 @@ import { DeleteConfirmationComponent } from './components/dialogs/delete-confirm
     MatFormFieldModule,
     MatInputModule,
     MatSlideToggleModule,
-    MatIconModule,
     ReactiveFormsModule,
     MatListModule,
     MatMenuModule,
