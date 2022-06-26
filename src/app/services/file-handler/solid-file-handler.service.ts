@@ -289,12 +289,7 @@ export class SolidFileHandlerService {
    * @returns if the file should be hidden
    */
   isHiddenFile(url: string): boolean {
-    // the groups folder is hidden
-    if (url.endsWith('/solidcryptpad/groups/')) {
-      return true;
-    }
-
-    // prepare for further checks
+    // prepare for checks
     if (url.endsWith('/')) {
       url = url.slice(0, url.length - 1);
     }
