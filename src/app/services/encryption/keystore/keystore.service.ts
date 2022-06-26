@@ -10,6 +10,7 @@ import { KeystoreStorageService } from './keystore-storage.service';
 import { SolidFileHandlerService } from '../../file-handler/solid-file-handler.service';
 import { FileKeystore } from './file-keystore.class';
 import { KeystoreNotFoundException } from '../../../exceptions/keystore-not-found-exception';
+import { LinksKeystore } from './created-links-keystore.class';
 
 @Injectable({
   providedIn: 'root',
@@ -127,6 +128,8 @@ export class KeystoreService {
               return FileKeystore.deserialize(keystoreSerialized, storage);
             case 'folder':
               return FolderKeystore.deserialize(keystoreSerialized, storage);
+            case 'link':
+              return LinksKeystore.deserialize(keystoreSerialized, storage);
           }
         }
       );
@@ -196,6 +199,8 @@ export class KeystoreService {
     const encryptionKeyForSharedFolders =
       this.encryptionService.generateNewKey();
     const encryptionKeyForSharedFiles = this.encryptionService.generateNewKey();
+    const encryptionKeyForCreatedLinks =
+      this.encryptionService.generateNewKey();
     const ownPodKeystore = new FolderKeystore(
       keystoresFolder + 'root.json.enc',
       podRoot,
@@ -211,7 +216,18 @@ export class KeystoreService {
       keystoresFolder + 'shared-files.json.enc'
     );
 
-    this.keystores = [ownPodKeystore, sharedLinksKeystore];
+    const createdLinksKeystore = new LinksKeystore(
+      this.keystoreStorageService.createSecureStorage(
+        encryptionKeyForCreatedLinks
+      ),
+      keystoresFolder + 'created-links.json.enc'
+    );
+
+    this.keystores = [
+      ownPodKeystore,
+      sharedLinksKeystore,
+      createdLinksKeystore,
+    ];
     await this.saveKeystores();
   }
 
@@ -223,6 +239,19 @@ export class KeystoreService {
 
     if (!keystore) {
       throw new KeystoreNotFoundException('Nopeeeee');
+    }
+
+    return keystore;
+  }
+
+  async getLinksKeystore(): Promise<LinksKeystore> {
+    await this.loadKeystores();
+    const keystore = this.keystores?.find(
+      (element) => element instanceof LinksKeystore
+    ) as LinksKeystore;
+
+    if (!keystore) {
+      throw new KeystoreNotFoundException('Could not find LinksKeystore.');
     }
 
     return keystore;

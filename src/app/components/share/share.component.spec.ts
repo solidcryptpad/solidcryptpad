@@ -10,6 +10,7 @@ import {
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
+import { MatIcon } from '@angular/material/icon';
 
 describe('ShareComponent', () => {
   let component: ShareComponent;
@@ -22,7 +23,7 @@ describe('ShareComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [RouterTestingModule, MatDialogModule],
-      declarations: [ShareComponent],
+      declarations: [ShareComponent, MatIcon],
       providers: [
         { provide: MatDialogRef, useValue: {} },
         { provide: MAT_DIALOG_DATA, useValue: {} },

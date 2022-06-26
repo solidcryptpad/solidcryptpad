@@ -7,6 +7,10 @@ import { ChangePasswordComponent } from './change-password.component';
 import { MasterPasswordService } from 'src/app/services/encryption/master-password/master-password.service';
 import { EncryptionService } from 'src/app/services/encryption/encryption/encryption.service';
 import { KeystoreService } from 'src/app/services/encryption/keystore/keystore.service';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('ChangePasswordComponent', () => {
   let component: ChangePasswordComponent;
@@ -44,6 +48,12 @@ describe('ChangePasswordComponent', () => {
       'loadKeystores',
     ]);
     await TestBed.configureTestingModule({
+      imports: [
+        FormsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        NoopAnimationsModule,
+      ],
       declarations: [ChangePasswordComponent],
       providers: [
         { provide: MatDialogRef, useValue: dialogRef },

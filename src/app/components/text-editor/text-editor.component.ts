@@ -23,6 +23,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import ColorHash from 'color-hash';
+import { NotificationService } from '../../services/notification/notification.service';
 
 @Component({
   selector: 'app-text-editor',
@@ -41,6 +42,8 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   provider!: WebrtcProvider;
   ydoc!: Y.Doc;
   autoSave = true;
+  sharedFile = false;
+  fileLoaded = false;
 
   constructor(
     private profileService: ProfileService,
@@ -49,7 +52,8 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private dialog: MatDialog,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -61,18 +65,34 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       this.baseUrl = podUrls[0];
       this.setupSharedFileKey();
       this.setupFilenameFromParams();
+      this.setSharedFile();
     });
   }
 
   setupFilenameFromParams(): void {
     this.route.queryParams.subscribe((params) => {
       this.fileUrl = params['file'];
+
+      const fileToCreate = params['fileToCreate'];
+      if (
+        fileToCreate !== null &&
+        fileToCreate !== undefined &&
+        fileToCreate !== ''
+      ) {
+        this.fileUrl = this.getExampleUrl(fileToCreate);
+      }
+
       if (
         this.fileUrl === null ||
         this.fileUrl === undefined ||
         this.fileUrl === ''
       ) {
         this.closeEditor();
+        this.notificationService.error({
+          title: '',
+          message: 'No Filename given. Select a file to edit it.',
+        });
+        this.router.navigate(['/files']);
       } else {
         this.setupEditor();
       }
@@ -85,7 +105,6 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       if (key) {
         this.sharedKey = atob(key);
       }
-      console.log(this.sharedKey); // TEMP
     });
   }
 
@@ -148,6 +167,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     blob.text().then((text) => {
       this.html = this.sanitizeHtmlContent(text);
       this.readyForSave = true;
+      this.fileLoaded = true;
       this.editor.commands.focus().exec();
     });
   }
@@ -204,13 +224,16 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    * closes the current file with saving it
    */
   async closeFile(saveFile: boolean): Promise<void> {
+    this.fileLoaded = false;
     this.readyForSave = false;
     if (saveFile) {
       await this.saveFile();
+      this.notificationService.success({ title: '', message: 'File saved!' });
     }
     this.closeEditor();
     this.html = '';
-    this.router.navigate(['/editor'], { queryParams: { filename: '' } });
+    //this.router.navigate(['/editor'], { queryParams: { filename: '' } });
+    this.router.navigate(['/preview'], { queryParams: { url: this.fileUrl } });
   }
 
   async shareFile() {
@@ -264,6 +287,10 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       content = '';
     }
     return content;
+  }
+
+  setSharedFile(): void {
+    this.sharedFile = !this.fileUrl.includes(this.baseUrl);
   }
 
   ngOnDestroy(): void {

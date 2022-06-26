@@ -1,6 +1,30 @@
+.mat-row .mat-cell {
+  border-bottom: 1px solid transparent;
+  border-top: 1px solid transparent;
+  cursor: pointer;
+}
+
+.mat-row:hover .mat-cell {
+  background-color: #f4cfab;
+}
+
+table {
+  width: 100%;
+}
+.content {
+  width: 100%;
+  white-space: nowrap;
+  overflow: auto;
+  text-overflow: ellipsis;
+}
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .container {
   width: 100%;
-  max-width: 900px;
+  max-width: 1200px;
   min-width: 320px;
   margin: auto;
   display: flex;
@@ -38,10 +62,4 @@
       }
     }
   }
-}
-
-.editor-button {
-  margin-right: 7px;
-  margin-left: 7px;
-  margin-bottom: 7px;
 }

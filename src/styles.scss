@@ -1,5 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
 @import "custom";
+@import "~@angular/material/theming";
 
 html,
 body {
@@ -73,4 +74,9 @@ body {
       white-space: pre !important;
     }
   }
+}
+
+.NgxEditor__MenuBar {
+  background-color: mat-color($bv-palette-primary);
+  color: mat-color($bv-palette-primary);
 }
