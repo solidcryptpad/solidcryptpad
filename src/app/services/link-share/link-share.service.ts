@@ -155,9 +155,10 @@ export class LinkShareService {
     return `${window.location.origin}/share?${urlParams.toString()}`;
   }
 
-  deactivateLink(link: string) {
-    this.sharedByMeService.removeLink(link);
+  async deactivateLink(link: string) {
+    // first delete group to make sure we still show the link in case deletion goes wrong
     const groupUrl = new URLSearchParams(link).get('group') as string;
-    this.fileService.deleteFile(groupUrl);
+    await this.fileService.deleteFile(groupUrl);
+    await this.sharedByMeService.removeLink(link);
   }
 }

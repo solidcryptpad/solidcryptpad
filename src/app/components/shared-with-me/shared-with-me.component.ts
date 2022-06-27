@@ -28,15 +28,15 @@ export class SharedWithMeComponent implements OnInit {
     if (await this.keystoreService.sharedFilesKeystoreExists()) {
       const sharedFilesKeystore =
         await this.keystoreService.getSharedFilesKeystore();
-      const sharedFilesAllKeys = Object.entries(
+      const sharedFilesUrls = Object.keys(
         await sharedFilesKeystore.getKeysAll()
       );
 
-      this.mapKeysToObjects(sharedFilesAllKeys);
+      this.addFileUrls(sharedFilesUrls);
     }
 
     const sharedFoldersKeystores =
-      await this.keystoreService.getSharedFoldersKeystore();
+      await this.keystoreService.getSharedFoldersKeystores();
 
     this.mapSharedFoldersToObjects(sharedFoldersKeystores);
 
@@ -52,37 +52,21 @@ export class SharedWithMeComponent implements OnInit {
       return;
     }
 
-    sharedFoldersKeystores.map((row) => {
+    sharedFoldersKeystores.map((keystore) => {
+      const url = keystore.getFolderUrl();
       this.foldersSharedWithMe.push({
-        ownerPod: row.getFolderUrl().split('/')[2],
-        resourceName: row.getFolderUrl().split('/')[
-          row.getFolderUrl().split('/').length - 2
-        ],
-        url: row.getFolderUrl(),
+        ownerPod: new URL(url).host,
+        resourceName: this.getResourceName(url),
+        url: url,
       });
     });
   }
 
-  private mapKeysToObjects(
-    sharedFilesAllKeys: [string, string][],
-    isFolder = false
-  ) {
-    sharedFilesAllKeys.map((row) => {
-      const url = row[0];
-
-      const offset = url.includes('https') ? 8 : 7;
-
-      const splitUrlString = url.substring(offset).split('/');
-      const ownerPod = splitUrlString[0];
-
-      const fileNameIndex = isFolder
-        ? splitUrlString.length - 2
-        : splitUrlString.length - 1;
-      const resourceName = splitUrlString[fileNameIndex];
-
+  private addFileUrls(sharedFilesUrls: string[]) {
+    sharedFilesUrls.forEach((url) => {
       this.filesSharedWithMe.push({
-        ownerPod: ownerPod,
-        resourceName: resourceName,
+        ownerPod: new URL(url).host,
+        resourceName: this.getResourceName(url),
         url: url,
       });
     });
@@ -100,5 +84,10 @@ export class SharedWithMeComponent implements OnInit {
         url: url,
       },
     });
+  }
+
+  private getResourceName(url: string): string {
+    if (url.endsWith('/')) url = url.slice(0, -1);
+    return url.substring(url.lastIndexOf('/') + 1);
   }
 }

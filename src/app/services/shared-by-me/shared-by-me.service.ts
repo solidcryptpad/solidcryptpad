@@ -39,6 +39,7 @@ export class SharedByMeService {
       await this.getRootPath()
     );
 
+    // TODO: this should return some specific type, not any
     return JSON.parse(await indexAsBlob.text());
   }
 

@@ -31,7 +31,7 @@ export class SharedByMeComponent implements OnInit {
   private async loadLinks() {
     this.resourcesSharedByMe = [];
     const sharedByMe = await this.sharedByMeService.getAllSharedByMe();
-    sharedByMe.links.map((el: { link: string; resourceName: string }) => {
+    sharedByMe.links.forEach((el: { link: string; resourceName: string }) => {
       this.resourcesSharedByMe.push({
         resourceName: el.resourceName,
         url: el.link,

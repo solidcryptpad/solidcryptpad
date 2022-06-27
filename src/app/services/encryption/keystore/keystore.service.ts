@@ -242,7 +242,7 @@ export class KeystoreService {
     return keystore;
   }
 
-  async getSharedFoldersKeystore(): Promise<SharedFolderKeystore[]> {
+  async getSharedFoldersKeystores(): Promise<SharedFolderKeystore[]> {
     await this.loadKeystores();
     return this.keystores?.filter(
       (element) => element instanceof SharedFolderKeystore
