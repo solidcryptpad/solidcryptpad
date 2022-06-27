@@ -3,8 +3,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 import { SolidPermissionService } from '../../services/solid-permission/solid-permission.service';
 import { Editor } from 'ngx-editor';
-import { redo, undo } from 'y-prosemirror';
-import { keymap } from 'prosemirror-keymap';
 import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
@@ -62,6 +60,7 @@ export class FilePreviewComponent implements OnInit {
       (blob) => {
         this.fileType = blob.type;
         if (this.fileType.includes('text')) {
+          /*
           this.editor = new Editor({
             history: false,
             plugins: [
@@ -72,6 +71,7 @@ export class FilePreviewComponent implements OnInit {
               }),
             ],
           });
+           */
           this.getTextFileContent(blob);
         } else if (this.fileType.includes('image')) {
           this.getImageUrlFromBlob(blob);
