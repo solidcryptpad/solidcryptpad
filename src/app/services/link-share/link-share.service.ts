@@ -100,7 +100,7 @@ export class LinkShareService {
       keystoreEncryptionKey: encryptionKey,
     });
 
-    const folderName = folderURL.split('/')[folderURL.split('/').length - 2];
+    const folderName = folderUrl.split('/')[folderUrl.split('/').length - 2];
     await this.sharedByMeService.addLink(folderName, link);
 
     return link;
