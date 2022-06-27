@@ -20,7 +20,8 @@ export class SharedByMeService {
     }
     const index = await this.getAllSharedByMe();
     index.links.push({ resourceName: resourceName, link: link });
-    await this.saveIndex(index);
+
+    await this.saveIndex(JSON.stringify(index));
   }
 
   async instantiateSharedByMeIndexWithFirstEntry(
@@ -39,6 +40,18 @@ export class SharedByMeService {
     );
 
     return JSON.parse(await indexAsBlob.text());
+  }
+
+  async removeLink(link: string) {
+    const allSharedByMe = await this.getAllSharedByMe();
+    console.log('all links', allSharedByMe.links);
+
+    allSharedByMe.links.splice(
+      allSharedByMe.links.findIndex((v: { link: string }) => v.link === link),
+      1
+    );
+
+    await this.saveIndex(JSON.stringify(allSharedByMe));
   }
 
   private async getRootPath() {

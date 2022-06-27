@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { KeystoreService } from '../../services/encryption/keystore/keystore.service';
-import { SharedResource } from '../../models/shared-resource';
 import { Router } from '@angular/router';
 import { SharedFolderKeystore } from '../../services/encryption/keystore/shared-folder-keystore.class';
+import { SharedWithMeResource } from '../../models/shared-with-me-resource';
 
 @Component({
   selector: 'app-shared-with-me',
@@ -10,8 +10,8 @@ import { SharedFolderKeystore } from '../../services/encryption/keystore/shared-
   styleUrls: ['./shared-with-me.component.scss'],
 })
 export class SharedWithMeComponent implements OnInit {
-  filesSharedWithMe: SharedResource[] = [];
-  foldersSharedWithMe: SharedResource[] = [];
+  filesSharedWithMe: SharedWithMeResource[] = [];
+  foldersSharedWithMe: SharedWithMeResource[] = [];
 
   constructor(
     private keystoreService: KeystoreService,
@@ -35,25 +35,29 @@ export class SharedWithMeComponent implements OnInit {
       this.mapKeysToObjects(sharedFilesAllKeys);
     }
 
-    if (await this.keystoreService.sharedFoldersKeystoreExists()) {
-      const sharedFoldersKeystores =
-        await this.keystoreService.getSharedFoldersKeystore();
+    const sharedFoldersKeystores =
+      await this.keystoreService.getSharedFoldersKeystore();
 
-      this.mapSharedFoldersToObjects(sharedFoldersKeystores);
-    }
+    this.mapSharedFoldersToObjects(sharedFoldersKeystores);
+
+    // TODO - deactivated links should be removed from keystore
+
     this.loading = false;
   }
 
   private mapSharedFoldersToObjects(
     sharedFoldersKeystores: SharedFolderKeystore[]
   ) {
+    if (sharedFoldersKeystores.length === 0) {
+      return;
+    }
+
     sharedFoldersKeystores.map((row) => {
-      console.log(row);
       this.foldersSharedWithMe.push({
-        ownerPod: 'huuhu',
-        resourceName: row
-          .getFolderUrl()
-          .substring(row.getFolderUrl().lastIndexOf('/')),
+        ownerPod: row.getFolderUrl().split('/')[2],
+        resourceName: row.getFolderUrl().split('/')[
+          row.getFolderUrl().split('/').length - 2
+        ],
         url: row.getFolderUrl(),
       });
     });
@@ -64,7 +68,6 @@ export class SharedWithMeComponent implements OnInit {
     isFolder = false
   ) {
     sharedFilesAllKeys.map((row) => {
-      console.log(row);
       const url = row[0];
 
       const offset = url.includes('https') ? 8 : 7;
@@ -77,7 +80,7 @@ export class SharedWithMeComponent implements OnInit {
         : splitUrlString.length - 1;
       const resourceName = splitUrlString[fileNameIndex];
 
-      (isFolder ? this.foldersSharedWithMe : this.filesSharedWithMe).push({
+      this.filesSharedWithMe.push({
         ownerPod: ownerPod,
         resourceName: resourceName,
         url: url,
@@ -85,17 +88,17 @@ export class SharedWithMeComponent implements OnInit {
     });
   }
 
-  async handleClick(url: string, isFolder: boolean) {
-    if (isFolder) {
-      await this.router.navigate(['files'], {
-        queryParams: {
-          url: url,
-        },
-      });
-    } else {
-      await this.router.navigate(['preview'], {
-        queryParams: { url: url },
-      });
-    }
+  async clickFile(url: string) {
+    await this.router.navigate(['preview'], {
+      queryParams: { url: url },
+    });
+  }
+
+  async clickFolder(url: string) {
+    await this.router.navigate(['files'], {
+      queryParams: {
+        url: url,
+      },
+    });
   }
 }

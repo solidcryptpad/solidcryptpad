@@ -33,7 +33,7 @@
         ></tr>
         <tr
           mat-row
-          (click)="handleClick(row.url, row.isFolder)"
+          (click)="clickFile(row.url)"
           *matRowDef="let row; columns: displayedColumns"
         ></tr>
       </table>
@@ -79,12 +79,12 @@
         ></tr>
         <tr
           mat-row
-          (click)="handleClick(row.url, row.isFolder)"
+          (click)="clickFolder(row.url)"
           *matRowDef="let row; columns: displayedColumns"
         ></tr>
       </table>
 
-      <mat-paginator [pageSizeOptions]="[5, 10]" aria-label="Select page">
+      <mat-paginator [pageSizeOptions]="[5]" aria-label="Select page">
       </mat-paginator>
     </div>
 

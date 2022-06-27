@@ -10,7 +10,7 @@
       <ng-container matColumnDef="type">
         <th mat-header-cell *matHeaderCellDef>Type</th>
         <td mat-cell *matCellDef="let element">
-          {{ element.url.endsWith("/") ? "Folder" : "File" }}
+          {{ element.url.includes("folder=") ? "Folder" : "File" }}
         </td>
       </ng-container>
 
@@ -31,7 +31,7 @@
         </td>
       </ng-container>
 
-      <ng-container matColumnDef="deactivate">
+      <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef>Actions</th>
         <td class="" mat-cell *matCellDef="let element">
           <button
@@ -48,7 +48,9 @@
             >
               Copy URL
             </button>
-            <button mat-menu-item>Deactivate</button>
+            <button mat-menu-item (click)="deactivateLink(element.url)">
+              Deactivate
+            </button>
           </mat-menu>
         </td>
       </ng-container>

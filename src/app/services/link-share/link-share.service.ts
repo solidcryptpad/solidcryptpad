@@ -61,7 +61,6 @@ export class LinkShareService {
     });
 
     const fileName = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
-    console.log('hih', fileName);
     await this.sharedByMeService.addLink(fileName, link);
 
     return link;
@@ -117,12 +116,17 @@ export class LinkShareService {
       }
     );
 
-    return this.toSharingLink({
+    const link = this.toSharingLink({
       folder: folderURL,
       group: groupUrl,
       keystore: keystoreUrl,
       keystoreEncryptionKey: encryptionKey,
     });
+
+    const folderName = folderURL.split('/')[folderURL.split('/').length - 2];
+    await this.sharedByMeService.addLink(folderName, link);
+
+    return link;
   }
 
   private async setupKeystoreForFolder(
@@ -238,6 +242,7 @@ _:addAccess a solid:InsertDeletePatch;
   }
 
   deactivateLink(link: string) {
+    this.sharedByMeService.removeLink(link);
     const groupUrl = new URLSearchParams(link).get('group') as string;
     this.fileService.deleteFile(groupUrl);
   }

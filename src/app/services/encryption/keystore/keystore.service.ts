@@ -193,11 +193,6 @@ export class KeystoreService {
     return this.fileService.resourceExists(keystoreUrl);
   }
 
-  async sharedFoldersKeystoreExists() {
-    const keystoreUrl = await this.getSharedFoldersKeystoreUrl();
-    return this.fileService.resourceExists(keystoreUrl);
-  }
-
   private async setupMasterPassword() {
     // TODO: shift responsibility to master-password service if possible
     if (this.masterPasswordService.checkMasterPasswordNotSet()) {
@@ -205,7 +200,7 @@ export class KeystoreService {
         await this.masterPasswordService.openSetMasterPasswordDialog();
       // TODO: what if this is not set?
       if (newMasterPassword) {
-        this.masterPasswordService.setMasterPassword(newMasterPassword);
+        await this.masterPasswordService.setMasterPassword(newMasterPassword);
       }
     }
   }
@@ -261,10 +256,6 @@ export class KeystoreService {
   private async getKeystoresFolderUrl(): Promise<string> {
     const podUrls = await this.profileService.getPodUrls();
     return podUrls[0] + this.keystoresFolderPath;
-  }
-
-  private async getSharedFoldersKeystoreUrl(): Promise<string> {
-    return (await this.getKeystoresFolderUrl()) + 'shared-folders.json.enc';
   }
 
   private async getSharedFilesKeystoreUrl(): Promise<string> {

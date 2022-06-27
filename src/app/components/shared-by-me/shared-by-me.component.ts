@@ -14,7 +14,6 @@ import { SharedByMeService } from '../../services/shared-by-me/shared-by-me.serv
 })
 export class SharedByMeComponent implements OnInit {
   resourcesSharedByMe: SharedResource[] = [];
-
   constructor(
     private keystoreService: KeystoreService,
     private router: Router,
@@ -23,14 +22,18 @@ export class SharedByMeComponent implements OnInit {
     private linkShareService: LinkShareService,
     private sharedByMeService: SharedByMeService
   ) {}
-  displayedColumns: string[] = ['type', 'fileName', 'url', 'deactivate'];
+  displayedColumns: string[] = ['type', 'fileName', 'url', 'actions'];
 
   async ngOnInit(): Promise<void> {
+    await this.loadLinks();
+  }
+
+  private async loadLinks() {
+    this.resourcesSharedByMe = [];
     const sharedByMe = await this.sharedByMeService.getAllSharedByMe();
-    sharedByMe.links.map((el: { filename: string; link: string }) => {
+    sharedByMe.links.map((el: { link: string; resourceName: string }) => {
       this.resourcesSharedByMe.push({
-        ownerPod: 'me',
-        resourceName: el.filename,
+        resourceName: el.resourceName,
         url: el.link,
       });
     });
@@ -42,5 +45,12 @@ export class SharedByMeComponent implements OnInit {
       title: '',
       message: 'Copied url for ' + filename,
     });
+  }
+
+  async deactivateLink(link: string) {
+    this.linkShareService.deactivateLink(link);
+    await this.loadLinks();
+    await this.router.navigate(['/']);
+    // TODO - refresh table without refresh
   }
 }
