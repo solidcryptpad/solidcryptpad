@@ -1,8 +1,8 @@
 describe('Folder sharing', function () {
   beforeEach(function () {
     cy.createRandomAccount()
-      .then(cy.loginMocked)
       .then(cy.storeMasterPassword)
+      .then(cy.loginMocked)
       .as('owner');
     cy.createRandomAccount().as('friend');
   });
