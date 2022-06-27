@@ -76,7 +76,8 @@ export class LinkShareService {
     const keystoreUrl = await this.setupKeystoreForFolder(
       folderUrl,
       encryptionKey,
-      groupUrl
+      groupUrl,
+      grantedPermissions.write || false
     );
 
     const linksKeystore = await this.keystoreService.getLinksKeystore();
@@ -110,7 +111,8 @@ export class LinkShareService {
   private async setupKeystoreForFolder(
     folderUrl: string,
     encryptionKey: string,
-    groupUrl: string
+    groupUrl: string,
+    hasWritePermissions: boolean
   ): Promise<string> {
     const keystoreUrl =
       (await this.profileService.getPodUrls())[0] +
@@ -118,7 +120,6 @@ export class LinkShareService {
       this.encryptionService.SHA256Salted(folderUrl) +
       '.keystore';
 
-    console.log(keystoreUrl);
     // assume that it already is known and contains keys if it already exists
     if (await this.fileService.resourceExists(keystoreUrl)) {
       // TODO: currently there's a mismatch between the key and url if we return this
@@ -137,8 +138,7 @@ export class LinkShareService {
     await this.keystoreService.addKeystore(keystore);
     await this.permissionService.setGroupPermissions(keystoreUrl, groupUrl, {
       read: true,
-      write: false,
-      append: false,
+      write: hasWritePermissions,
     });
     return keystoreUrl;
   }

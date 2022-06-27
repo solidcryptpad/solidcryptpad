@@ -109,15 +109,16 @@ describe('Folder sharing', function () {
 
     // opening shared file
     cy.contains(folderName);
+    cy.url().as('explorerSharedFolderUrl');
     cy.explorerOpenNode(fileName);
     cy.url().as('filePreviewUrl');
     cy.contains(fileContent);
 
     // modifying file
     const fileUrl = `${this.owner.podUrl}/solidcryptpad/${folderName}/${fileName}`;
-    const newFileContent = 'Goodbye World!';
+    const modifiedFileContent = 'Goodbye World!';
     cy.openFileInEditor(fileUrl);
-    cy.get('ngx-editor [contenteditable]').clear().type(newFileContent);
+    cy.get('ngx-editor [contenteditable]').clear().type(modifiedFileContent);
     cy.contains('Save and close').click();
     cy.contains('saved');
 
@@ -125,6 +126,23 @@ describe('Folder sharing', function () {
     cy.loginMocked(this.owner);
     cy.get('@filePreviewUrl').then(cy.visit);
     cy.contains('Preview from');
+    cy.contains(modifiedFileContent);
+
+    // uploading a new file
+    const newFileName = 'newFile.txt';
+    const newFileContent = 'Hey there newbie';
+    cy.loginMocked(this.friend);
+    cy.get('@explorerSharedFolderUrl').then(cy.visit);
+    cy.explorerUploadFileIn(
+      folderName,
+      newFileName,
+      new Blob([newFileContent])
+    );
+
+    // creator can view new file
+    cy.loginMocked(this.owner);
+    cy.get('@explorerSharedFolderUrl').then(cy.visit);
+    cy.explorerOpenNode(newFileName);
     cy.contains(newFileContent);
   });
 });
