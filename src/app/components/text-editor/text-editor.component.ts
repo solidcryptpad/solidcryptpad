@@ -24,6 +24,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import ColorHash from 'color-hash';
 import { NotificationService } from '../../services/notification/notification.service';
 import { KeystoreService } from 'src/app/services/encryption/keystore/keystore.service';
+import { SolidFileHandlerService } from '../../services/file-handler/solid-file-handler.service';
 
 @Component({
   selector: 'app-text-editor',
@@ -49,6 +50,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   constructor(
     private profileService: ProfileService,
     private fileEncryptionService: FileEncryptionService,
+    private solidFileHandlerService: SolidFileHandlerService,
     private keystoreService: KeystoreService,
     private route: ActivatedRoute,
     private router: Router,
@@ -157,7 +159,11 @@ export class TextEditorComponent implements OnInit, OnDestroy {
 
   handleReadFile(blob: Blob): void {
     this.fileType = blob.type;
-    console.log(this.fileType);
+    if (this.fileType === '' || this.fileType === 'application/octet-stream') {
+      this.fileType =
+        this.solidFileHandlerService.guessContentType(this.fileUrl) ??
+        'text/plain';
+    }
     blob.text().then((text) => {
       this.html = this.sanitizeHtmlContent(text);
       this.readyForSave = true;
