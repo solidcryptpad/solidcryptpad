@@ -2,6 +2,7 @@ import { Component, HostBinding, OnInit } from '@angular/core';
 import { SolidFileHandlerService } from './services/file-handler/solid-file-handler.service';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
+import { RedirectService } from './services/redirect/redirect.service';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +17,8 @@ export class AppComponent implements OnInit {
   constructor(
     private solidFileHandler: SolidFileHandlerService,
     private matIconRegistry: MatIconRegistry,
-    private domSanitizer: DomSanitizer
+    private domSanitizer: DomSanitizer,
+    private redirect: RedirectService
   ) {}
 
   toggleDarkMode(darkModeOff: boolean) {
@@ -31,5 +33,7 @@ export class AppComponent implements OnInit {
         '../assets/solid-emblem.svg'
       )
     );
+
+    this.redirect.tryRedirect();
   }
 }
