@@ -24,6 +24,7 @@ describe('SolidFileHandlerService', () => {
 
   beforeEach(() => {
     const authenticationSpy = jasmine.createSpyObj('SolidAuthenticationSpy', [
+      'getWebId',
       'authenticatedFetch',
       'readAndDecryptFile',
       'writeAndEncryptFile',
@@ -422,6 +423,26 @@ describe('SolidFileHandlerService', () => {
     expect(callback).toHaveBeenCalledWith(urls.baseFile);
     expect(callback).toHaveBeenCalledWith(urls.nested);
     expect(callback).toHaveBeenCalledWith(urls.nestedFile);
+  });
+
+  it('addCurrentUserToGroup makes a PATCH request containing the active webId', async () => {
+    const groupUrl = 'https://example.org/some/group.ttl#group';
+    const webId = 'https://other.example.org/profile/card#me';
+    authenticationServiceSpy.getWebId.and.resolveTo(webId);
+    authenticationServiceSpy.authenticatedFetch.and.resolveTo();
+
+    await service.addCurrentUserToGroup(groupUrl);
+
+    expect(authenticationServiceSpy.authenticatedFetch).toHaveBeenCalledWith(
+      groupUrl,
+      {
+        method: 'PATCH',
+        headers: {
+          'content-type': 'text/n3',
+        },
+        body: jasmine.stringContaining(webId),
+      }
+    );
   });
 });
 
