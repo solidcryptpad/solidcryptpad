@@ -143,7 +143,7 @@ export class TreeNestedExplorerComponent implements OnInit {
       encryptedBlob,
       node.link
     );
-    this.downloadBlob(decryptedBlob);
+    this.downloadBlob(decryptedBlob, node.shortName);
   }
 
   async getFilesInFolder(nodeLink: string): Promise<string[]> {
@@ -178,7 +178,10 @@ export class TreeNestedExplorerComponent implements OnInit {
         zip.file(filename, decryptedBlob);
       }
     }
-    this.downloadBlob(await zip.generateAsync({ type: 'blob' }), foldername);
+    this.downloadBlob(
+      await zip.generateAsync({ type: 'blob' }),
+      foldername + '.zip'
+    );
   }
 
   async upload(node: Node) {
