@@ -9,7 +9,11 @@ import { KeystoreService } from '../keystore/keystore.service';
   providedIn: 'root',
 })
 export class FileEncryptionService {
-  private readonly cryptoDirectoryName = 'solidcryptpad';
+  private readonly defaultCryptoDirectoryName = 'solidcryptpad';
+  private readonly cryptoDirectoryNames = [
+    this.defaultCryptoDirectoryName,
+    'solidcryptpad-data',
+  ];
 
   constructor(
     private keystoreService: KeystoreService,
@@ -61,7 +65,9 @@ export class FileEncryptionService {
    */
   async readAndDecryptFile(fileURL: string): Promise<Blob> {
     if (!this.isCryptoDirectory(fileURL)) {
-      throw new NotACryptpadUrlException('file is not in a valid directory');
+      throw new NotACryptpadUrlException(
+        `Cannot encrypt ${fileURL} if it is not in an encrypted directory`
+      );
     }
     const file = await this.fileService.readFile(fileURL);
     return this.decryptFile(file, fileURL);
@@ -69,7 +75,9 @@ export class FileEncryptionService {
 
   async readAndDecryptFileWithKey(fileURL: string, key: string): Promise<Blob> {
     if (!this.isCryptoDirectory(fileURL)) {
-      throw new NotACryptpadUrlException('file is not in a valid directory');
+      throw new NotACryptpadUrlException(
+        `Cannot encrypt ${fileURL} if it is not in an encrypted directory`
+      );
     }
     const file = await this.fileService.readFile(fileURL);
     return this.decryptFileWithKey(file, key);
@@ -91,7 +99,9 @@ export class FileEncryptionService {
   async writeAndEncryptFile(file: Blob, fileURL: string): Promise<Blob> {
     fileURL = fileURL.replace(/ /g, '');
     if (!this.isCryptoDirectory(fileURL)) {
-      throw new NotACryptpadUrlException('file is not in a valid directory');
+      throw new NotACryptpadUrlException(
+        `Cannot encrypt ${fileURL} if it is not in an encrypted directory`
+      );
     }
     const encryptedFile = await this.encryptFile(file, fileURL);
 
@@ -104,7 +114,7 @@ export class FileEncryptionService {
    * @returns if it contains the wanted directoryname
    */
   isCryptoDirectory(url: string): boolean {
-    return url.includes('/' + this.cryptoDirectoryName + '/');
+    return this.cryptoDirectoryNames.some((name) => url.includes(`/${name}/`));
   }
 
   /**
@@ -112,6 +122,6 @@ export class FileEncryptionService {
    * @returns url of the crypto directory
    */
   getDefaultCryptoDirectoryUrl(baseUrl: string): string {
-    return `${baseUrl}${this.cryptoDirectoryName}/`;
+    return `${baseUrl}${this.defaultCryptoDirectoryName}/`;
   }
 }

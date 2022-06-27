@@ -7,3 +7,8 @@
 .mat-row:hover .mat-cell {
   background-color: #f4cfab;
 }
+
+.horizontal {
+  display: flex;
+  justify-content: space-between;
+}

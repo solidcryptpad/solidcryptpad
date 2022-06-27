@@ -10,7 +10,7 @@ import {
 /**
  * Manages all keys of received shared files
  */
-export class LinksKeystore implements Keystore {
+export class SharedFileKeystore implements Keystore {
   private keys: { [fileUrl: string]: string } = {};
 
   /**
@@ -96,13 +96,13 @@ export class LinksKeystore implements Keystore {
   static deserialize(
     serialization: string,
     storage: SecureRemoteStorage
-  ): LinksKeystore {
+  ): SharedFileKeystore {
     const data = JSON.parse(serialization);
-    return new LinksKeystore(storage, data.url);
+    return new SharedFileKeystore(storage, data.url);
   }
 
   getKeystoreType(): KeystoreType {
-    return 'link';
+    return 'sharedFile';
   }
 }
 

@@ -11,6 +11,7 @@ import { Keystore } from '../encryption/keystore/keystore.interface';
 import { FolderKeystore } from '../encryption/keystore/folder-keystore.class';
 import { KeystoreStorageService } from '../encryption/keystore/keystore-storage.service';
 import { SolidGroupService } from '../solid-group/solid-group.service';
+import { SharedByMeService } from '../shared-by-me/shared-by-me.service';
 
 @Injectable({
   providedIn: 'root',
@@ -25,7 +26,8 @@ export class LinkShareService {
     private fileService: SolidFileHandlerService,
     private groupService: SolidGroupService,
     private profileService: ProfileService,
-    private permissionService: SolidPermissionService
+    private permissionService: SolidPermissionService,
+    private sharedByMeService: SharedByMeService
   ) {}
 
   /**
@@ -39,7 +41,6 @@ export class LinkShareService {
     fileUrl: string,
     grantedPermissions: Partial<SolidPermissions>
   ): Promise<string> {
-    const linksKeystore = await this.keystoreService.getLinksKeystore();
     const key = await this.keystoreService.getKey(fileUrl);
     const encodedKey = btoa(key);
 
@@ -56,10 +57,10 @@ export class LinkShareService {
       key: encodedKey,
       group: groupUrl,
     });
-    await linksKeystore.addKey(
-      JSON.stringify({ object: fileUrl, url: link, type: 'Link' }),
-      ''
-    );
+
+    const fileName = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
+    await this.sharedByMeService.addLink(fileName, link);
+
     return link;
   }
 
@@ -80,8 +81,6 @@ export class LinkShareService {
       grantedPermissions.write || false
     );
 
-    const linksKeystore = await this.keystoreService.getLinksKeystore();
-
     // give access to the folder and all items in it
     await this.permissionService.setGroupPermissions(
       folderUrl,
@@ -101,10 +100,9 @@ export class LinkShareService {
       keystoreEncryptionKey: encryptionKey,
     });
 
-    await linksKeystore.addKey(
-      JSON.stringify({ object: folderUrl, url: link, type: 'Folder' }),
-      ''
-    );
+    const folderName = folderUrl.split('/')[folderUrl.split('/').length - 2];
+    await this.sharedByMeService.addLink(folderName, link);
+
     return link;
   }
 
@@ -155,5 +153,12 @@ export class LinkShareService {
   private toSharingLink(data: Record<string, string>): string {
     const urlParams = new URLSearchParams(data);
     return `${window.location.origin}/share?${urlParams.toString()}`;
+  }
+
+  async deactivateLink(link: string) {
+    // first delete group to make sure we still show the link in case deletion goes wrong
+    const groupUrl = new URLSearchParams(link).get('group') as string;
+    await this.fileService.deleteFile(groupUrl);
+    await this.sharedByMeService.removeLink(link);
   }
 }
