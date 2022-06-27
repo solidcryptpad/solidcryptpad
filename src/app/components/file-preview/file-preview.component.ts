@@ -1,10 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, SecurityContext } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 import { SolidPermissionService } from '../../services/solid-permission/solid-permission.service';
 import { Editor } from 'ngx-editor';
-import { redo, undo } from 'y-prosemirror';
-import { keymap } from 'prosemirror-keymap';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-file-preview',
@@ -25,6 +24,7 @@ export class FilePreviewComponent implements OnInit {
     private fileEncryptionService: FileEncryptionService,
     private route: ActivatedRoute,
     private router: Router,
+    private sanitizer: DomSanitizer,
     private permissionService: SolidPermissionService
   ) {}
 
@@ -60,6 +60,7 @@ export class FilePreviewComponent implements OnInit {
       (blob) => {
         this.fileType = blob.type;
         if (this.fileType.includes('text')) {
+          /*
           this.editor = new Editor({
             history: false,
             plugins: [
@@ -70,6 +71,7 @@ export class FilePreviewComponent implements OnInit {
               }),
             ],
           });
+           */
           this.getTextFileContent(blob);
         } else if (this.fileType.includes('image')) {
           this.getImageUrlFromBlob(blob);
@@ -89,7 +91,7 @@ export class FilePreviewComponent implements OnInit {
    * @param blob
    */
   async getTextFileContent(blob: Blob): Promise<void> {
-    this.textFileContent = await blob.text();
+    this.textFileContent = this.sanitizeHtmlContent(await blob.text());
   }
 
   /**
@@ -103,6 +105,18 @@ export class FilePreviewComponent implements OnInit {
     reader.onload = (_event) => {
       this.imageUrl = reader.result; //url declared earlier
     };
+  }
+
+  /**
+   * sanitize Html Content
+   * @param htmlstring sanitized Html Content
+   */
+  public sanitizeHtmlContent(htmlstring: string): string {
+    let content = this.sanitizer.sanitize(SecurityContext.HTML, htmlstring);
+    if (content === null) {
+      content = '';
+    }
+    return content;
   }
 
   open(link: string) {
