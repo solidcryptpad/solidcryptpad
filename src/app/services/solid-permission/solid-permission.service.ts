@@ -8,6 +8,7 @@ import { SolidAuthenticationService } from '../authentication/solid-authenticati
 import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { SolidClientService } from '../module-wrappers/solid-client/solid-client.service';
 import { throwWithContext } from 'src/app/exceptions/error-options';
+import { SolidFileHandlerService } from '../file-handler/solid-file-handler.service';
 
 export interface SolidPermissions {
   read: boolean;
@@ -29,6 +30,7 @@ const noPermissions = {
 export class SolidPermissionService {
   constructor(
     private solidClient: SolidClientService,
+    private fileService: SolidFileHandlerService,
     private authService: SolidAuthenticationService
   ) {}
 
@@ -53,7 +55,7 @@ export class SolidPermissionService {
   }
 
   /**
-   * Set default group permissions for all contained resources
+   * Set default group permissions for all contained resources without an own ACL file
    * @param folderUrl
    * @param groupUrl
    * @param grantedPermissions new permissions of this group. Default to false for unspecified values
@@ -69,6 +71,42 @@ export class SolidPermissionService {
         groupUrl,
         this.extendWithFalsePermissions(grantedPermissions)
       )
+    );
+  }
+
+  /**
+   * Set group permissions for all contained resources
+   * @param folderUrl
+   * @param groupUrl
+   * @param grantedPermissions new permissions of this group. Default to false for unspecified values
+   */
+  async setGroupPermissionsForContainedResources(
+    folderUrl: string,
+    groupUrl: string,
+    grantedPermissions: Partial<SolidPermissions>
+  ) {
+    await this.setGroupDefaultPermissions(
+      folderUrl,
+      groupUrl,
+      grantedPermissions
+    );
+    await this.fileService.traverseContainerContentsRecursively(
+      folderUrl,
+      async (resourceUrl) => {
+        if (await this.hasAcl(resourceUrl)) {
+          if (this.fileService.isContainer(resourceUrl))
+            await this.setGroupDefaultPermissions(
+              resourceUrl,
+              groupUrl,
+              grantedPermissions
+            );
+          await this.setGroupPermissions(
+            resourceUrl,
+            groupUrl,
+            grantedPermissions
+          );
+        }
+      }
     );
   }
 

@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { PermissionException } from 'src/app/exceptions/permission-exception';
 import { SolidAuthenticationService } from '../authentication/solid-authentication.service';
+import { SolidFileHandlerService } from '../file-handler/solid-file-handler.service';
 import { SolidClientService } from '../module-wrappers/solid-client/solid-client.service';
 
 import { SolidPermissionService } from './solid-permission.service';
@@ -9,6 +10,7 @@ describe('SolidPermissionService', () => {
   let service: SolidPermissionService;
   let authenticationServiceSpy: jasmine.SpyObj<SolidAuthenticationService>;
   let solidClientServiceSpy: jasmine.SpyObj<SolidClientService>;
+  let fileServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
 
   // values where we only check how they are forward to other calls
   // hence we don't care about the values
@@ -22,6 +24,7 @@ describe('SolidPermissionService', () => {
       resourceInfo: placeholderResourceInfo,
     });
 
+  const sampleFolderUrl = 'https://example.com/folder/';
   const sampleFileUrl = 'https://example.com/folder/file.txt';
   const sampleGroupUrl = 'https://example.com/groups/group.ttl#some-group-id';
   const samplePartialPermissions = Object.freeze({ read: true, write: false });
@@ -51,10 +54,16 @@ describe('SolidPermissionService', () => {
       'saveAclFor',
     ]);
 
+    const fileSpy = jasmine.createSpyObj('SolidFileHandlerService', [
+      'isContainer',
+      'traverseContainerContentsRecursively',
+    ]);
+
     TestBed.configureTestingModule({
       providers: [
         { provide: SolidAuthenticationService, useValue: authenticationSpy },
         { provide: SolidClientService, useValue: solidClientSpy },
+        { provide: SolidFileHandlerService, useValue: fileSpy },
       ],
     });
     service = TestBed.inject(SolidPermissionService);
@@ -64,6 +73,9 @@ describe('SolidPermissionService', () => {
     solidClientServiceSpy = TestBed.inject(
       SolidClientService
     ) as jasmine.SpyObj<SolidClientService>;
+    fileServiceSpy = TestBed.inject(
+      SolidFileHandlerService
+    ) as jasmine.SpyObj<SolidFileHandlerService>;
   });
 
   it('should be created', () => {
@@ -277,5 +289,70 @@ describe('SolidPermissionService', () => {
       placeholderAcl,
       jasmine.anything()
     );
+  });
+
+  it('setGroupPermissionsForContainedResources sets default permissions of container', async () => {
+    const setDefaultPermissionsSpy = spyOn(
+      service,
+      'setGroupDefaultPermissions'
+    );
+    setDefaultPermissionsSpy.and.resolveTo();
+    fileServiceSpy.traverseContainerContentsRecursively.and.resolveTo();
+
+    await service.setGroupPermissionsForContainedResources(
+      sampleFolderUrl,
+      sampleGroupUrl,
+      samplePartialPermissions
+    );
+
+    expect(setDefaultPermissionsSpy).toHaveBeenCalledWith(
+      sampleFolderUrl,
+      sampleGroupUrl,
+      samplePartialPermissions
+    );
+  });
+
+  it('setGroupPermissionsForContainedResources updates contained resources that have an ACL', async () => {
+    const setDefaultPermissionsSpy = spyOn(
+      service,
+      'setGroupDefaultPermissions'
+    );
+    setDefaultPermissionsSpy.and.resolveTo();
+    const setGroupPermissionsSpy = spyOn(service, 'setGroupPermissions');
+    setGroupPermissionsSpy.and.resolveTo();
+    fileServiceSpy.traverseContainerContentsRecursively.and.resolveTo();
+    fileServiceSpy.isContainer.and.callFake((url) => url.endsWith('/'));
+    const folderWithAcl = 'https://example.org/with/acl/folder/';
+    const fileWithAcl = 'https://example.org/with/acl/file.txt';
+    const fileWithoutAcl = 'https://example.org/without/acl/file.txt';
+    spyOn(service, 'hasAcl')
+      .withArgs(folderWithAcl)
+      .and.resolveTo(true)
+      .withArgs(fileWithAcl)
+      .and.resolveTo(true)
+      .withArgs(fileWithoutAcl)
+      .and.resolveTo(false);
+
+    await service.setGroupPermissionsForContainedResources(
+      sampleFolderUrl,
+      sampleGroupUrl,
+      samplePartialPermissions
+    );
+    const callback =
+      fileServiceSpy.traverseContainerContentsRecursively.calls.first().args[1];
+
+    await callback(folderWithAcl);
+    await callback(fileWithAcl);
+    await callback(fileWithoutAcl);
+
+    expect(setDefaultPermissionsSpy.calls.all()[0].args[0]).toBe(
+      sampleFolderUrl
+    );
+    expect(setDefaultPermissionsSpy.calls.all()[1].args[0]).toBe(folderWithAcl);
+    expect(setDefaultPermissionsSpy).toHaveBeenCalledTimes(2);
+
+    expect(setGroupPermissionsSpy.calls.all()[0].args[0]).toBe(folderWithAcl);
+    expect(setGroupPermissionsSpy.calls.all()[1].args[0]).toBe(fileWithAcl);
+    expect(setGroupPermissionsSpy).toHaveBeenCalledTimes(2);
   });
 });

@@ -1,8 +1,8 @@
 describe('FileExplorer menu actions', function () {
   beforeEach(function () {
     cy.createRandomAccount()
-      .then(cy.loginMocked)
       .then(cy.storeMasterPassword)
+      .then(cy.loginMocked)
       .as('user');
     cy.contains('Files').click();
     cy.contains('solidcryptpad');

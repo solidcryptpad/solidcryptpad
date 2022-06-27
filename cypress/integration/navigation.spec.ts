@@ -1,8 +1,8 @@
 describe('can navigate with navbar as logged in user', () => {
   beforeEach(() => {
     cy.createRandomAccount()
-      .then(cy.loginMocked)
       .then(cy.storeMasterPassword)
+      .then(cy.loginMocked)
       .as('user');
   });
 

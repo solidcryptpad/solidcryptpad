@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { KeystoreStorageService } from 'src/app/services/encryption/keystore/keystore-storage.service';
 import { KeystoreService } from 'src/app/services/encryption/keystore/keystore.service';
-import { LinkShareService } from '../../services/link-share/link-share.service';
 import { InvalidSharingLinkException } from '../../exceptions/invalid-sharing-link-exception';
+import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 import { SharedFolderKeystore } from '../../services/encryption/keystore/shared-folder-keystore.class';
 
 @Component({
@@ -15,7 +15,7 @@ export class ShareComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private linkShareService: LinkShareService,
+    private fileService: SolidFileHandlerService,
     private keystoreService: KeystoreService,
     private keystoreStorageService: KeystoreStorageService
   ) {}
@@ -47,7 +47,7 @@ export class ShareComponent implements OnInit {
   }
 
   private async processShareFile(fileUrl: string, key: string, group: string) {
-    await this.linkShareService.addWebIdToGroup(group);
+    await this.fileService.addCurrentUserToGroup(group);
 
     const sharedFilesKeystore =
       await this.keystoreService.getSharedFilesKeystore();
@@ -63,7 +63,7 @@ export class ShareComponent implements OnInit {
     keystoreUrl: string,
     keystoreEncryptionKey: string
   ) {
-    await this.linkShareService.addWebIdToGroup(group);
+    await this.fileService.addCurrentUserToGroup(group);
     const storage = this.keystoreStorageService.createSecureStorage(
       keystoreEncryptionKey
     );

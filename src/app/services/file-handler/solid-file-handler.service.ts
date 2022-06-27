@@ -238,6 +238,32 @@ export class SolidFileHandlerService {
   }
 
   /**
+   * Inserts the current user's webId to the specified group
+   * by using a so called n3-patch. Further information
+   * can be found under https://solid.github.io/specification/protocol#n3-patch
+   * @param webId the webId to be added
+   * @param groupUrl the group to which the webId is to be added
+   */
+  async addCurrentUserToGroup(groupUrl: string) {
+    const webId = await this.authService.getWebId();
+    const n3Patch = `
+@prefix solid: <http://www.w3.org/ns/solid/terms#>.
+@prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
+
+_:addAccess a solid:InsertDeletePatch;
+  solid:inserts { <${groupUrl}> vcard:hasMember <${webId}>. }.
+`;
+
+    await this.authService.authenticatedFetch(groupUrl, {
+      method: 'PATCH',
+      headers: {
+        'content-type': 'text/n3',
+      },
+      body: n3Patch,
+    });
+  }
+
+  /**
    * converts any given error
    * @param error the error to convert
    */
