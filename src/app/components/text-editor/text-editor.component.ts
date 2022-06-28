@@ -181,7 +181,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     } else {
       this.errorMsg = 'Error while opening your file: ' + reason;
     }
-    console.error('couldnt load file: ' + reason);
+    console.error('couldnt load file', reason);
   }
 
   setUsername(username: string): void {

@@ -81,7 +81,7 @@ export class FilePreviewComponent implements OnInit {
       },
       (reason) => {
         this.errorMsg = 'Error while opening your file: ' + reason;
-        console.error('couldnt load file: ' + reason);
+        console.error('couldnt load file', reason);
       }
     );
   }
