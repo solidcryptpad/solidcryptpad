@@ -36,7 +36,7 @@ export class SharedWithMeComponent implements OnInit {
     }
 
     const sharedFoldersKeystores =
-      await this.keystoreService.getSharedFoldersKeystores();
+      await this.keystoreService.getSharedFolderKeystores();
 
     this.mapSharedFoldersToObjects(sharedFoldersKeystores);
 

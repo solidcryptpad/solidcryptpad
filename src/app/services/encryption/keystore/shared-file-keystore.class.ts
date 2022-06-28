@@ -87,6 +87,10 @@ export class SharedFileKeystore implements Keystore {
     return this.storage;
   }
 
+  getStorageUrl(): string {
+    return this.keystoreUrl;
+  }
+
   serializeMetadata(): string {
     return JSON.stringify({
       url: this.keystoreUrl,

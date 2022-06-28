@@ -242,7 +242,43 @@ export class KeystoreService {
     return keystore;
   }
 
-  async getSharedFoldersKeystores(): Promise<SharedFolderKeystore[]> {
+  async getOrCreateSharedFolderKeystore(
+    folderUrl: string
+  ): Promise<{ keystoreUrl: string; encryptionKey: string }> {
+    let keystore = this.keystores?.find((keystore) => {
+      return (
+        keystore instanceof SharedFolderKeystore &&
+        keystore.getFolderUrl() === folderUrl
+      );
+    }) as SharedFolderKeystore | undefined;
+
+    if (!keystore) {
+      keystore = await this.createSharedFolderKeystore(folderUrl);
+    }
+    const keystoreUrl = keystore.getStorageUrl();
+    const encryptionKey = keystore.getStorage().getEncryptionKey();
+
+    return { keystoreUrl, encryptionKey };
+  }
+
+  async createSharedFolderKeystore(
+    folderUrl: string
+  ): Promise<SharedFolderKeystore> {
+    const keystoreUrl =
+      (await this.getKeystoresFolderUrl()) +
+      this.encryptionService.generateNewKey() +
+      '.shared-keystore';
+    const encryptionKey = this.encryptionService.generateNewKey();
+    const storage =
+      this.keystoreStorageService.createSecureStorage(encryptionKey);
+    const keystore = new SharedFolderKeystore(keystoreUrl, folderUrl, storage);
+    const existingKeys = await this.getKeysInFolder(folderUrl);
+    await keystore.addKeys(existingKeys);
+    await this.addKeystore(keystore);
+    return keystore;
+  }
+
+  async getSharedFolderKeystores(): Promise<SharedFolderKeystore[]> {
     await this.loadKeystores();
     return this.keystores?.filter(
       (element) => element instanceof SharedFolderKeystore

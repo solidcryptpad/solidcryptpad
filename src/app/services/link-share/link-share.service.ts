@@ -1,15 +1,10 @@
 import { Injectable } from '@angular/core';
 import { KeystoreService } from '../encryption/keystore/keystore.service';
 import { SolidFileHandlerService } from '../file-handler/solid-file-handler.service';
-import { ProfileService } from '../profile/profile.service';
-import { EncryptionService } from '../encryption/encryption/encryption.service';
 import {
   SolidPermissionService,
   SolidPermissions,
 } from '../solid-permission/solid-permission.service';
-import { Keystore } from '../encryption/keystore/keystore.interface';
-import { FolderKeystore } from '../encryption/keystore/folder-keystore.class';
-import { KeystoreStorageService } from '../encryption/keystore/keystore-storage.service';
 import { SolidGroupService } from '../solid-group/solid-group.service';
 import { SharedByMeService } from '../shared-by-me/shared-by-me.service';
 
@@ -17,15 +12,10 @@ import { SharedByMeService } from '../shared-by-me/shared-by-me.service';
   providedIn: 'root',
 })
 export class LinkShareService {
-  private readonly keystoreFolderPath = 'solidcryptpad-data/keystores/';
-
   constructor(
     private keystoreService: KeystoreService,
-    private keystoreStorageService: KeystoreStorageService,
-    private encryptionService: EncryptionService,
     private fileService: SolidFileHandlerService,
     private groupService: SolidGroupService,
-    private profileService: ProfileService,
     private permissionService: SolidPermissionService,
     private sharedByMeService: SharedByMeService
   ) {}
@@ -71,12 +61,10 @@ export class LinkShareService {
     folderUrl: string,
     grantedPermissions: Partial<SolidPermissions>
   ): Promise<string> {
-    const encryptionKey = this.encryptionService.generateNewKey();
     const groupUrl = await this.createSecretAppendableGroup();
 
-    const keystoreUrl = await this.setupKeystoreForFolder(
+    const { keystoreUrl, encryptionKey } = await this.setupKeystoreForFolder(
       folderUrl,
-      encryptionKey,
       groupUrl,
       grantedPermissions.write || false
     );
@@ -108,37 +96,16 @@ export class LinkShareService {
 
   private async setupKeystoreForFolder(
     folderUrl: string,
-    encryptionKey: string,
     groupUrl: string,
     hasWritePermissions: boolean
-  ): Promise<string> {
-    const keystoreUrl =
-      (await this.profileService.getPodUrls())[0] +
-      this.keystoreFolderPath +
-      this.encryptionService.SHA256Salted(folderUrl) +
-      '.keystore';
-
-    // assume that it already is known and contains keys if it already exists
-    if (await this.fileService.resourceExists(keystoreUrl)) {
-      // TODO: currently there's a mismatch between the key and url if we return this
-      // because the caller will expect it to be encrypted with the encryptionKey parameter
-      return keystoreUrl;
-    }
-    const storage =
-      this.keystoreStorageService.createSecureStorage(encryptionKey);
-    const keystore: Keystore = new FolderKeystore(
-      keystoreUrl,
-      folderUrl,
-      storage
-    );
-    const keys = await this.keystoreService.getKeysInFolder(folderUrl);
-    await keystore.addKeys(keys);
-    await this.keystoreService.addKeystore(keystore);
+  ): Promise<{ keystoreUrl: string; encryptionKey: string }> {
+    const { keystoreUrl, encryptionKey } =
+      await this.keystoreService.getOrCreateSharedFolderKeystore(folderUrl);
     await this.permissionService.setGroupPermissions(keystoreUrl, groupUrl, {
       read: true,
       write: hasWritePermissions,
     });
-    return keystoreUrl;
+    return { keystoreUrl, encryptionKey };
   }
 
   private async createSecretAppendableGroup(): Promise<string> {

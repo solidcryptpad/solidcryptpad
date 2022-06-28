@@ -32,6 +32,11 @@ export interface Keystore extends Serializable {
   getStorage(): SecureRemoteStorage;
 
   /**
+   * Return the url where the keystore is stored at
+   */
+  getStorageUrl(): string;
+
+  /**
    * Return the type of the keystore instance.
    */
   getKeystoreType(): KeystoreType;
@@ -40,6 +45,7 @@ export interface Keystore extends Serializable {
 export interface SecureRemoteStorage extends Serializable {
   loadSecure(url: string): Promise<string>;
   saveSecure(url: string, data: string): Promise<void>;
+  getEncryptionKey(): string;
 }
 
 export interface Serializable {

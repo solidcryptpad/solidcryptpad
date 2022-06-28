@@ -103,6 +103,10 @@ export class FolderKeystore implements Keystore {
     return this.folderRoot;
   }
 
+  getStorageUrl(): string {
+    return this.keystoreUrl;
+  }
+
   static deserialize(
     serialization: string,
     storage: SecureRemoteStorage
