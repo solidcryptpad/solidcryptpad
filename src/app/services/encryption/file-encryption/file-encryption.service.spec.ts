@@ -2,13 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
 import { SolidFileHandlerService } from '../../file-handler/solid-file-handler.service';
 import { EncryptionService } from '../encryption/encryption.service';
-import { KeystoreService } from '../keystore/keystore.service';
+import { KeyService } from '../key/key.service';
 
 import { FileEncryptionService } from './file-encryption.service';
 
 describe('FileEncryptionService', () => {
   let service: FileEncryptionService;
-  let keystoreServiceSpy: jasmine.SpyObj<KeystoreService>;
+  let keyServiceSpy: jasmine.SpyObj<KeyService>;
   let encryptionServiceSpy: jasmine.SpyObj<EncryptionService>;
   let fileServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
 
@@ -20,10 +20,9 @@ describe('FileEncryptionService', () => {
   const sampleFileUrl = 'https://example.org/solidcryptpad/file.txt';
 
   beforeEach(() => {
-    const keystoreSpy = jasmine.createSpyObj('KeystoreService', [
+    const keySpy = jasmine.createSpyObj('KeyService', [
       'getKey',
       'getOrCreateKey',
-      'storeKey',
     ]);
     const encryptionSpy = jasmine.createSpyObj('EncryptionService', [
       'encryptBlob',
@@ -36,7 +35,7 @@ describe('FileEncryptionService', () => {
     ]);
     TestBed.configureTestingModule({
       providers: [
-        { provide: KeystoreService, useValue: keystoreSpy },
+        { provide: KeyService, useValue: keySpy },
         { provide: EncryptionService, useValue: encryptionSpy },
         {
           provide: SolidFileHandlerService,
@@ -46,9 +45,7 @@ describe('FileEncryptionService', () => {
     });
     service = TestBed.inject(FileEncryptionService);
 
-    keystoreServiceSpy = TestBed.inject(
-      KeystoreService
-    ) as jasmine.SpyObj<KeystoreService>;
+    keyServiceSpy = TestBed.inject(KeyService) as jasmine.SpyObj<KeyService>;
     encryptionServiceSpy = TestBed.inject(
       EncryptionService
     ) as jasmine.SpyObj<EncryptionService>;
@@ -64,7 +61,7 @@ describe('FileEncryptionService', () => {
   });
 
   it('encryptFile encrypts blob with key from keystore', async () => {
-    keystoreServiceSpy.getOrCreateKey.and.resolveTo('the key');
+    keyServiceSpy.getOrCreateKey.and.resolveTo('the key');
     encryptionServiceSpy.encryptBlob.and.resolveTo(sampleCiphertext);
 
     const encryptedBlob = await service.encryptFile(
@@ -72,9 +69,7 @@ describe('FileEncryptionService', () => {
       sampleFileUrl
     );
 
-    expect(keystoreServiceSpy.getOrCreateKey).toHaveBeenCalledWith(
-      sampleFileUrl
-    );
+    expect(keyServiceSpy.getOrCreateKey).toHaveBeenCalledWith(sampleFileUrl);
     expect(encryptionServiceSpy.encryptBlob).toHaveBeenCalledWith(
       sampleTurtleBlob,
       'the key'
@@ -85,12 +80,12 @@ describe('FileEncryptionService', () => {
   });
 
   it('decryptFile gets key and calls decryptFileWithKey', async () => {
-    keystoreServiceSpy.getKey.and.resolveTo('the key');
+    keyServiceSpy.getKey.and.resolveTo('the key');
     const decryptFileWithKeySpy = spyOn(service, 'decryptFileWithKey');
 
     await service.decryptFile(sampleEncryptedBlob, sampleFileUrl);
 
-    expect(keystoreServiceSpy.getKey).toHaveBeenCalledWith(sampleFileUrl);
+    expect(keyServiceSpy.getKey).toHaveBeenCalledWith(sampleFileUrl);
     expect(decryptFileWithKeySpy).toHaveBeenCalledWith(
       sampleEncryptedBlob,
       'the key'

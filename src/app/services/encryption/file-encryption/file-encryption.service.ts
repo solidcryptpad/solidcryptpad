@@ -3,7 +3,7 @@ import { throwWithContext } from 'src/app/exceptions/error-options';
 import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
 import { SolidFileHandlerService } from '../../file-handler/solid-file-handler.service';
 import { EncryptionService } from '../encryption/encryption.service';
-import { KeystoreService } from '../keystore/keystore.service';
+import { KeyService } from '../key/key.service';
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +16,7 @@ export class FileEncryptionService {
   ];
 
   constructor(
-    private keystoreService: KeystoreService,
+    private keyService: KeyService,
     private encryptionService: EncryptionService,
     private fileService: SolidFileHandlerService
   ) {}
@@ -26,7 +26,7 @@ export class FileEncryptionService {
    * If no matching key is found, a new one is generated.
    */
   async encryptFile(file: Blob, fileURL: string): Promise<Blob> {
-    const key = await this.keystoreService.getOrCreateKey(fileURL);
+    const key = await this.keyService.getOrCreateKey(fileURL);
     const encryptedFileContent = await this.encryptionService.encryptBlob(
       file,
       key
@@ -39,7 +39,7 @@ export class FileEncryptionService {
    * Decrypts a file by using its url to find the matching key from the keystore.
    */
   async decryptFile(file: Blob, fileURL: string): Promise<Blob> {
-    const key = await this.keystoreService.getKey(fileURL);
+    const key = await this.keyService.getKey(fileURL);
     return this.decryptFileWithKey(file, key);
   }
 

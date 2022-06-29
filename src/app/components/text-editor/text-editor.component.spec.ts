@@ -7,7 +7,7 @@ import { ProfileService } from 'src/app/services/profile/profile.service';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
 import { NotificationService } from 'src/app/services/notification/notification.service';
-import { KeystoreService } from 'src/app/services/encryption/keystore/keystore.service';
+import { KeyService } from 'src/app/services/encryption/key/key.service';
 
 describe('TextEditorComponent', () => {
   let component: TextEditorComponent;
@@ -15,7 +15,7 @@ describe('TextEditorComponent', () => {
   let profileServiceSpy: jasmine.SpyObj<ProfileService>;
   let fileServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
   let notificationServiceSpy: jasmine.SpyObj<NotificationService>;
-  let keystoreServiceSpy: jasmine.SpyObj<KeystoreService>;
+  let keyServiceSpy: jasmine.SpyObj<KeyService>;
 
   beforeEach(async () => {
     const authenticationSpy = jasmine.createSpyObj(
@@ -33,7 +33,7 @@ describe('TextEditorComponent', () => {
       'success',
       'error',
     ]);
-    const keystoreSpy = jasmine.createSpyObj('KeystoreService', ['getKey']);
+    const keySpy = jasmine.createSpyObj('KeyService', ['getKey']);
 
     await TestBed.configureTestingModule({
       imports: [RouterTestingModule, MatDialogModule],
@@ -52,7 +52,7 @@ describe('TextEditorComponent', () => {
           useValue: authenticationSpy,
         },
         { provide: NotificationService, useValue: notificationSpy },
-        { provide: KeystoreService, useValue: keystoreSpy },
+        { provide: KeyService, useValue: keySpy },
       ],
     }).compileComponents();
 
@@ -67,9 +67,7 @@ describe('TextEditorComponent', () => {
     notificationServiceSpy = TestBed.inject(
       NotificationService
     ) as jasmine.SpyObj<NotificationService>;
-    keystoreServiceSpy = TestBed.inject(
-      KeystoreService
-    ) as jasmine.SpyObj<KeystoreService>;
+    keyServiceSpy = TestBed.inject(KeyService) as jasmine.SpyObj<KeyService>;
   });
 
   beforeEach(() => {
@@ -85,13 +83,13 @@ describe('TextEditorComponent', () => {
   });
 
   it('getRoomPassword uses key from keystore', async () => {
-    keystoreServiceSpy.getKey.and.resolveTo('the key');
+    keyServiceSpy.getKey.and.resolveTo('the key');
     component.fileUrl = 'https://example.org/some/file.txt';
 
     const key = await component.getRoomPassword();
 
     expect(key).toBe('the key');
-    expect(keystoreServiceSpy.getKey).toHaveBeenCalledWith(
+    expect(keyServiceSpy.getKey).toHaveBeenCalledWith(
       'https://example.org/some/file.txt'
     );
   });

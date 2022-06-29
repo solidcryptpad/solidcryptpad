@@ -23,8 +23,8 @@ import { DomSanitizer } from '@angular/platform-browser';
 // @ts-ignore
 import ColorHash from 'color-hash';
 import { NotificationService } from '../../services/notification/notification.service';
-import { KeystoreService } from 'src/app/services/encryption/keystore/keystore.service';
 import { SolidFileHandlerService } from '../../services/file-handler/solid-file-handler.service';
+import { KeyService } from 'src/app/services/encryption/key/key.service';
 
 @Component({
   selector: 'app-text-editor',
@@ -51,7 +51,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
     private profileService: ProfileService,
     private fileEncryptionService: FileEncryptionService,
     private solidFileHandlerService: SolidFileHandlerService,
-    private keystoreService: KeystoreService,
+    private keyService: KeyService,
     private route: ActivatedRoute,
     private router: Router,
     private dialog: MatDialog,
@@ -266,7 +266,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    * @return the room pw for the current opened file
    */
   getRoomPassword(): Promise<string> {
-    return this.keystoreService.getKey(this.fileUrl);
+    return this.keyService.getKey(this.fileUrl);
   }
 
   /**

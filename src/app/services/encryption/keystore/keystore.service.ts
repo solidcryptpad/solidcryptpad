@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { ProfileService } from '../../profile/profile.service';
 import { EncryptionService } from '../encryption/encryption.service';
 import { MasterPasswordService } from '../master-password/master-password.service';
-import { KeyNotFoundException } from 'src/app/exceptions/key-not-found-exception';
 import { FolderKeystore } from './folder-keystore.class';
 import { throwWithContext } from 'src/app/exceptions/error-options';
 import { Keystore, KeystoreType } from './keystore.interface';
@@ -29,78 +28,13 @@ export class KeystoreService {
   private readonly keystoresFolderPath: string =
     'solidcryptpad-data/keystores/';
 
-  /**
-   * Search through all responsible keystores. Return the first found key for this url
-   */
-  async getKey(url: string): Promise<string> {
-    const keystores = await this.findAllKeystores((keystore) =>
-      keystore.handlesKeyForUrl(url)
-    );
-    return Promise.any(keystores.map((keystore) => keystore.getKey(url))).catch(
-      (aggregateError) => {
-        throw new KeyNotFoundException(`Could not find key for ${url}`, {
-          cause: aggregateError,
-        });
-      }
-    );
-  }
-
-  /**
-   * Try to get the corresponding key. If it is not found, create and store a new key.
-   */
-  async getOrCreateKey(url: string): Promise<string> {
-    return this.getKey(url).catch(async (error) => {
-      if (!(error instanceof KeyNotFoundException)) throw error;
-
-      const newKey = this.encryptionService.generateNewKey();
-      await this.addKeyToKeystores(url, newKey);
-      return newKey;
-    });
-  }
-
-  /**
-   * Add a key for an url to all responsible keystores
-   */
-  private async addKeyToKeystores(url: string, key: string): Promise<void> {
-    const keystores = await this.findAllKeystores((keystore) =>
-      keystore.handlesKeyForUrl(url)
-    );
-    await Promise.all(keystores.map((keystore) => keystore.addKey(url, key)));
-  }
-
-  async addKeystore(keystore: Keystore): Promise<void> {
+  async getKeystores(): Promise<Keystore[]> {
     await this.loadKeystores();
-    this.keystores?.push(keystore);
-    await this.saveKeystores();
-  }
-
-  private async findAllKeystores(
-    callback: (keystore: Keystore) => Promise<boolean>
-  ): Promise<Keystore[]> {
-    await this.loadKeystores();
-    return filterAsync(this.keystores || [], callback);
-  }
-
-  async getKeysInFolder(folderUrl: string): Promise<{ [url: string]: string }> {
-    const keys = await this.getKeysAll();
-    return Object.fromEntries(
-      Object.entries(keys).filter(([url]) => url.startsWith(folderUrl))
-    );
-  }
-
-  private async getKeysAll(): Promise<{ [url: string]: string }> {
-    await this.loadKeystores();
-    const promises =
-      this.keystores?.map((keystore) => keystore.getKeysAll()) || [];
-    const keys = (await Promise.all(promises)).reduce((allKeys, keys) => ({
-      ...allKeys,
-      ...keys,
-    }));
-    return keys;
+    return this.keystores!;
   }
 
   /**
-   * Reloads the keystores from the solid pod and stores it in the local storage.
+   * Reloads the keystores from the solid pod and stores it in memory
    */
   async loadKeystores(): Promise<void> {
     try {
@@ -176,6 +110,34 @@ export class KeystoreService {
     );
   }
 
+  async createEmptySharedFolderKeystore(
+    folderUrl: string
+  ): Promise<SharedFolderKeystore> {
+    const keystoreUrl =
+      (await this.getKeystoresFolderUrl()) +
+      this.encryptionService.generateNewKey() +
+      '.shared-keystore';
+    const encryptionKey = this.encryptionService.generateNewKey();
+    const storage =
+      this.keystoreStorageService.createSecureStorage(encryptionKey);
+    const keystore = new SharedFolderKeystore(keystoreUrl, folderUrl, storage);
+    await this.addKeystore(keystore);
+    return keystore;
+  }
+
+  async addKeystore(keystore: Keystore): Promise<void> {
+    await this.loadKeystores();
+    this.keystores?.push(keystore);
+    await this.saveKeystores();
+  }
+
+  async findAllKeystores(
+    callback: (keystore: Keystore) => Promise<boolean>
+  ): Promise<Keystore[]> {
+    await this.loadKeystores();
+    return filterAsync(this.keystores || [], callback);
+  }
+
   /**
    * Check if the keystores folder is set up.
    * If not, create it with appropriate permissions and ask for master password to secure it
@@ -239,42 +201,6 @@ export class KeystoreService {
       throw new KeystoreNotFoundException('No keystore found!');
     }
 
-    return keystore;
-  }
-
-  async getOrCreateSharedFolderKeystore(
-    folderUrl: string
-  ): Promise<{ keystoreUrl: string; encryptionKey: string }> {
-    let keystore = this.keystores?.find((keystore) => {
-      return (
-        keystore instanceof SharedFolderKeystore &&
-        keystore.getFolderUrl() === folderUrl
-      );
-    }) as SharedFolderKeystore | undefined;
-
-    if (!keystore) {
-      keystore = await this.createSharedFolderKeystore(folderUrl);
-    }
-    const keystoreUrl = keystore.getStorageUrl();
-    const encryptionKey = keystore.getStorage().getEncryptionKey();
-
-    return { keystoreUrl, encryptionKey };
-  }
-
-  async createSharedFolderKeystore(
-    folderUrl: string
-  ): Promise<SharedFolderKeystore> {
-    const keystoreUrl =
-      (await this.getKeystoresFolderUrl()) +
-      this.encryptionService.generateNewKey() +
-      '.shared-keystore';
-    const encryptionKey = this.encryptionService.generateNewKey();
-    const storage =
-      this.keystoreStorageService.createSecureStorage(encryptionKey);
-    const keystore = new SharedFolderKeystore(keystoreUrl, folderUrl, storage);
-    const existingKeys = await this.getKeysInFolder(folderUrl);
-    await keystore.addKeys(existingKeys);
-    await this.addKeystore(keystore);
     return keystore;
   }
 

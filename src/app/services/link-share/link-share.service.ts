@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { KeystoreService } from '../encryption/keystore/keystore.service';
 import { SolidFileHandlerService } from '../file-handler/solid-file-handler.service';
 import {
   SolidPermissionService,
@@ -7,13 +6,14 @@ import {
 } from '../solid-permission/solid-permission.service';
 import { SolidGroupService } from '../solid-group/solid-group.service';
 import { SharedByMeService } from '../shared-by-me/shared-by-me.service';
+import { KeyService } from '../encryption/key/key.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LinkShareService {
   constructor(
-    private keystoreService: KeystoreService,
+    private keyService: KeyService,
     private fileService: SolidFileHandlerService,
     private groupService: SolidGroupService,
     private permissionService: SolidPermissionService,
@@ -31,7 +31,7 @@ export class LinkShareService {
     fileUrl: string,
     grantedPermissions: Partial<SolidPermissions>
   ): Promise<string> {
-    const key = await this.keystoreService.getKey(fileUrl);
+    const key = await this.keyService.getKey(fileUrl);
     const encodedKey = btoa(key);
 
     const groupUrl = await this.createSecretAppendableGroup();
@@ -100,7 +100,7 @@ export class LinkShareService {
     hasWritePermissions: boolean
   ): Promise<{ keystoreUrl: string; encryptionKey: string }> {
     const { keystoreUrl, encryptionKey } =
-      await this.keystoreService.getOrCreateSharedFolderKeystore(folderUrl);
+      await this.keyService.getOrCreateSharedFolderKeystore(folderUrl);
     await this.permissionService.setGroupPermissions(keystoreUrl, groupUrl, {
       read: true,
       write: hasWritePermissions,
