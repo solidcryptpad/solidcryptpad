@@ -16,7 +16,6 @@ import { SolidFileHandlerService } from '../../services/file-handler/solid-file-
 import { SharedFileKeystore } from '../../services/encryption/keystore/shared-file-keystore.class';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { SecureRemoteStorage } from '../../services/encryption/keystore/keystore.interface';
-import { KeystoreStorageService } from '../../services/encryption/keystore/keystore-storage.service';
 
 fdescribe('ShareComponent', () => {
   let component: ShareComponent;
@@ -76,10 +75,6 @@ fdescribe('ShareComponent', () => {
     keystoreService = TestBed.inject(
       KeystoreService
     ) as jasmine.SpyObj<KeystoreService>;
-
-    keystoreStorageService = TestBed.inject(
-      KeystoreStorageService
-    ) as jasmine.SpyObj<KeystoreStorageService>;
   });
 
   beforeEach(() => {
