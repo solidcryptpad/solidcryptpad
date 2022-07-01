@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { KeystoreStorageService } from 'src/app/services/encryption/keystore/keystore-storage.service';
 import { KeystoreService } from 'src/app/services/encryption/keystore/keystore.service';
 import { InvalidSharingLinkException } from '../../exceptions/invalid-sharing-link-exception';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 import { SharedFolderKeystore } from '../../services/encryption/keystore/shared-folder-keystore.class';
+import { Observable, throwError } from 'rxjs';
 
 @Component({
   selector: 'app-share',
@@ -23,7 +24,12 @@ export class ShareComponent implements OnInit {
   error = false;
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(async (params) => {
+    const params = this.route.queryParams;
+    this.parseParamsAndCallProcessingMethod(params);
+  }
+
+  parseParamsAndCallProcessingMethod(params: Observable<Params>) {
+    params.subscribe(async (params) => {
       if (params['file']) {
         await this.processShareFile(
           params['file'],
@@ -39,8 +45,11 @@ export class ShareComponent implements OnInit {
         );
       } else {
         this.error = true;
-        throw new InvalidSharingLinkException(
-          'Your link is incomplete or corrupted. Please check with the owner of the file.'
+        throwError(
+          () =>
+            new InvalidSharingLinkException(
+              'Your link is incomplete or corrupted. Please check with the owner of the file.'
+            )
         );
       }
     });

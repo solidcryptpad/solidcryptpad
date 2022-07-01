@@ -1,6 +1,9 @@
 import { FolderKeystore } from './folder-keystore.class';
 import { KeystoreType, SecureRemoteStorage } from './keystore.interface';
 
+/**
+ * Manages all keys of received shared folders
+ */
 export class SharedFolderKeystore extends FolderKeystore {
   static override deserialize(
     serialization: string,
