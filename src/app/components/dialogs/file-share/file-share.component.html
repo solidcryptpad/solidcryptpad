@@ -3,11 +3,13 @@
 <div *ngIf="!this.link">
   <div mat-dialog-content>
     <section [formGroup]="access">
-      <h4>What access should it give?</h4>
+      <h4>What access would you like to grant your collaborators?</h4>
       <p>
         <mat-checkbox formControlName="read">Read</mat-checkbox>
       </p>
-      <p><mat-checkbox formControlName="write">Write</mat-checkbox></p>
+      <p>
+        <mat-checkbox formControlName="write">Write</mat-checkbox>
+      </p>
     </section>
     <p>
       Your collaborators will be able to READ
@@ -31,10 +33,29 @@
       Here is your freshly baked link for sharing the file with your
       collaborators.
     </p>
-    <code>{{ this.link }}</code>
+    <p>
+      Click on the link to copy it to your clipboard or use one of the buttons
+      below.
+    </p>
+    <div
+      style="border: solid #e6964f; border-radius: 10px"
+      (click)="copyLink()"
+    >
+      <small
+        style="
+          width: 450px;
+          word-wrap: break-word;
+          display: inline-block;
+          padding: 3px;
+          color: gray;
+        "
+      >
+        {{ this.link }}
+      </small>
+    </div>
   </div>
   <div mat-dialog-actions>
-    <button mat-button [cdkCopyToClipboard]="link">Copy to clipboard</button>
+    <button mat-button (click)="copyLink()">Copy to clipboard</button>
     <button mat-button (click)="cancel()">Close</button>
   </div>
 </div>

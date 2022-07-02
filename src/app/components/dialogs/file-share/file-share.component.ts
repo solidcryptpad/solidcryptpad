@@ -3,6 +3,8 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormControl } from '@angular/forms';
 import { LinkShareService } from '../../../services/link-share/link-share.service';
 import { throwWithContext } from '../../../exceptions/error-options';
+import { NotificationService } from '../../../services/notification/notification.service';
+import { Clipboard } from '@angular/cdk/clipboard';
 
 @Component({
   selector: 'app-link-share',
@@ -21,6 +23,8 @@ export class FileShareComponent {
     private formBuilder: FormBuilder,
     public dialogRef: MatDialogRef<FileShareComponent>,
     private linkSharingService: LinkShareService,
+    private notificationService: NotificationService,
+    private clipboard: Clipboard,
     @Inject(MAT_DIALOG_DATA) public data: { fileUrl: string }
   ) {}
 
@@ -42,5 +46,15 @@ export class FileShareComponent {
 
   cancel(): void {
     this.dialogRef.close();
+  }
+
+  async copyLink() {
+    if (this.link != null) {
+      this.clipboard.copy(this.link);
+    }
+    this.notificationService.success({
+      title: 'Success!',
+      message: 'Link has been copied to your clipboard.',
+    });
   }
 }
