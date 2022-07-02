@@ -45,7 +45,6 @@ export class SharedByMeService {
 
   async removeLink(link: string) {
     const allSharedByMe = await this.getAllSharedByMe();
-    console.log('all links', allSharedByMe.links);
 
     allSharedByMe.links.splice(
       allSharedByMe.links.findIndex((v: { link: string }) => v.link === link),
