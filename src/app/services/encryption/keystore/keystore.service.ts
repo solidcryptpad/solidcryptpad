@@ -4,7 +4,11 @@ import { EncryptionService } from '../encryption/encryption.service';
 import { MasterPasswordService } from '../master-password/master-password.service';
 import { FolderKeystore } from './folder-keystore.class';
 import { throwWithContext } from 'src/app/exceptions/error-options';
-import { Keystore, KeystoreType } from './keystore.interface';
+import {
+  Keystore,
+  KeystoreType,
+  SecureRemoteStorage,
+} from './keystore.interface';
 import { KeystoreStorageService } from './keystore-storage.service';
 import { SolidFileHandlerService } from '../../file-handler/solid-file-handler.service';
 import { SharedFileKeystore } from './shared-file-keystore.class';
@@ -34,48 +38,14 @@ export class KeystoreService {
   }
 
   /**
-   * Reloads the keystores from the solid pod and stores it in memory
+   * Reload the keystores from the solid pod and stores it in this.keystores
    */
   async loadKeystores(): Promise<void> {
     try {
       await this.ensureKeystoresFolderSetup();
-      const keystoresListUrl = await this.getKeystoresListUrl();
-      const keystoresEncrypted = await this.fileService
-        .readFile(keystoresListUrl)
-        .then((res) => res.text());
-      const masterPassword =
-        await this.masterPasswordService.getMasterPassword();
-      const keystoresJSON = this.encryptionService.decryptString(
-        keystoresEncrypted,
-        masterPassword
-      );
-      const keystoresSerialized: KeystoreSerialization[] =
-        JSON.parse(keystoresJSON);
-      this.keystores = keystoresSerialized.map(
-        ({ type, keystoreSerialized, storageSerialized }) => {
-          const storage =
-            this.keystoreStorageService.deserializeSecureStorage(
-              storageSerialized
-            );
-
-          switch (type) {
-            case 'folder':
-              return FolderKeystore.deserialize(keystoreSerialized, storage);
-
-            case 'sharedFile':
-              return SharedFileKeystore.deserialize(
-                keystoreSerialized,
-                storage
-              );
-
-            case 'sharedFolder':
-              return SharedFolderKeystore.deserialize(
-                keystoreSerialized,
-                storage
-              );
-          }
-        }
-      );
+      const keystoresSerialized = await this.fetchSerializedKeystoresMetadata();
+      this.keystores =
+        this.parseSerializedKeystoresMetadata(keystoresSerialized);
     } catch (error: any) {
       if (error.message == 'Malformed UTF-8 data') {
         this.masterPasswordService.clearMasterPassword();
@@ -88,17 +58,42 @@ export class KeystoreService {
     }
   }
 
-  async saveKeystores(): Promise<void> {
-    if (!this.keystores) return;
-    const keystoresUrl = await this.getKeystoresListUrl();
+  private async fetchSerializedKeystoresMetadata(): Promise<
+    KeystoreSerialization[]
+  > {
     const masterPassword = await this.masterPasswordService.getMasterPassword();
-    const keystoresSerialized: KeystoreSerialization[] = this.keystores.map(
-      (keystore) => ({
-        type: keystore.getKeystoreType(),
-        keystoreSerialized: keystore.serializeMetadata(),
-        storageSerialized: keystore.getStorage().serializeMetadata(),
-      })
+    const keystoresMetadataUrl = await this.getKeystoresMetadataUrl();
+    const keystoresEncrypted = await this.fileService
+      .readFile(keystoresMetadataUrl)
+      .then((res) => res.text());
+    const keystoresJSON = this.encryptionService.decryptString(
+      keystoresEncrypted,
+      masterPassword
     );
+    const keystoresSerialized: KeystoreSerialization[] =
+      JSON.parse(keystoresJSON);
+    return keystoresSerialized;
+  }
+
+  private parseSerializedKeystoresMetadata(
+    serializedMetadata: KeystoreSerialization[]
+  ): Keystore[] {
+    return serializedMetadata.map(
+      ({ type, keystoreSerialized, storageSerialized }) => {
+        const storage =
+          this.keystoreStorageService.deserializeSecureStorage(
+            storageSerialized
+          );
+        return this.deserializeKeystore(keystoreSerialized, type, storage);
+      }
+    );
+  }
+
+  async saveKeystoresMetadata(): Promise<void> {
+    if (!this.keystores) return;
+    const masterPassword = await this.masterPasswordService.getMasterPassword();
+    const keystoresMetadataUrl = await this.getKeystoresMetadataUrl();
+    const keystoresSerialized = this.keystores.map(this.serializeKeystore);
     const keystoresJSON = JSON.stringify(keystoresSerialized);
     const encryptedKeystores = this.encryptionService.encryptString(
       keystoresJSON,
@@ -106,8 +101,33 @@ export class KeystoreService {
     );
     await this.fileService.writeFile(
       new Blob([encryptedKeystores], { type: 'text/plain' }),
-      keystoresUrl
+      keystoresMetadataUrl
     );
+  }
+
+  private serializeKeystore(keystore: Keystore): KeystoreSerialization {
+    return {
+      type: keystore.getKeystoreType(),
+      keystoreSerialized: keystore.serializeMetadata(),
+      storageSerialized: keystore.getStorage().serializeMetadata(),
+    };
+  }
+
+  private deserializeKeystore(
+    keystoreSerialized: string,
+    keystoreType: KeystoreType,
+    storage: SecureRemoteStorage
+  ): Keystore {
+    switch (keystoreType) {
+      case 'folder':
+        return FolderKeystore.deserialize(keystoreSerialized, storage);
+
+      case 'sharedFile':
+        return SharedFileKeystore.deserialize(keystoreSerialized, storage);
+
+      case 'sharedFolder':
+        return SharedFolderKeystore.deserialize(keystoreSerialized, storage);
+    }
   }
 
   async createEmptySharedFolderKeystore(
@@ -128,7 +148,7 @@ export class KeystoreService {
   async addKeystore(keystore: Keystore): Promise<void> {
     await this.loadKeystores();
     this.keystores?.push(keystore);
-    await this.saveKeystores();
+    await this.saveKeystoresMetadata();
   }
 
   async findAllKeystores(
@@ -143,9 +163,9 @@ export class KeystoreService {
    * If not, create it with appropriate permissions and ask for master password to secure it
    */
   private async ensureKeystoresFolderSetup() {
-    const keystoresUrl = await this.getKeystoresListUrl();
+    const keystoresUrl = await this.getKeystoresMetadataUrl();
     if (!(await this.fileService.resourceExists(keystoresUrl))) {
-      await this.setupMasterPassword();
+      await this.masterPasswordService.setupMasterPassword();
       await this.setupKeystoresFolder();
     }
   }
@@ -153,18 +173,6 @@ export class KeystoreService {
   async sharedFilesKeystoreExists() {
     const keystoreUrl = await this.getSharedFilesKeystoreUrl();
     return this.fileService.resourceExists(keystoreUrl);
-  }
-
-  private async setupMasterPassword() {
-    // TODO: shift responsibility to master-password service if possible
-    if (this.masterPasswordService.checkMasterPasswordNotSet()) {
-      const newMasterPassword =
-        await this.masterPasswordService.openSetMasterPasswordDialog();
-      // TODO: what if this is not set?
-      if (newMasterPassword) {
-        await this.masterPasswordService.setMasterPassword(newMasterPassword);
-      }
-    }
   }
 
   private async setupKeystoresFolder() {
@@ -188,7 +196,7 @@ export class KeystoreService {
 
     this.keystores = [ownPodKeystore, sharedFileKeystore];
 
-    await this.saveKeystores();
+    await this.saveKeystoresMetadata();
   }
 
   async getSharedFilesKeystore(): Promise<SharedFileKeystore> {
@@ -211,7 +219,7 @@ export class KeystoreService {
     ) as SharedFolderKeystore[];
   }
 
-  private async getKeystoresListUrl(): Promise<string> {
+  private async getKeystoresMetadataUrl(): Promise<string> {
     return (await this.getKeystoresFolderUrl()) + 'keystores.json.enc';
   }
 

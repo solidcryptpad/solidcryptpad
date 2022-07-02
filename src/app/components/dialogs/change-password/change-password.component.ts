@@ -45,7 +45,7 @@ export class ChangePasswordComponent {
 
     await this.keystoreService.loadKeystores();
     await this.masterPasswordService.setMasterPassword(this.new_password);
-    await this.keystoreService.saveKeystores();
+    await this.keystoreService.saveKeystoresMetadata();
     this.notificationService.success({
       title: 'Password',
       message: 'Password changed successfully',

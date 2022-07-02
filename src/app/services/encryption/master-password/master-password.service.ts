@@ -20,6 +20,15 @@ export class MasterPasswordService {
     private userLocalStorage: UserLocalStorage
   ) {}
 
+  async setupMasterPassword() {
+    if (this.checkMasterPasswordNotSet()) {
+      const newMasterPassword = await this.openSetMasterPasswordDialog();
+      if (newMasterPassword) {
+        await this.setMasterPassword(newMasterPassword);
+      }
+    }
+  }
+
   async setMasterPassword(pwd: string) {
     if (pwd) {
       this.userLocalStorage.setItem(

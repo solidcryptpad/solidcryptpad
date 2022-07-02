@@ -44,7 +44,7 @@ describe('ChangePasswordComponent', () => {
     ]);
     const dialogRef = jasmine.createSpyObj(MatDialogRef, ['close']);
     const keyStoreRef = jasmine.createSpyObj('KeystoreService', [
-      'saveKeystores',
+      'saveKeystoresMetadata',
       'loadKeystores',
     ]);
     await TestBed.configureTestingModule({
@@ -167,7 +167,7 @@ describe('ChangePasswordComponent', () => {
     expect(dialogRefSpy.close).toHaveBeenCalled();
   });
 
-  it('changePassword calls saveKeystores and setMasterPassword', async () => {
+  it('changePassword calls saveKeystoresMetadata and setMasterPassword', async () => {
     component.old_password = 'test';
     component.new_password = 'something';
     component.repeated_password = 'something';
@@ -178,6 +178,6 @@ describe('ChangePasswordComponent', () => {
     await component.changePassword();
 
     expect(masterPasswordRefSpy.setMasterPassword).toHaveBeenCalled();
-    expect(keystoreRefSpy.saveKeystores).toHaveBeenCalled();
+    expect(keystoreRefSpy.saveKeystoresMetadata).toHaveBeenCalled();
   });
 });

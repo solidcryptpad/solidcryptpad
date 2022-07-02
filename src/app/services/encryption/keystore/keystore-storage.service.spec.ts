@@ -63,11 +63,11 @@ describe('KeystoreStorageService', () => {
 
   it('saveSecure forwards to saveKeystore with url, data and encryptionKey', async () => {
     const storage = service.createSecureStorage('encryption key');
-    const saveKeystoreSpy = spyOn<any>(service, 'saveKeystore');
+    const saveKeystoresMetadataSpy = spyOn<any>(service, 'saveKeystore');
 
     await storage.saveSecure('https://example.org', 'some data');
 
-    expect(saveKeystoreSpy).toHaveBeenCalledOnceWith(
+    expect(saveKeystoresMetadataSpy).toHaveBeenCalledOnceWith(
       'https://example.org',
       'some data',
       'encryption key'
