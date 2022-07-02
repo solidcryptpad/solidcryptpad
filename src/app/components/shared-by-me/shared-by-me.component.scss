@@ -1,3 +1,9 @@
+.scroll-container {
+  max-height: 400px;
+  max-width: 100%;
+  overflow: auto;
+}
+
 .mat-row .mat-cell {
   border-bottom: 1px solid transparent;
   border-top: 1px solid transparent;
