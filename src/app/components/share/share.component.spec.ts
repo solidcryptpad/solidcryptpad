@@ -17,7 +17,7 @@ import { SharedFileKeystore } from '../../services/encryption/keystore/shared-fi
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { SecureRemoteStorage } from '../../services/encryption/keystore/keystore.interface';
 
-fdescribe('ShareComponent', () => {
+describe('ShareComponent', () => {
   let component: ShareComponent;
   let fixture: ComponentFixture<ShareComponent>;
   let fileService: jasmine.SpyObj<SolidFileHandlerService>;
