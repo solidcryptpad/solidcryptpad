@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import * as cryptoJS from 'crypto-js';
 import { InvalidContentException } from 'src/app/exceptions/invalid-content';
+import { UnknownException } from 'src/app/exceptions/unknown-exception';
+import { WrongDecriptionKeyException } from 'src/app/exceptions/wrong-decription-key-exception';
 
 @Injectable({
   providedIn: 'root',
@@ -21,11 +23,26 @@ export class EncryptionService {
   }
 
   /**
-   * Careful: If key is wrong then <empty string> is returned, no exception is thrown.
-   * Thanks cryptoJS :-)
+   * If key is wrong, then WrongDecriptionKeyException is thrown.
    */
   decryptString(ciphertext: string, key: string): string {
-    return cryptoJS.AES.decrypt(ciphertext, key).toString(cryptoJS.enc.Utf8);
+    try {
+      const plaintext = cryptoJS.AES.decrypt(ciphertext, key).toString(
+        cryptoJS.enc.Utf8
+      );
+      if (plaintext == '') {
+        throw new WrongDecriptionKeyException('Wrong Decription Key');
+      }
+      return cryptoJS.AES.decrypt(ciphertext, key).toString(cryptoJS.enc.Utf8);
+    } catch (error: any) {
+      if (error.message == 'Malformed UTF-8 data') {
+        throw new WrongDecriptionKeyException('Wrong Decription Key');
+      } else if (error instanceof WrongDecriptionKeyException) {
+        throw error;
+      } else {
+        throw new UnknownException(error.message);
+      }
+    }
   }
 
   /**
@@ -40,8 +57,16 @@ export class EncryptionService {
    * Decrypts a ciphertext of a previously encrypted blob
    */
   async decryptAsBlob(ciphertext: string, key: string): Promise<Blob> {
-    const dataURL = this.decryptString(ciphertext, key);
-    return this.dataURLtoBlob(dataURL);
+    try {
+      const dataURL = this.decryptString(ciphertext, key);
+      return this.dataURLtoBlob(dataURL);
+    } catch (error: any) {
+      if (error.message == 'Malformed UTF-8 data') {
+        throw new WrongDecriptionKeyException('Wrong Decription Key');
+      } else {
+        throw new UnknownException(error.message);
+      }
+    }
   }
 
   private SHA256(data: string): string {

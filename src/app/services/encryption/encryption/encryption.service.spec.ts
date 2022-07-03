@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { InvalidContentException } from 'src/app/exceptions/invalid-content';
+import { WrongDecriptionKeyException } from 'src/app/exceptions/wrong-decription-key-exception';
 
 import { EncryptionService } from './encryption.service';
 
@@ -31,10 +32,11 @@ describe('EncryptionService', () => {
     expect(plaintext).toBe(sampleMessage);
   });
 
-  it('decrypt returns an empty string when using a wrong key', () => {
+  it('decrypt throws WrongDecriptionKeyException when using a wrong key', () => {
     const ciphertext = service.encryptString(sampleMessage, sampleKey);
-    const plaintext = service.decryptString(ciphertext, 'wrong key?');
-    expect(plaintext).toBe('');
+    expect(() => service.decryptString(ciphertext, 'wrong key?')).toThrowError(
+      WrongDecriptionKeyException
+    );
   });
 
   it('can decrypt an encrypted blob', async () => {

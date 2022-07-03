@@ -14,6 +14,7 @@ import { SharedFileKeystore } from './shared-file-keystore.class';
 import { KeystoreNotFoundException } from '../../../exceptions/keystore-not-found-exception';
 import { SharedFolderKeystore } from './shared-folder-keystore.class';
 import { DirectoryStructureService } from '../../directory-structure/directory-structure.service';
+import { WrongDecriptionKeyException } from 'src/app/exceptions/wrong-decription-key-exception';
 
 @Injectable({
   providedIn: 'root',
@@ -44,7 +45,7 @@ export class KeystoreService {
       this.keystores =
         this.parseSerializedKeystoresMetadata(keystoresSerialized);
     } catch (error: any) {
-      if (error.message == 'Malformed UTF-8 data') {
+      if (error instanceof WrongDecriptionKeyException) {
         this.masterPasswordService.clearMasterPassword();
         await this.loadKeystores();
       } else {
