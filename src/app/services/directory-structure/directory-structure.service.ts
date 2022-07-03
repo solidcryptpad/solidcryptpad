@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { UnknownException } from 'src/app/exceptions/unknown-exception';
 import { ProfileService } from '../profile/profile.service';
 
 @Injectable({
@@ -61,5 +62,25 @@ export class DirectoryStructureService {
 
   isInEncryptedDirectory(url: string) {
     return this.encryptedDirectories.some((path) => url.includes(`/${path}`));
+  }
+
+  isKeystoreForResource(keystoreUrl: string, resourceUrl: string): boolean {
+    const root = this.getRootFromResource(resourceUrl);
+    const expectedKeystoreFolder = root + this.dirKeystores;
+    return keystoreUrl.startsWith(expectedKeystoreFolder);
+  }
+
+  getRootFromResource(resourceUrl: string): string {
+    const encryptedDir = this.encryptedDirectories.find((dir) =>
+      resourceUrl.includes(`/${dir}`)
+    );
+    if (!encryptedDir) {
+      throw new UnknownException(
+        `Expected ${resourceUrl} to be stored with solidcryptpad, but it wasn't`
+      );
+    }
+    return (
+      resourceUrl.substring(0, resourceUrl.indexOf(`/${encryptedDir}`)) + '/'
+    );
   }
 }

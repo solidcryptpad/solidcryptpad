@@ -6,6 +6,8 @@ import {
   KeystoreType,
   SecureRemoteStorage,
 } from './keystore.interface';
+import { DirectoryStructureService } from '../../directory-structure/directory-structure.service';
+import { InvalidKeystoreException } from 'src/app/exceptions/invalid-keystore';
 
 /**
  * Manages all keys of a folder and its contents
@@ -21,19 +23,39 @@ export class FolderKeystore implements Keystore {
   constructor(
     private keystoreUrl: string,
     private folderRoot: string,
-    private storage: SecureRemoteStorage
+    private storage: SecureRemoteStorage,
+    private directoryService: DirectoryStructureService
   ) {}
 
   handlesKeyForUrl(url: string) {
+    // prevent that a keystore provides keys for other pods
+    if (!this.directoryService.isKeystoreForResource(this.keystoreUrl, url)) {
+      return Promise.resolve(false);
+    }
+
     return Promise.resolve(url.startsWith(this.folderRoot));
   }
 
   async getKey(url: string) {
+    // explicitly checking, because we don't trust the keystore and want to prevent, that it provides keys for other pods
+    if (!this.directoryService.isKeystoreForResource(this.keystoreUrl, url)) {
+      throw new KeyNotFoundException(
+        `Keystore ${this.keystoreUrl} does not manage keys for ${url}`
+      );
+    }
     return this.getCachedKey(url) ?? this.getRemoteKey(url);
   }
 
   async getKeysAll() {
     await this.loadKeys();
+    // prevent that attacker can provide keys for other pods
+    for (const url of Object.keys(this.keys)) {
+      if (!this.directoryService.isKeystoreForResource(this.keystoreUrl, url)) {
+        throw new InvalidKeystoreException(
+          `The keystore ${this.keystoreUrl} contains a key which should not be there: ${url}`
+        );
+      }
+    }
     return { ...this.keys };
   }
 
@@ -109,10 +131,11 @@ export class FolderKeystore implements Keystore {
 
   static deserialize(
     serialization: string,
-    storage: SecureRemoteStorage
+    storage: SecureRemoteStorage,
+    directoryService: DirectoryStructureService
   ): FolderKeystore {
     const data = JSON.parse(serialization);
-    return new FolderKeystore(data.url, data.root, storage);
+    return new FolderKeystore(data.url, data.root, storage, directoryService);
   }
 }
 
