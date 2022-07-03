@@ -100,7 +100,7 @@ export class LinkShareService {
     hasWritePermissions: boolean
   ): Promise<{ keystoreUrl: string; encryptionKey: string }> {
     const { keystoreUrl, encryptionKey } =
-      await this.keyService.getOrCreateSharedFolderKeystore(folderUrl);
+      await this.keyService.getOrCreateFolderKeystore(folderUrl);
     await this.permissionService.setGroupPermissions(keystoreUrl, groupUrl, {
       read: true,
       write: hasWritePermissions,

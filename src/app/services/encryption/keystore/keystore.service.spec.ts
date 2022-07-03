@@ -12,6 +12,7 @@ import { EncryptionService } from '../encryption/encryption.service';
 import { KeystoreStorageService } from './keystore-storage.service';
 import { SharedFolderKeystore } from './shared-folder-keystore.class';
 import { DirectoryStructureService } from '../../directory-structure/directory-structure.service';
+import { FolderKeystore } from './folder-keystore.class';
 
 describe('KeystoreService', () => {
   let service: KeystoreService;
@@ -146,7 +147,7 @@ describe('KeystoreService', () => {
     );
   });
 
-  it('createEmptySharedFolderKeystore creates shared folder keystore', async () => {
+  it('createEmptyFolderKeystore creates folder keystore', async () => {
     const fakeNewKey = 'newKey';
     const fakeKeystoreUrl =
       fakePodUrl + keystoresFolderPath + fakeNewKey + '.shared-keystore';
@@ -156,9 +157,9 @@ describe('KeystoreService', () => {
     keystoreStorageServiceSpy.createSecureStorage.and.returnValue(storage);
     spyOn(service, 'loadKeystores').and.resolveTo();
 
-    const ks = new SharedFolderKeystore(fakeKeystoreUrl, 'root', storage);
+    const ks = new FolderKeystore(fakeKeystoreUrl, 'root', storage);
 
-    expect(await service.createEmptySharedFolderKeystore('root')).toEqual(ks);
+    expect(await service.createEmptyFolderKeystore('root')).toEqual(ks);
   });
 
   it('findAllKeystores returns all keystores', () => {

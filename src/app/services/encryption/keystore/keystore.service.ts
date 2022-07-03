@@ -127,9 +127,7 @@ export class KeystoreService {
     }
   }
 
-  async createEmptySharedFolderKeystore(
-    folderUrl: string
-  ): Promise<SharedFolderKeystore> {
+  async createEmptyFolderKeystore(folderUrl: string): Promise<FolderKeystore> {
     const keystoreUrl =
       (await this.getKeystoresFolderUrl()) +
       this.encryptionService.generateNewKey() +
@@ -137,7 +135,7 @@ export class KeystoreService {
     const encryptionKey = this.encryptionService.generateNewKey();
     const storage =
       this.keystoreStorageService.createSecureStorage(encryptionKey);
-    const keystore = new SharedFolderKeystore(keystoreUrl, folderUrl, storage);
+    const keystore = new FolderKeystore(keystoreUrl, folderUrl, storage);
     await this.addKeystore(keystore);
     return keystore;
   }

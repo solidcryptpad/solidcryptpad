@@ -15,8 +15,8 @@ describe('KeyService', () => {
 
   const createKeystoreSpy = () =>
     jasmine.createSpyObj('Keystore', ['getKey', 'addKey']);
-  const createSharedFolderKeystoreSpy = () =>
-    jasmine.createSpyObj('SharedFolderKeystore', [
+  const createFolderKeystoreSpy = () =>
+    jasmine.createSpyObj('FolderKeystore', [
       'getKey',
       'addKey',
       'addKeys',
@@ -35,7 +35,7 @@ describe('KeyService', () => {
     const keystoreSpy = jasmine.createSpyObj('KeystoreService', [
       'findAllKeystores',
       'getKey',
-      'createEmptySharedFolderKeystore',
+      'createEmptyFolderKeystore',
       'getKeystores',
     ]);
     const encryptionSpy = jasmine.createSpyObj('EncryptionService', [
@@ -97,40 +97,40 @@ describe('KeyService', () => {
     expect(await service.getOrCreateKey('nonExistent.com')).toBe('newKey');
   });
 
-  it('getOrCreateSharedFolderKeystore with existing keystore returns keystore', async () => {
-    const sharedFolderKeystore = createSharedFolderKeystoreSpy();
-    sharedFolderKeystore.getFolderUrl.and.returnValue('example.org/folder/');
-    sharedFolderKeystore.getStorageUrl.and.returnValue('example.org/keystore');
-    sharedFolderKeystore.getStorage.and.returnValue(storage);
+  it('getOrCreateFolderKeystore with existing keystore returns keystore', async () => {
+    const folderKeystoreSpy = createFolderKeystoreSpy();
+    folderKeystoreSpy.getFolderUrl.and.returnValue('example.org/folder/');
+    folderKeystoreSpy.getStorageUrl.and.returnValue('example.org/keystore');
+    folderKeystoreSpy.getStorage.and.returnValue(storage);
     storage.getEncryptionKey.and.returnValue('key');
-    keystoreServiceSpy.findAllKeystores.and.resolveTo([sharedFolderKeystore]);
+    keystoreServiceSpy.findAllKeystores.and.resolveTo([folderKeystoreSpy]);
 
     expect(
-      await service.getOrCreateSharedFolderKeystore('example.org/folder/')
+      await service.getOrCreateFolderKeystore('example.org/folder/')
     ).toEqual({
       keystoreUrl: 'example.org/keystore',
       encryptionKey: 'key',
     });
   });
 
-  it('getOrCreateSharedFolderKeystore with not existing keystore returns new keystore', async () => {
-    const sharedFolderKeystore = createSharedFolderKeystoreSpy();
-    sharedFolderKeystore.getFolderUrl.and.returnValue('example.org/folder/');
-    sharedFolderKeystore.getStorageUrl.and.returnValue('example.org/keystore');
-    sharedFolderKeystore.getStorage.and.returnValue(storage);
-    sharedFolderKeystore.getKeysAll.and.resolveTo({});
+  it('getOrCreateFolderKeystore with not existing keystore returns new keystore', async () => {
+    const folderKeystoreSpy = createFolderKeystoreSpy();
+    folderKeystoreSpy.getFolderUrl.and.returnValue('example.org/folder/');
+    folderKeystoreSpy.getStorageUrl.and.returnValue('example.org/keystore');
+    folderKeystoreSpy.getStorage.and.returnValue(storage);
+    folderKeystoreSpy.getKeysAll.and.resolveTo({});
     storage.getEncryptionKey.and.returnValue('key');
 
     keystoreServiceSpy.findAllKeystores.and.resolveTo([]);
-    keystoreServiceSpy.getKeystores.and.resolveTo([sharedFolderKeystore]);
-    keystoreServiceSpy.createEmptySharedFolderKeystore
+    keystoreServiceSpy.getKeystores.and.resolveTo([folderKeystoreSpy]);
+    keystoreServiceSpy.createEmptyFolderKeystore
       .withArgs('example.org/folder/')
-      .and.resolveTo(sharedFolderKeystore);
+      .and.resolveTo(folderKeystoreSpy);
 
-    await service.getOrCreateSharedFolderKeystore('example.org/folder/');
+    await service.getOrCreateFolderKeystore('example.org/folder/');
 
     expect(
-      await keystoreServiceSpy.createEmptySharedFolderKeystore
+      await keystoreServiceSpy.createEmptyFolderKeystore
     ).toHaveBeenCalledWith('example.org/folder/');
   });
 });

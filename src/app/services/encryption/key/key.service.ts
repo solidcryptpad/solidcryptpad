@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { KeyNotFoundException } from 'src/app/exceptions/key-not-found-exception';
 import { EncryptionService } from '../encryption/encryption.service';
+import { FolderKeystore } from '../keystore/folder-keystore.class';
 import { KeystoreService } from '../keystore/keystore.service';
-import { SharedFolderKeystore } from '../keystore/shared-folder-keystore.class';
 
 @Injectable({
   providedIn: 'root',
@@ -53,21 +53,21 @@ export class KeyService {
   }
 
   /**
-   * Create a shared folder keystore if it does not exist.
+   * Create a folder keystore if it does not exist.
    * Then return metadata for this keystore.
    */
-  async getOrCreateSharedFolderKeystore(
+  async getOrCreateFolderKeystore(
     folderUrl: string
   ): Promise<{ keystoreUrl: string; encryptionKey: string }> {
     const keystores = (await this.keystoreService.findAllKeystores((keystore) =>
       Promise.resolve(
-        keystore instanceof SharedFolderKeystore &&
+        keystore instanceof FolderKeystore &&
           keystore.getFolderUrl() === folderUrl
       )
-    )) as SharedFolderKeystore[];
+    )) as FolderKeystore[];
 
     if (!keystores.length) {
-      keystores.push(await this.createSharedFolderKeystore(folderUrl));
+      keystores.push(await this.createFolderKeystore(folderUrl));
     }
     const keystoreUrl = keystores[0].getStorageUrl();
     const encryptionKey = keystores[0].getStorage().getEncryptionKey();
@@ -76,12 +76,12 @@ export class KeyService {
   }
 
   /**
-   * Create a shared folder keystore and initialize with existing keys in this folder
+   * Create a folder keystore and initialize with existing keys in this folder
    */
-  private async createSharedFolderKeystore(
+  private async createFolderKeystore(
     folderUrl: string
-  ): Promise<SharedFolderKeystore> {
-    const keystore = await this.keystoreService.createEmptySharedFolderKeystore(
+  ): Promise<FolderKeystore> {
+    const keystore = await this.keystoreService.createEmptyFolderKeystore(
       folderUrl
     );
     const existingKeys = await this.getKeysInFolder(folderUrl);

@@ -53,7 +53,7 @@ describe('LinkShareService', () => {
 
     const keySpy = jasmine.createSpyObj('KeyService', [
       'getKey',
-      'getOrCreateSharedFolderKeystore',
+      'getOrCreateFolderKeystore',
     ]);
     const groupSpy = jasmine.createSpyObj('GroupService', [
       'createNewRandomGroup',
@@ -138,7 +138,7 @@ describe('LinkShareService', () => {
 
     groupServiceSpy.createNewRandomGroup.and.resolveTo('the group');
 
-    keyServiceSpy.getOrCreateSharedFolderKeystore.and.resolveTo({
+    keyServiceSpy.getOrCreateFolderKeystore.and.resolveTo({
       keystoreUrl: 'keystore.url',
       encryptionKey: 'key',
     });
