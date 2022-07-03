@@ -44,6 +44,15 @@ Cypress.Commands.add('openNewFileInEditor', (fileUrl) => {
   cy.contains(fileUrl, { timeout: 30000 });
 });
 
+Cypress.Commands.add('openFileInPreview', (fileUrl) => {
+  cy.visit('/preview', {
+    qs: {
+      url: fileUrl,
+    },
+  });
+  cy.contains(fileUrl, { timeout: 30000 });
+});
+
 Cypress.Commands.add('openFileInEditor', (fileUrl) => {
   cy.visit('/editor', {
     qs: {

@@ -82,6 +82,7 @@ declare global {
         content: Blob
       ): Chainable<void>;
 
+      openFileInPreview(fileUrl: string): Chainable<void>;
       openFileInEditor(fileUrl: string): Chainable<void>;
       openNewFileInEditor(fileUrl: string): Chainable<void>;
 
