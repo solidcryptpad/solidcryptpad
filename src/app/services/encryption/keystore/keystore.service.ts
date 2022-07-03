@@ -117,13 +117,21 @@ export class KeystoreService {
   ): Keystore {
     switch (keystoreType) {
       case 'folder':
-        return FolderKeystore.deserialize(keystoreSerialized, storage);
+        return FolderKeystore.deserialize(
+          keystoreSerialized,
+          storage,
+          this.directoryService
+        );
 
       case 'sharedFile':
         return SharedFileKeystore.deserialize(keystoreSerialized, storage);
 
       case 'sharedFolder':
-        return SharedFolderKeystore.deserialize(keystoreSerialized, storage);
+        return SharedFolderKeystore.deserialize(
+          keystoreSerialized,
+          storage,
+          this.directoryService
+        );
     }
   }
 
@@ -137,7 +145,12 @@ export class KeystoreService {
     const encryptionKey = this.encryptionService.generateNewKey();
     const storage =
       this.keystoreStorageService.createSecureStorage(encryptionKey);
-    const keystore = new SharedFolderKeystore(keystoreUrl, folderUrl, storage);
+    const keystore = new SharedFolderKeystore(
+      keystoreUrl,
+      folderUrl,
+      storage,
+      this.directoryService
+    );
     await this.addKeystore(keystore);
     return keystore;
   }
@@ -181,7 +194,8 @@ export class KeystoreService {
     const ownPodKeystore = new FolderKeystore(
       keystoresFolder + 'root.json.enc',
       rootDirectory,
-      this.keystoreStorageService.createSecureStorage(encryptionKeyForFolders)
+      this.keystoreStorageService.createSecureStorage(encryptionKeyForFolders),
+      this.directoryService
     );
 
     const sharedFileKeystore = new SharedFileKeystore(

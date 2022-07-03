@@ -156,14 +156,24 @@ describe('KeystoreService', () => {
     keystoreStorageServiceSpy.createSecureStorage.and.returnValue(storage);
     spyOn(service, 'loadKeystores').and.resolveTo();
 
-    const ks = new SharedFolderKeystore(fakeKeystoreUrl, 'root', storage);
+    const ks = new SharedFolderKeystore(
+      fakeKeystoreUrl,
+      'root',
+      storage,
+      directoryServiceSpy
+    );
 
     expect(await service.createEmptySharedFolderKeystore('root')).toEqual(ks);
   });
 
   it('findAllKeystores returns all keystores', () => {
     const ks = new SharedFileKeystore(storage, 'keystore.url');
-    const ks2 = new SharedFolderKeystore('keystore.url', 'root', storage);
+    const ks2 = new SharedFolderKeystore(
+      'keystore.url',
+      'root',
+      storage,
+      directoryServiceSpy
+    );
     keystores = [ks, ks2];
     service['keystores'] = keystores;
 
@@ -191,7 +201,12 @@ describe('KeystoreService', () => {
 
   it('getSharedFilesKeystore returns sharedFilesKeystore', async () => {
     const ks = new SharedFileKeystore(storage, 'keystore.url');
-    const ks2 = new SharedFolderKeystore('keystore.url', 'root', storage);
+    const ks2 = new SharedFolderKeystore(
+      'keystore.url',
+      'root',
+      storage,
+      directoryServiceSpy
+    );
 
     keystores = [ks, ks2];
     service['keystores'] = keystores;
@@ -203,8 +218,18 @@ describe('KeystoreService', () => {
 
   it('getSharedFolderKeystores returns sharedFolderKeystores', async () => {
     const ks = new SharedFileKeystore(storage, 'keystore.url');
-    const ks2 = new SharedFolderKeystore('keystore2.url', 'root', storage);
-    const ks3 = new SharedFolderKeystore('keystore3.url', 'root2', storage);
+    const ks2 = new SharedFolderKeystore(
+      'keystore2.url',
+      'root',
+      storage,
+      directoryServiceSpy
+    );
+    const ks3 = new SharedFolderKeystore(
+      'keystore3.url',
+      'root2',
+      storage,
+      directoryServiceSpy
+    );
 
     keystores = [ks, ks2, ks3];
     service['keystores'] = keystores;

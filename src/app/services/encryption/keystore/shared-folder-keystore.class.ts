@@ -1,3 +1,4 @@
+import { DirectoryStructureService } from '../../directory-structure/directory-structure.service';
 import { FolderKeystore } from './folder-keystore.class';
 import { KeystoreType, SecureRemoteStorage } from './keystore.interface';
 
@@ -7,10 +8,16 @@ import { KeystoreType, SecureRemoteStorage } from './keystore.interface';
 export class SharedFolderKeystore extends FolderKeystore {
   static override deserialize(
     serialization: string,
-    storage: SecureRemoteStorage
+    storage: SecureRemoteStorage,
+    directoryService: DirectoryStructureService
   ): SharedFolderKeystore {
     const data = JSON.parse(serialization);
-    return new SharedFolderKeystore(data.url, data.root, storage);
+    return new SharedFolderKeystore(
+      data.url,
+      data.root,
+      storage,
+      directoryService
+    );
   }
 
   override getKeystoreType(): KeystoreType {
