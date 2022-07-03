@@ -1,9 +1,11 @@
+import { DirectoryStructureService } from '../../directory-structure/directory-structure.service';
 import { SecureRemoteStorage } from './keystore.interface';
 import { SharedFolderKeystore } from './shared-folder-keystore.class';
 
 describe('SharedFolderKeystore', () => {
   let storage: jasmine.SpyObj<SecureRemoteStorage>;
   let keystore: SharedFolderKeystore;
+  let directoryServiceSpy: jasmine.SpyObj<DirectoryStructureService>;
 
   const exampleFolderUrl = 'https://example.org/folder/';
   const exampleKeystoreUrl = 'https://example.org/keystores/.keystore';
@@ -13,11 +15,15 @@ describe('SharedFolderKeystore', () => {
       'loadSecure',
       'saveSecure',
     ]);
+    directoryServiceSpy = jasmine.createSpyObj('DirectoryServiceSpy', [
+      'isKeystoreForResource',
+    ]);
 
     keystore = new SharedFolderKeystore(
       exampleKeystoreUrl,
       exampleFolderUrl,
-      storage
+      storage,
+      directoryServiceSpy
     );
   });
 
@@ -25,7 +31,8 @@ describe('SharedFolderKeystore', () => {
     const keystore = new SharedFolderKeystore(
       exampleKeystoreUrl,
       exampleFolderUrl,
-      storage
+      storage,
+      directoryServiceSpy
     );
 
     expect(keystore).toBeTruthy();
@@ -39,8 +46,12 @@ describe('SharedFolderKeystore', () => {
     const storage = keystore.getStorage();
     const serialization = keystore.serializeMetadata();
 
-    expect(SharedFolderKeystore.deserialize(serialization, storage)).toEqual(
-      keystore
-    );
+    expect(
+      SharedFolderKeystore.deserialize(
+        serialization,
+        storage,
+        directoryServiceSpy
+      )
+    ).toEqual(keystore);
   });
 });

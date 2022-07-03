@@ -6,6 +6,7 @@ import { InvalidSharingLinkException } from '../../exceptions/invalid-sharing-li
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 import { SharedFolderKeystore } from '../../services/encryption/keystore/shared-folder-keystore.class';
 import { Observable, throwError } from 'rxjs';
+import { DirectoryStructureService } from 'src/app/services/directory-structure/directory-structure.service';
 
 @Component({
   selector: 'app-share',
@@ -18,7 +19,8 @@ export class ShareComponent implements OnInit {
     private router: Router,
     private fileService: SolidFileHandlerService,
     private keystoreService: KeystoreService,
-    private keystoreStorageService: KeystoreStorageService
+    private keystoreStorageService: KeystoreStorageService,
+    private directoryService: DirectoryStructureService
   ) {}
 
   error = false;
@@ -77,7 +79,12 @@ export class ShareComponent implements OnInit {
       keystoreEncryptionKey
     );
     await this.keystoreService.addKeystore(
-      new SharedFolderKeystore(keystoreUrl, folderUrl, storage)
+      new SharedFolderKeystore(
+        keystoreUrl,
+        folderUrl,
+        storage,
+        this.directoryService
+      )
     );
 
     await this.router.navigate(['files'], {
