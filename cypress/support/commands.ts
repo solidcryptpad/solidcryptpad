@@ -53,6 +53,13 @@ Cypress.Commands.add('openFileInEditor', (fileUrl) => {
   cy.contains(fileUrl, { timeout: 30000 });
 });
 
+Cypress.Commands.add('getSharingLink', () => {
+  cy.get('[data-cy=sharing-link]').then((el) => {
+    const link = el.contents().text().trim();
+    return cy.wrap(link);
+  });
+});
+
 Cypress.Commands.add(
   'createRandomAccount',
   function (): Cypress.Chainable<UserConfig> {

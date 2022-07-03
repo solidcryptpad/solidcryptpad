@@ -10,6 +10,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ReactiveFormsModule } from '@angular/forms';
 import { LinkShareService } from 'src/app/services/link-share/link-share.service';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { NotificationService } from 'src/app/services/notification/notification.service';
 
 describe('FolderShareComponent', () => {
   let component: FolderShareComponent;
@@ -20,6 +21,9 @@ describe('FolderShareComponent', () => {
   beforeEach(async () => {
     const linkShareSpy = jasmine.createSpyObj('LinkShareService', [
       'createFolderSharingLink',
+    ]);
+    const notificationSpy = jasmine.createSpyObj('NotificationService', [
+      'success',
     ]);
     const dialogRef = jasmine.createSpyObj(MatDialogRef, ['close']);
 
@@ -35,6 +39,7 @@ describe('FolderShareComponent', () => {
         { provide: MatDialogRef, useValue: dialogRef },
         { provide: MAT_DIALOG_DATA, useValue: {} },
         { provide: LinkShareService, useValue: linkShareSpy },
+        { provide: NotificationService, useValue: notificationSpy },
       ],
     }).compileComponents();
   });

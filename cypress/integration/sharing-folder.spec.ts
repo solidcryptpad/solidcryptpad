@@ -23,9 +23,7 @@ describe('Folder sharing', function () {
     cy.contains('Create Link').click();
     cy.contains('freshly baked');
 
-    cy.get('code')
-      .then((el) => cy.wrap(el.contents().text()))
-      .as('link');
+    cy.getSharingLink().as('link');
 
     // opening link as other user
     cy.loginMocked(this.friend);
@@ -67,9 +65,7 @@ describe('Folder sharing', function () {
     cy.contains('Create Link').click();
     cy.contains('freshly baked');
 
-    cy.get('code')
-      .then((el) => cy.wrap(el.contents().text()))
-      .as('link');
+    cy.getSharingLink().as('link');
 
     // opening link as other user
     cy.loginMocked(this.friend);
@@ -99,9 +95,7 @@ describe('Folder sharing', function () {
     cy.wait(1000); // creating link sometimes takes longer on certain machines
     cy.contains('freshly baked');
 
-    cy.get('code')
-      .then((el) => cy.wrap(el.contents().text()))
-      .as('link');
+    cy.getSharingLink().as('link');
 
     // opening link as other user
     cy.loginMocked(this.friend);

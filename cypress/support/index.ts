@@ -84,6 +84,9 @@ declare global {
 
       openFileInEditor(fileUrl: string): Chainable<void>;
       openNewFileInEditor(fileUrl: string): Chainable<void>;
+
+      /** Get sharing link from dialog */
+      getSharingLink(): Chainable<string>;
     }
   }
   interface Window {

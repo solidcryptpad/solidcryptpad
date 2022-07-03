@@ -41,12 +41,7 @@ describe('File sharing', function () {
     cy.contains('freshly baked');
 
     // save link for later
-    cy.get('code')
-      .then((el) => {
-        const link = el.contents().text();
-        return cy.wrap(link);
-      })
-      .as('link');
+    cy.getSharingLink().as('link');
 
     // Use shared link
     cy.loginMocked(this.friend);
