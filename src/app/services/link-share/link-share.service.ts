@@ -109,6 +109,8 @@ export class LinkShareService {
   }
 
   private async createSecretAppendableGroup(): Promise<string> {
+    // we use a random group file, so nobody can read it without knowing the file name
+    // it must have read permissions, so the server itself is allowed to read it for checking ACL permissions
     const groupFileUrl = await this.groupService.createNewRandomGroup();
     await this.permissionService.setPublicPermissions(groupFileUrl, {
       read: true,
