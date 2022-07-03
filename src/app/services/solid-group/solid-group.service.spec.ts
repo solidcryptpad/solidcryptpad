@@ -1,15 +1,14 @@
 import { TestBed } from '@angular/core/testing';
+import { DirectoryStructureService } from '../directory-structure/directory-structure.service';
 import { EncryptionService } from '../encryption/encryption/encryption.service';
 import { SolidFileHandlerService } from '../file-handler/solid-file-handler.service';
-import { ProfileService } from '../profile/profile.service';
-
 import { SolidGroupService } from './solid-group.service';
 
 describe('SolidGroupService', () => {
   let service: SolidGroupService;
   let encryptionServiceSpy: jasmine.SpyObj<EncryptionService>;
   let fileServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
-  let profileServiceSpy: jasmine.SpyObj<ProfileService>;
+  let directoryServiceSpy: jasmine.SpyObj<DirectoryStructureService>;
 
   const sampleGroupFileUrl = 'https://example.org/groups/group.ttl';
 
@@ -18,12 +17,14 @@ describe('SolidGroupService', () => {
       'generateNewKey',
     ]);
     const fileSpy = jasmine.createSpyObj('FileService', ['writeFile']);
-    const profileSpy = jasmine.createSpyObj('ProfileService', ['getPodUrl']);
+    const directorySpy = jasmine.createSpyObj('DirectoryStructureService', [
+      'getGroupsDirectory',
+    ]);
     TestBed.configureTestingModule({
       providers: [
         { provide: EncryptionService, useValue: encryptionSpy },
         { provide: SolidFileHandlerService, useValue: fileSpy },
-        { provide: ProfileService, useValue: profileSpy },
+        { provide: DirectoryStructureService, useValue: directorySpy },
       ],
     });
     service = TestBed.inject(SolidGroupService);
@@ -33,9 +34,9 @@ describe('SolidGroupService', () => {
     fileServiceSpy = TestBed.inject(
       SolidFileHandlerService
     ) as jasmine.SpyObj<SolidFileHandlerService>;
-    profileServiceSpy = TestBed.inject(
-      ProfileService
-    ) as jasmine.SpyObj<ProfileService>;
+    directoryServiceSpy = TestBed.inject(
+      DirectoryStructureService
+    ) as jasmine.SpyObj<DirectoryStructureService>;
   });
 
   it('should be created', () => {
@@ -68,7 +69,9 @@ describe('SolidGroupService', () => {
 
   it('generateSecretGroupFileUrl uses a random key for the url', async () => {
     encryptionServiceSpy.generateNewKey.and.returnValue('random key');
-    profileServiceSpy.getPodUrl.and.resolveTo('https://example.org/');
+    directoryServiceSpy.getGroupsDirectory.and.resolveTo(
+      'https://example.org/groups/'
+    );
 
     const secretGroupFileUrl = await service.generateSecretGroupFileUrl();
 

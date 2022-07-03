@@ -3,16 +3,16 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TextEditorComponent } from './text-editor.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MatDialogModule } from '@angular/material/dialog';
-import { ProfileService } from 'src/app/services/profile/profile.service';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
 import { SolidAuthenticationService } from '../../services/authentication/solid-authentication.service';
 import { NotificationService } from 'src/app/services/notification/notification.service';
 import { KeyService } from 'src/app/services/encryption/key/key.service';
+import { DirectoryStructureService } from 'src/app/services/directory-structure/directory-structure.service';
 
 describe('TextEditorComponent', () => {
   let component: TextEditorComponent;
   let fixture: ComponentFixture<TextEditorComponent>;
-  let profileServiceSpy: jasmine.SpyObj<ProfileService>;
+  let directoryServiceSpy: jasmine.SpyObj<DirectoryStructureService>;
   let fileServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
   let notificationServiceSpy: jasmine.SpyObj<NotificationService>;
   let keyServiceSpy: jasmine.SpyObj<KeyService>;
@@ -22,9 +22,10 @@ describe('TextEditorComponent', () => {
       'SolidAuthenticationService',
       ['getWebId']
     );
-    const profileServiceSpyObj = jasmine.createSpyObj('ProfileServiceSpy', [
-      'getPodUrl',
-    ]);
+    const directoryServiceSpyObj = jasmine.createSpyObj(
+      'DirectoryStructureService',
+      ['getRootDirectory']
+    );
     const fileServiceSpyObj = jasmine.createSpyObj(
       'SolidFileHandlerServiceSpy',
       ['writeAndEncryptFile', 'readAndDecryptFile']
@@ -40,8 +41,8 @@ describe('TextEditorComponent', () => {
       declarations: [TextEditorComponent],
       providers: [
         {
-          provide: ProfileService,
-          useValue: profileServiceSpyObj,
+          provide: DirectoryStructureService,
+          useValue: directoryServiceSpyObj,
         },
         {
           provide: SolidFileHandlerService,
@@ -56,9 +57,9 @@ describe('TextEditorComponent', () => {
       ],
     }).compileComponents();
 
-    profileServiceSpy = TestBed.inject(
-      ProfileService
-    ) as jasmine.SpyObj<ProfileService>;
+    directoryServiceSpy = TestBed.inject(
+      DirectoryStructureService
+    ) as jasmine.SpyObj<DirectoryStructureService>;
     // eslint-disable-next-line unused-imports/no-unused-vars
     fileServiceSpy = TestBed.inject(
       SolidFileHandlerService
@@ -71,7 +72,9 @@ describe('TextEditorComponent', () => {
   });
 
   beforeEach(() => {
-    profileServiceSpy.getPodUrl.and.resolveTo('https://example.org/pod/');
+    directoryServiceSpy.getRootDirectory.and.resolveTo(
+      'https://example.org/pod/'
+    );
 
     fixture = TestBed.createComponent(TextEditorComponent);
     component = fixture.componentInstance;

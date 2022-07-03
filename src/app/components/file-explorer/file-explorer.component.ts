@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
-import { ProfileService } from 'src/app/services/profile/profile.service';
 import { FormControl } from '@angular/forms';
+import { DirectoryStructureService } from 'src/app/services/directory-structure/directory-structure.service';
 
 @Component({
   selector: 'app-file-explorer',
@@ -18,16 +17,14 @@ export class FileExplorerComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private fileEncryptionService: FileEncryptionService,
-    private profileService: ProfileService
+    private directoryService: DirectoryStructureService
   ) {}
   async ngOnInit(): Promise<void> {
     this.route.queryParams.subscribe(async (params) => {
       this.currentUrl = params['url'];
       if (!this.currentUrl) {
-        const baseUrl = await this.profileService.getPodUrl();
         this.currentUrl =
-          this.fileEncryptionService.getDefaultCryptoDirectoryUrl(baseUrl);
+          await this.directoryService.getDefaultStorageDirectory();
       }
       this.updateUrlSplit(this.currentUrl);
     });

@@ -1,19 +1,16 @@
 import { Injectable } from '@angular/core';
+import { DirectoryStructureService } from '../directory-structure/directory-structure.service';
 import { EncryptionService } from '../encryption/encryption/encryption.service';
 import { SolidFileHandlerService } from '../file-handler/solid-file-handler.service';
-import { ProfileService } from '../profile/profile.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SolidGroupService {
-  // this must be a folder for which only the owner has read access
-  private readonly secretGroupsFolderPath = 'solidcryptpad-data/groups/';
-
   constructor(
     private fileService: SolidFileHandlerService,
     private encryptionService: EncryptionService,
-    private profileService: ProfileService
+    private directoryService: DirectoryStructureService
   ) {}
 
   /**
@@ -35,12 +32,7 @@ export class SolidGroupService {
 
   async generateSecretGroupFileUrl(): Promise<string> {
     const secret = this.encryptionService.generateNewKey();
-    const groupFolderUrl = await this.getGroupsFolderUrl();
+    const groupFolderUrl = await this.directoryService.getGroupsDirectory();
     return `${groupFolderUrl}group-${secret}.ttl`;
-  }
-
-  private async getGroupsFolderUrl() {
-    const podUrl = await this.profileService.getPodUrl();
-    return podUrl + this.secretGroupsFolderPath;
   }
 }

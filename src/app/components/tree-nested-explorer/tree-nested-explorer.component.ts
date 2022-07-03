@@ -6,7 +6,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { FileUploadComponent } from '../dialogs/file-upload/file-upload.component';
 import { FolderCreateComponent } from '../dialogs/folder-create/folder-create.component';
 import { FileCreateComponent } from '../dialogs/file-create/file-create.component';
-import { ProfileService } from 'src/app/services/profile/profile.service';
 import { FolderDataSource, Node } from './folder-data-source.class';
 import { NotificationService } from 'src/app/services/notification/notification.service';
 import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
@@ -17,6 +16,7 @@ import * as JSZip from 'jszip';
 import { SolidPermissionService } from 'src/app/services/solid-permission/solid-permission.service';
 import { DeleteConfirmationComponent } from '../dialogs/delete-confirmation/delete-confirmation.component';
 import { FileShareComponent } from '../dialogs/file-share/file-share.component';
+import { DirectoryStructureService } from 'src/app/services/directory-structure/directory-structure.service';
 
 /**
  * represents an element in the tree
@@ -34,7 +34,7 @@ export class TreeNestedExplorerComponent implements OnInit {
   constructor(
     private solidFileHandlerService: SolidFileHandlerService,
     private fileEncryptionService: FileEncryptionService,
-    private profileService: ProfileService,
+    private directoryService: DirectoryStructureService,
     private route: ActivatedRoute,
     private router: Router,
     private dialog: MatDialog,
@@ -46,16 +46,14 @@ export class TreeNestedExplorerComponent implements OnInit {
     this.route.queryParams.subscribe(async (params) => {
       let rootPath: string | undefined = params['url'];
       // check if url is valid
-      if (rootPath && !this.fileEncryptionService.isCryptoDirectory(rootPath)) {
+      if (rootPath && !this.directoryService.isInEncryptedDirectory(rootPath)) {
         throw new NotACryptpadUrlException(
           `Not loading ${rootPath}, because it is not an encrypted directory`
         );
       }
 
       if (!rootPath) {
-        const baseUrl = await this.profileService.getPodUrl();
-        rootPath =
-          this.fileEncryptionService.getDefaultCryptoDirectoryUrl(baseUrl);
+        rootPath = await this.directoryService.getDefaultStorageDirectory();
         const created =
           await this.solidFileHandlerService.ensureContainerExists(rootPath);
         if (created) {

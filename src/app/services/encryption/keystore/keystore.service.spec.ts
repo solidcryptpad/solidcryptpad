@@ -9,24 +9,24 @@ import { SharedFileKeystore } from './shared-file-keystore.class';
 import { SolidFileHandlerService } from '../../file-handler/solid-file-handler.service';
 import { MasterPasswordService } from '../master-password/master-password.service';
 import { EncryptionService } from '../encryption/encryption.service';
-import { ProfileService } from '../../profile/profile.service';
 import { KeystoreStorageService } from './keystore-storage.service';
 import { SharedFolderKeystore } from './shared-folder-keystore.class';
+import { DirectoryStructureService } from '../../directory-structure/directory-structure.service';
 
 describe('KeystoreService', () => {
   let service: KeystoreService;
-  let authenticationServiceSpy: jasmine.SpyObj<SolidAuthenticationService>;
   let userLocalStorage: UserLocalStorage;
   let keystores: Keystore[];
   let storage: jasmine.SpyObj<SecureRemoteStorage>;
   let fileServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
   let masterPasswordSpy: jasmine.SpyObj<MasterPasswordService>;
   let encryptionServiceSpy: jasmine.SpyObj<EncryptionService>;
-  let profileServiceSpy: jasmine.SpyObj<ProfileService>;
   let keystoreStorageServiceSpy: jasmine.SpyObj<KeystoreStorageService>;
+  let directoryServiceSpy: jasmine.SpyObj<DirectoryStructureService>;
 
   const fakePodUrl = 'fake.solidweb.org/';
   const keystoresFolderPath = 'solidcryptpad-data/keystores/';
+  const fakeKeystoresUrl = fakePodUrl + keystoresFolderPath;
   const fakeMetaDataUrl =
     fakePodUrl + keystoresFolderPath + 'keystores.json.enc';
 
@@ -35,9 +35,11 @@ describe('KeystoreService', () => {
       'KeystoreStorageService',
       ['createSecureStorage']
     );
-    const profileServiceSpyObj = jasmine.createSpyObj('ProfileServiceSpy', [
-      'getPodUrl',
-    ]);
+
+    const directoryServiceSpyObj = jasmine.createSpyObj(
+      'DirectoryStructureService',
+      ['getRootDirectory', 'getKeystoresDirectory']
+    );
 
     const encryptionSpyObj = jasmine.createSpyObj('EncryptionService', [
       'encryptString',
@@ -77,7 +79,10 @@ describe('KeystoreService', () => {
         { provide: SolidFileHandlerService, useValue: fileServiceSpyObj },
         { provide: MasterPasswordService, useValue: masterPasswordObj },
         { provide: EncryptionService, useValue: encryptionSpyObj },
-        { provide: ProfileService, useValue: profileServiceSpyObj },
+        {
+          provide: DirectoryStructureService,
+          useValue: directoryServiceSpyObj,
+        },
         {
           provide: KeystoreStorageService,
           useValue: keystoreStorageServiceSpyObj,
@@ -91,14 +96,9 @@ describe('KeystoreService', () => {
       KeystoreStorageService
     ) as jasmine.SpyObj<KeystoreStorageService>;
 
-    profileServiceSpy = TestBed.inject(
-      ProfileService
-    ) as jasmine.SpyObj<ProfileService>;
-
-    // eslint-disable-next-line unused-imports/no-unused-vars
-    authenticationServiceSpy = TestBed.inject(
-      SolidAuthenticationService
-    ) as jasmine.SpyObj<SolidAuthenticationService>;
+    directoryServiceSpy = TestBed.inject(
+      DirectoryStructureService
+    ) as jasmine.SpyObj<DirectoryStructureService>;
 
     fileServiceSpy = TestBed.inject(
       SolidFileHandlerService
@@ -132,7 +132,7 @@ describe('KeystoreService', () => {
 
     masterPasswordSpy.getMasterPassword.and.resolveTo('my master password');
     encryptionServiceSpy.encryptString.and.returnValue('a encrypted string');
-    profileServiceSpy.getPodUrl.and.resolveTo(fakePodUrl);
+    directoryServiceSpy.getKeystoresDirectory.and.resolveTo(fakeKeystoresUrl);
 
     await service.saveKeystoresMetadata();
 
@@ -152,7 +152,7 @@ describe('KeystoreService', () => {
       fakePodUrl + keystoresFolderPath + fakeNewKey + '.shared-keystore';
 
     encryptionServiceSpy.generateNewKey.and.returnValue(fakeNewKey);
-    profileServiceSpy.getPodUrl.and.resolveTo(fakePodUrl);
+    directoryServiceSpy.getKeystoresDirectory.and.resolveTo(fakeKeystoresUrl);
     keystoreStorageServiceSpy.createSecureStorage.and.returnValue(storage);
     spyOn(service, 'loadKeystores').and.resolveTo();
 
@@ -178,7 +178,7 @@ describe('KeystoreService', () => {
     const fakeSharedFilesKeystoreUrl =
       fakePodUrl + keystoresFolderPath + 'shared-files.json.enc';
 
-    profileServiceSpy.getPodUrl.and.resolveTo(fakePodUrl);
+    directoryServiceSpy.getKeystoresDirectory.and.resolveTo(fakeKeystoresUrl);
 
     fileServiceSpy.resourceExists
       .withArgs(fakeSharedFilesKeystoreUrl)

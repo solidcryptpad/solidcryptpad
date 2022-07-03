@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { ProfileService } from '../../profile/profile.service';
 import { EncryptionService } from '../encryption/encryption.service';
 import { MasterPasswordService } from '../master-password/master-password.service';
 import { FolderKeystore } from './folder-keystore.class';
@@ -14,6 +13,7 @@ import { SolidFileHandlerService } from '../../file-handler/solid-file-handler.s
 import { SharedFileKeystore } from './shared-file-keystore.class';
 import { KeystoreNotFoundException } from '../../../exceptions/keystore-not-found-exception';
 import { SharedFolderKeystore } from './shared-folder-keystore.class';
+import { DirectoryStructureService } from '../../directory-structure/directory-structure.service';
 
 @Injectable({
   providedIn: 'root',
@@ -24,13 +24,10 @@ export class KeystoreService {
   constructor(
     private encryptionService: EncryptionService,
     private masterPasswordService: MasterPasswordService,
-    private profileService: ProfileService,
     private fileService: SolidFileHandlerService,
-    private keystoreStorageService: KeystoreStorageService
+    private keystoreStorageService: KeystoreStorageService,
+    private directoryService: DirectoryStructureService
   ) {}
-
-  private readonly keystoresFolderPath: string =
-    'solidcryptpad-data/keystores/';
 
   async getKeystores(): Promise<Keystore[]> {
     await this.loadKeystores();
@@ -176,14 +173,14 @@ export class KeystoreService {
   }
 
   private async setupKeystoresFolder() {
-    const podRoot = await this.profileService.getPodUrl();
+    const rootDirectory = await this.directoryService.getRootDirectory();
     const keystoresFolder = await this.getKeystoresFolderUrl();
     const encryptionKeyForFolders = this.encryptionService.generateNewKey();
     const encryptionKeyForSharedFiles = this.encryptionService.generateNewKey();
 
     const ownPodKeystore = new FolderKeystore(
       keystoresFolder + 'root.json.enc',
-      podRoot,
+      rootDirectory,
       this.keystoreStorageService.createSecureStorage(encryptionKeyForFolders)
     );
 
@@ -220,16 +217,21 @@ export class KeystoreService {
   }
 
   private async getKeystoresMetadataUrl(): Promise<string> {
-    return (await this.getKeystoresFolderUrl()) + 'keystores.json.enc';
+    return (
+      (await this.directoryService.getKeystoresDirectory()) +
+      'keystores.json.enc'
+    );
   }
 
   private async getKeystoresFolderUrl(): Promise<string> {
-    const podUrl = await this.profileService.getPodUrl();
-    return podUrl + this.keystoresFolderPath;
+    return this.directoryService.getKeystoresDirectory();
   }
 
   private async getSharedFilesKeystoreUrl(): Promise<string> {
-    return (await this.getKeystoresFolderUrl()) + 'shared-files.json.enc';
+    return (
+      (await this.directoryService.getKeystoresDirectory()) +
+      'shared-files.json.enc'
+    );
   }
 }
 

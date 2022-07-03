@@ -5,7 +5,6 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { KeystoreService } from '../encryption/keystore/keystore.service';
 import { EncryptionService } from '../encryption/encryption/encryption.service';
 import { SolidFileHandlerService } from '../file-handler/solid-file-handler.service';
-import { ProfileService } from '../profile/profile.service';
 import { SolidPermissionService } from '../solid-permission/solid-permission.service';
 import { KeyService } from '../encryption/key/key.service';
 import { SolidGroupService } from '../solid-group/solid-group.service';
@@ -16,7 +15,6 @@ describe('LinkShareService', () => {
   let keystoreServiceSpy: jasmine.SpyObj<KeystoreService>;
   let encryptionServiceSpy: jasmine.SpyObj<EncryptionService>;
   let fileServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
-  let profileServiceSpy: jasmine.SpyObj<ProfileService>;
   let permissionServiceSpy: jasmine.SpyObj<SolidPermissionService>;
   let keyServiceSpy: jasmine.SpyObj<KeyService>;
   let groupServiceSpy: jasmine.SpyObj<SolidGroupService>;
@@ -47,7 +45,6 @@ describe('LinkShareService', () => {
       'resourceExists',
       'deleteFile',
     ]);
-    const profileSpy = jasmine.createSpyObj('ProfileService', ['getPodUrl']);
     const permissionSpy = jasmine.createSpyObj('PermissionService', [
       'setGroupPermissions',
       'setPublicPermissions',
@@ -72,7 +69,6 @@ describe('LinkShareService', () => {
         { provide: KeystoreService, useValue: keystoreSpy },
         { provide: EncryptionService, useValue: encryptionSpy },
         { provide: SolidFileHandlerService, useValue: fileSpy },
-        { provide: ProfileService, useValue: profileSpy },
         { provide: SolidPermissionService, useValue: permissionSpy },
         { provide: KeyService, useValue: keySpy },
         { provide: SolidGroupService, useValue: groupSpy },
@@ -93,10 +89,6 @@ describe('LinkShareService', () => {
     fileServiceSpy = TestBed.inject(
       SolidFileHandlerService
     ) as jasmine.SpyObj<SolidFileHandlerService>;
-    // eslint-disable-next-line unused-imports/no-unused-vars
-    profileServiceSpy = TestBed.inject(
-      ProfileService
-    ) as jasmine.SpyObj<ProfileService>;
     // eslint-disable-next-line unused-imports/no-unused-vars
     permissionServiceSpy = TestBed.inject(
       SolidPermissionService

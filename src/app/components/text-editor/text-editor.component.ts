@@ -25,6 +25,7 @@ import ColorHash from 'color-hash';
 import { NotificationService } from '../../services/notification/notification.service';
 import { SolidFileHandlerService } from '../../services/file-handler/solid-file-handler.service';
 import { KeyService } from 'src/app/services/encryption/key/key.service';
+import { DirectoryStructureService } from 'src/app/services/directory-structure/directory-structure.service';
 
 @Component({
   selector: 'app-text-editor',
@@ -49,6 +50,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
 
   constructor(
     private profileService: ProfileService,
+    private directoryService: DirectoryStructureService,
     private fileEncryptionService: FileEncryptionService,
     private solidFileHandlerService: SolidFileHandlerService,
     private keyService: KeyService,
@@ -64,8 +66,8 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   }
 
   setupBaseUrl(): void {
-    this.profileService.getPodUrl().then((podUrl) => {
-      this.baseUrl = podUrl;
+    this.directoryService.getRootDirectory().then((rootUrl) => {
+      this.baseUrl = rootUrl;
       this.setupSharedFileKey();
       this.setupFilenameFromParams();
       this.setSharedFile();

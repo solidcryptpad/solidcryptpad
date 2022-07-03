@@ -16,19 +16,17 @@ import { FileCreateComponent } from '../dialogs/file-create/file-create.componen
 import { FolderCreateComponent } from '../dialogs/folder-create/folder-create.component';
 import { FileUploadComponent } from '../dialogs/file-upload/file-upload.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { ProfileService } from 'src/app/services/profile/profile.service';
 import { NotificationService } from 'src/app/services/notification/notification.service';
 import { LinkShareService } from 'src/app/services/link-share/link-share.service';
-import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 import { SolidPermissionService } from 'src/app/services/solid-permission/solid-permission.service';
 import { FolderShareComponent } from '../dialogs/folder-share/folder-share.component';
+import { DirectoryStructureService } from 'src/app/services/directory-structure/directory-structure.service';
 
 describe('TreeNestedExplorerComponent', () => {
   let component: TreeNestedExplorerComponent;
   let fixture: ComponentFixture<TreeNestedExplorerComponent>;
   let fileHandlerServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
-  let fileEncryptionServiceSpy: jasmine.SpyObj<FileEncryptionService>;
-  let profileServiceSpy: jasmine.SpyObj<ProfileService>;
+  let directoryServiceSpy: jasmine.SpyObj<DirectoryStructureService>;
   let dialogSpy: jasmine.SpyObj<MatDialog>;
   let notificationSpy: jasmine.SpyObj<NotificationService>;
   let linkShareSpy: jasmine.SpyObj<LinkShareService>;
@@ -49,14 +47,11 @@ describe('TreeNestedExplorerComponent', () => {
       'deleteFile',
       'isHiddenFile',
     ]);
-    const fileEncryptionSpy = jasmine.createSpyObj('SolidEncryptionSpy', [
-      'isCryptoDirectory',
-      'getDefaultCryptoDirectoryUrl',
-    ]);
     const matDialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
-    const profileServiceSpyObj = jasmine.createSpyObj('ProfileServiceSpy', [
-      'getPodUrl',
-    ]);
+    const directoryServiceSpyObj = jasmine.createSpyObj(
+      'DirectoryStructureService',
+      ['getDefaultStorageDirectory', 'isInEncryptedDirectory']
+    );
     const linkShareServiceSpy = jasmine.createSpyObj('LinkShareSpy', [
       'createReadOnlyFolderLink',
     ]);
@@ -87,8 +82,8 @@ describe('TreeNestedExplorerComponent', () => {
           useValue: dialogHandlerSpy,
         },
         {
-          provide: ProfileService,
-          useValue: profileServiceSpyObj,
+          provide: DirectoryStructureService,
+          useValue: directoryServiceSpyObj,
         },
         {
           provide: SolidPermissionService,
@@ -112,7 +107,6 @@ describe('TreeNestedExplorerComponent', () => {
         },
         { provide: NotificationService, useValue: notificationServiceSpy },
         { provide: LinkShareService, useValue: linkShareServiceSpy },
-        { provide: FileEncryptionService, useValue: fileEncryptionSpy },
       ],
     }).compileComponents();
 
@@ -123,14 +117,11 @@ describe('TreeNestedExplorerComponent', () => {
     fileHandlerServiceSpy = TestBed.inject(
       SolidFileHandlerService
     ) as jasmine.SpyObj<SolidFileHandlerService>;
-    fileEncryptionServiceSpy = TestBed.inject(
-      FileEncryptionService
-    ) as jasmine.SpyObj<FileEncryptionService>;
     dialogSpy = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
     // eslint-disable-next-line unused-imports/no-unused-vars
-    profileServiceSpy = TestBed.inject(
-      ProfileService
-    ) as jasmine.SpyObj<ProfileService>;
+    directoryServiceSpy = TestBed.inject(
+      DirectoryStructureService
+    ) as jasmine.SpyObj<DirectoryStructureService>;
     // eslint-disable-next-line unused-imports/no-unused-vars
     linkShareSpy = TestBed.inject(
       LinkShareService
@@ -139,7 +130,7 @@ describe('TreeNestedExplorerComponent', () => {
     dialogSpy = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
 
     // onInit calls this with the url param specified above, which is a crypto directory
-    fileEncryptionServiceSpy.isCryptoDirectory.and.returnValue(true);
+    directoryServiceSpy.isInEncryptedDirectory.and.returnValue(true);
 
     fixture = TestBed.createComponent(TreeNestedExplorerComponent);
 

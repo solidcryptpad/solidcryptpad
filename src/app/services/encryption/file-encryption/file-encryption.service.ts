@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { throwWithContext } from 'src/app/exceptions/error-options';
 import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
+import { DirectoryStructureService } from '../../directory-structure/directory-structure.service';
 import { SolidFileHandlerService } from '../../file-handler/solid-file-handler.service';
 import { EncryptionService } from '../encryption/encryption.service';
 import { KeyService } from '../key/key.service';
@@ -9,16 +10,11 @@ import { KeyService } from '../key/key.service';
   providedIn: 'root',
 })
 export class FileEncryptionService {
-  private readonly defaultCryptoDirectoryName = 'solidcryptpad';
-  private readonly cryptoDirectoryNames = [
-    this.defaultCryptoDirectoryName,
-    'solidcryptpad-data',
-  ];
-
   constructor(
     private keyService: KeyService,
     private encryptionService: EncryptionService,
-    private fileService: SolidFileHandlerService
+    private fileService: SolidFileHandlerService,
+    private directoryService: DirectoryStructureService
   ) {}
 
   /**
@@ -64,7 +60,7 @@ export class FileEncryptionService {
    * @throws NotACryptpadUrlException if the url does not point into a solidcryptpad folder
    */
   async readAndDecryptFile(fileURL: string): Promise<Blob> {
-    if (!this.isCryptoDirectory(fileURL)) {
+    if (!this.directoryService.isInEncryptedDirectory(fileURL)) {
       throw new NotACryptpadUrlException(
         `Cannot encrypt ${fileURL} if it is not in an encrypted directory`
       );
@@ -74,7 +70,7 @@ export class FileEncryptionService {
   }
 
   async readAndDecryptFileWithKey(fileURL: string, key: string): Promise<Blob> {
-    if (!this.isCryptoDirectory(fileURL)) {
+    if (!this.directoryService.isInEncryptedDirectory(fileURL)) {
       throw new NotACryptpadUrlException(
         `Cannot encrypt ${fileURL} if it is not in an encrypted directory`
       );
@@ -98,7 +94,7 @@ export class FileEncryptionService {
    */
   async writeAndEncryptFile(file: Blob, fileURL: string): Promise<Blob> {
     fileURL = fileURL.replace(/ /g, '');
-    if (!this.isCryptoDirectory(fileURL)) {
+    if (!this.directoryService.isInEncryptedDirectory(fileURL)) {
       throw new NotACryptpadUrlException(
         `Cannot encrypt ${fileURL} if it is not in an encrypted directory`
       );
@@ -106,22 +102,5 @@ export class FileEncryptionService {
     const encryptedFile = await this.encryptFile(file, fileURL);
 
     return this.fileService.writeFile(encryptedFile, fileURL);
-  }
-
-  /**
-   * checks if the directory is a valid cryptodirectory
-   * @param url the url to check
-   * @returns if it contains the wanted directoryname
-   */
-  isCryptoDirectory(url: string): boolean {
-    return this.cryptoDirectoryNames.some((name) => url.includes(`/${name}/`));
-  }
-
-  /**
-   * @param baseUrl url to which the crypto directory path should be added. Must end with /
-   * @returns url of the crypto directory
-   */
-  getDefaultCryptoDirectoryUrl(baseUrl: string): string {
-    return `${baseUrl}${this.defaultCryptoDirectoryName}/`;
   }
 }

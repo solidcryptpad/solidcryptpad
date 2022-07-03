@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { NotACryptpadUrlException } from 'src/app/exceptions/not-a-cryptpad-url-exception';
+import { DirectoryStructureService } from '../../directory-structure/directory-structure.service';
 import { SolidFileHandlerService } from '../../file-handler/solid-file-handler.service';
 import { EncryptionService } from '../encryption/encryption.service';
 import { KeyService } from '../key/key.service';
@@ -11,6 +12,7 @@ describe('FileEncryptionService', () => {
   let keyServiceSpy: jasmine.SpyObj<KeyService>;
   let encryptionServiceSpy: jasmine.SpyObj<EncryptionService>;
   let fileServiceSpy: jasmine.SpyObj<SolidFileHandlerService>;
+  let directoryServiceSpy: jasmine.SpyObj<DirectoryStructureService>;
 
   const sampleTurtleBlob = new Blob(["I'm a turtle"], { type: 'text/turtle' });
   const sampleEncryptedBlob = new Blob(["I'm a ciphertext"], {
@@ -33,6 +35,9 @@ describe('FileEncryptionService', () => {
       'readFile',
       'isContainer',
     ]);
+    const directorySpy = jasmine.createSpyObj('DirectoryStructureService', [
+      'isInEncryptedDirectory',
+    ]);
     TestBed.configureTestingModule({
       providers: [
         { provide: KeyService, useValue: keySpy },
@@ -41,6 +46,7 @@ describe('FileEncryptionService', () => {
           provide: SolidFileHandlerService,
           useValue: fileSpy,
         },
+        { provide: DirectoryStructureService, useValue: directorySpy },
       ],
     });
     service = TestBed.inject(FileEncryptionService);
@@ -52,6 +58,9 @@ describe('FileEncryptionService', () => {
     fileServiceSpy = TestBed.inject(
       SolidFileHandlerService
     ) as jasmine.SpyObj<SolidFileHandlerService>;
+    directoryServiceSpy = TestBed.inject(
+      DirectoryStructureService
+    ) as jasmine.SpyObj<DirectoryStructureService>;
 
     fileServiceSpy.isContainer.and.returnValue(false);
   });
@@ -63,6 +72,7 @@ describe('FileEncryptionService', () => {
   it('encryptFile encrypts blob with key from keystore', async () => {
     keyServiceSpy.getOrCreateKey.and.resolveTo('the key');
     encryptionServiceSpy.encryptBlob.and.resolveTo(sampleCiphertext);
+    directoryServiceSpy.isInEncryptedDirectory.and.returnValue(true);
 
     const encryptedBlob = await service.encryptFile(
       sampleTurtleBlob,
@@ -81,6 +91,7 @@ describe('FileEncryptionService', () => {
 
   it('decryptFile gets key and calls decryptFileWithKey', async () => {
     keyServiceSpy.getKey.and.resolveTo('the key');
+    directoryServiceSpy.isInEncryptedDirectory.and.returnValue(true);
     const decryptFileWithKeySpy = spyOn(service, 'decryptFileWithKey');
 
     await service.decryptFile(sampleEncryptedBlob, sampleFileUrl);
@@ -94,6 +105,7 @@ describe('FileEncryptionService', () => {
 
   it('decryptFileWithKey decrypts blob', async () => {
     encryptionServiceSpy.decryptAsBlob.and.resolveTo(sampleTurtleBlob);
+    directoryServiceSpy.isInEncryptedDirectory.and.returnValue(true);
 
     const blob = await service.decryptFileWithKey(
       new Blob(['ciphertext']),
@@ -110,6 +122,7 @@ describe('FileEncryptionService', () => {
   it('readAndDecryptFile calls decryptFile with returned file', async () => {
     const url = 'https://example.com/solidcryptpad/test';
     fileServiceSpy.readFile.and.resolveTo(sampleEncryptedBlob);
+    directoryServiceSpy.isInEncryptedDirectory.and.returnValue(true);
     const decryptFileSpy = spyOn(service, 'decryptFile').and.resolveTo(
       sampleTurtleBlob
     );
@@ -124,6 +137,7 @@ describe('FileEncryptionService', () => {
 
   it('readAndDecryptFileWithKey calls decryptFileWithKey with returned file', async () => {
     fileServiceSpy.readFile.and.resolveTo(sampleTurtleBlob);
+    directoryServiceSpy.isInEncryptedDirectory.and.returnValue(true);
     const decryptFileWithKeySpy = spyOn(service, 'decryptFileWithKey');
 
     await service.readAndDecryptFileWithKey(sampleFileUrl, 'the key');
@@ -134,7 +148,8 @@ describe('FileEncryptionService', () => {
     );
   });
 
-  it('readAndDecryptFileWithKey throws exception on url without solidcryptpad', async () => {
+  it('readAndDecryptFileWithKey throws exception if not in encrypted directory', async () => {
+    directoryServiceSpy.isInEncryptedDirectory.and.returnValue(false);
     const url = 'https://example.org/test/';
 
     await expectAsync(
@@ -143,10 +158,12 @@ describe('FileEncryptionService', () => {
   });
 
   it('writeAndEncryptFile calls writeFile and encryptFile', async () => {
+    directoryServiceSpy.isInEncryptedDirectory.and.returnValue(true);
     const url = 'https://example.com/solidcryptpad/test';
     const file = new Blob(['file']);
     const encryptedFile = new Blob(['encrypted file']);
     fileServiceSpy.writeFile.and.resolveTo();
+    directoryServiceSpy.isInEncryptedDirectory.and.returnValue(true);
     const encryptFileSpy = spyOn(service, 'encryptFile').and.resolveTo(
       encryptedFile
     );
@@ -157,7 +174,8 @@ describe('FileEncryptionService', () => {
     expect(encryptFileSpy).toHaveBeenCalledWith(file, url);
   });
 
-  it('writeAndEncryptFile throws exception on url without solidcryptpad', async () => {
+  it('writeAndEncryptFile throws exception if not in encrypted directory', async () => {
+    directoryServiceSpy.isInEncryptedDirectory.and.returnValue(false);
     const url = 'https://example.com/test';
 
     await expectAsync(
@@ -165,30 +183,12 @@ describe('FileEncryptionService', () => {
     ).toBeRejectedWithError(NotACryptpadUrlException);
   });
 
-  it('readAndDecryptFile throws exception on url without solidcryptpad', async () => {
+  it('readAndDecryptFile throws exception if not in encrypted directory', async () => {
+    directoryServiceSpy.isInEncryptedDirectory.and.returnValue(false);
     const url = 'https://example.com/test';
 
     await expectAsync(service.readAndDecryptFile(url)).toBeRejectedWithError(
       NotACryptpadUrlException
     );
-  });
-
-  it('isCryptoDirectory returns false for non-crypto-directory', () => {
-    const result = service.isCryptoDirectory('https://example.org/test/foo/');
-    expect(result).toBeFalse();
-  });
-
-  it('isCryptoDirectory returns true for crypto-directory', () => {
-    const result = service.isCryptoDirectory(
-      'https://example.org/solidcryptpad/foo/'
-    );
-    expect(result).toBeTrue();
-  });
-
-  it('getDefaultCryptoDirectoryUrl append default crypto directory to baseUrl', () => {
-    const cryptoDirectoryUrl = service.getDefaultCryptoDirectoryUrl(
-      'https://example.org/test/'
-    );
-    expect(cryptoDirectoryUrl).toBe('https://example.org/test/solidcryptpad/');
   });
 });

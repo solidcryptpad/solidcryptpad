@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { ProfileService } from '../profile/profile.service';
 import { SolidFileHandlerService } from '../file-handler/solid-file-handler.service';
 import { FileEncryptionService } from '../encryption/file-encryption/file-encryption.service';
+import { DirectoryStructureService } from '../directory-structure/directory-structure.service';
 
 @Injectable({
   providedIn: 'root',
@@ -9,6 +10,7 @@ import { FileEncryptionService } from '../encryption/file-encryption/file-encryp
 export class SharedByMeService {
   constructor(
     private profileService: ProfileService,
+    private directoryService: DirectoryStructureService,
     private fileEncryptionService: FileEncryptionService,
     private fileService: SolidFileHandlerService
   ) {}
@@ -36,7 +38,7 @@ export class SharedByMeService {
 
   async getAllSharedByMe() {
     const indexAsBlob = await this.fileEncryptionService.readAndDecryptFile(
-      await this.getRootPath()
+      await this.getIndexUrl()
     );
 
     // TODO: this should return some specific type, not any
@@ -54,20 +56,19 @@ export class SharedByMeService {
     await this.saveIndex(JSON.stringify(allSharedByMe));
   }
 
-  private async getRootPath() {
+  private async getIndexUrl() {
     return (
-      (await this.profileService.getPodUrl()) +
-      'solidcryptpad-data/shared-by-me.json'
+      (await this.directoryService.getSharingDirectory()) + 'shared-by-me.json'
     );
   }
 
   private async sharedByMeIndexExists() {
-    return this.fileService.resourceExists(await this.getRootPath());
+    return this.fileService.resourceExists(await this.getIndexUrl());
   }
 
   private async saveIndex(index: string) {
-    const path = await this.getRootPath();
+    const indexUrl = await this.getIndexUrl();
     const asBlob = new Blob([index], { type: 'application/json' });
-    await this.fileEncryptionService.writeAndEncryptFile(asBlob, path);
+    await this.fileEncryptionService.writeAndEncryptFile(asBlob, indexUrl);
   }
 }
