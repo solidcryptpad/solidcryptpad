@@ -18,7 +18,7 @@ describe('SolidGroupService', () => {
       'generateNewKey',
     ]);
     const fileSpy = jasmine.createSpyObj('FileService', ['writeFile']);
-    const profileSpy = jasmine.createSpyObj('ProfileService', ['getPodUrls']);
+    const profileSpy = jasmine.createSpyObj('ProfileService', ['getPodUrl']);
     TestBed.configureTestingModule({
       providers: [
         { provide: EncryptionService, useValue: encryptionSpy },
@@ -68,7 +68,7 @@ describe('SolidGroupService', () => {
 
   it('generateSecretGroupFileUrl uses a random key for the url', async () => {
     encryptionServiceSpy.generateNewKey.and.returnValue('random key');
-    profileServiceSpy.getPodUrls.and.resolveTo(['https://example.org/']);
+    profileServiceSpy.getPodUrl.and.resolveTo('https://example.org/');
 
     const secretGroupFileUrl = await service.generateSecretGroupFileUrl();
 

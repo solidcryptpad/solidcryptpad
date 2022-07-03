@@ -64,8 +64,8 @@ export class TextEditorComponent implements OnInit, OnDestroy {
   }
 
   setupBaseUrl(): void {
-    this.profileService.getPodUrls().then((podUrls) => {
-      this.baseUrl = podUrls[0];
+    this.profileService.getPodUrl().then((podUrl) => {
+      this.baseUrl = podUrl;
       this.setupSharedFileKey();
       this.setupFilenameFromParams();
       this.setSharedFile();

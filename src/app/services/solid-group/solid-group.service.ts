@@ -40,7 +40,7 @@ export class SolidGroupService {
   }
 
   private async getGroupsFolderUrl() {
-    const podUrls = await this.profileService.getPodUrls();
-    return podUrls[0] + this.secretGroupsFolderPath;
+    const podUrl = await this.profileService.getPodUrl();
+    return podUrl + this.secretGroupsFolderPath;
   }
 }

@@ -53,7 +53,7 @@ export class TreeNestedExplorerComponent implements OnInit {
       }
 
       if (!rootPath) {
-        const baseUrl = (await this.profileService.getPodUrls())[0];
+        const baseUrl = await this.profileService.getPodUrl();
         rootPath =
           this.fileEncryptionService.getDefaultCryptoDirectoryUrl(baseUrl);
         const created =

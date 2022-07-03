@@ -12,7 +12,7 @@ import { AttributeNotFoundException } from '../../exceptions/attribute-not-found
 export class ProfileService {
   cachedUserName: string | null = null;
 
-  cachedPodUrls: string[] | null = null;
+  cachedPodUrl: string | null = null;
 
   constructor(
     private authService: SolidAuthenticationService,
@@ -29,7 +29,7 @@ export class ProfileService {
 
     const profile = this.solidClientService.getThing(
       await this.getProfileDataset(),
-      await this.getWebId()
+      await this.authService.getWebId()
     );
 
     if (profile === null) {
@@ -51,30 +51,31 @@ export class ProfileService {
   }
 
   /**
-   * Retrieves all Pod Urls connected to the logged in webId.
+   * Get current pod url of the logged in user
    */
-  async getPodUrls(): Promise<string[]> {
-    if (this.cachedPodUrls) {
-      return this.cachedPodUrls;
+  async getPodUrl(): Promise<string> {
+    if (this.cachedPodUrl) {
+      return this.cachedPodUrl;
     }
 
-    this.cachedPodUrls = await this.solidClientService.getPodUrlAll(
-      await this.getWebId()
+    const podUrls = await this.solidClientService.getPodUrlAll(
+      await this.authService.getWebId()
     );
-    return this.cachedPodUrls;
-  }
-
-  /**
-   * Retrieves the webId of the logged in user
-   */
-  async getWebId(): Promise<string> {
-    return this.authService.getWebId();
+    if (!podUrls.length) {
+      throw new AttributeNotFoundException(
+        'No pod is associated with your profile. Please add one to use this application'
+      );
+    }
+    this.cachedPodUrl = podUrls[0];
+    return this.cachedPodUrl;
   }
 
   /**
    * Retrieves profile dataset containing public information.
    */
   private async getProfileDataset() {
-    return this.solidClientService.getSolidDataset(await this.getWebId());
+    return this.solidClientService.getSolidDataset(
+      await this.authService.getWebId()
+    );
   }
 }

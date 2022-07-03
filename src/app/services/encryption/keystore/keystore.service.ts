@@ -176,7 +176,7 @@ export class KeystoreService {
   }
 
   private async setupKeystoresFolder() {
-    const podRoot = (await this.profileService.getPodUrls())[0];
+    const podRoot = await this.profileService.getPodUrl();
     const keystoresFolder = await this.getKeystoresFolderUrl();
     const encryptionKeyForFolders = this.encryptionService.generateNewKey();
     const encryptionKeyForSharedFiles = this.encryptionService.generateNewKey();
@@ -224,8 +224,8 @@ export class KeystoreService {
   }
 
   private async getKeystoresFolderUrl(): Promise<string> {
-    const podUrls = await this.profileService.getPodUrls();
-    return podUrls[0] + this.keystoresFolderPath;
+    const podUrl = await this.profileService.getPodUrl();
+    return podUrl + this.keystoresFolderPath;
   }
 
   private async getSharedFilesKeystoreUrl(): Promise<string> {

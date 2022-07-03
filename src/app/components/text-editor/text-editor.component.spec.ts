@@ -23,7 +23,7 @@ describe('TextEditorComponent', () => {
       ['getWebId']
     );
     const profileServiceSpyObj = jasmine.createSpyObj('ProfileServiceSpy', [
-      'getPodUrls',
+      'getPodUrl',
     ]);
     const fileServiceSpyObj = jasmine.createSpyObj(
       'SolidFileHandlerServiceSpy',
@@ -71,7 +71,7 @@ describe('TextEditorComponent', () => {
   });
 
   beforeEach(() => {
-    profileServiceSpy.getPodUrls.and.resolveTo(['https://example.org/pod/']);
+    profileServiceSpy.getPodUrl.and.resolveTo('https://example.org/pod/');
 
     fixture = TestBed.createComponent(TextEditorComponent);
     component = fixture.componentInstance;

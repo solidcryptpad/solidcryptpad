@@ -47,7 +47,7 @@ describe('LinkShareService', () => {
       'resourceExists',
       'deleteFile',
     ]);
-    const profileSpy = jasmine.createSpyObj('ProfileService', ['getPodUrls']);
+    const profileSpy = jasmine.createSpyObj('ProfileService', ['getPodUrl']);
     const permissionSpy = jasmine.createSpyObj('PermissionService', [
       'setGroupPermissions',
       'setPublicPermissions',

@@ -45,12 +45,6 @@ describe('ProfileService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('returns webId', () => {
-    const webId = 'https://example.pod/profile/card#me';
-    authenticationServiceSpy.getWebId.and.resolveTo(webId);
-    return expectAsync(service.getWebId()).toBeResolvedTo(webId);
-  });
-
   it('returns Testy as username and calls getStringNoLocale', async () => {
     const profile = createThing();
     const webId = 'https://example.pod/profile/card#me';
@@ -67,18 +61,24 @@ describe('ProfileService', () => {
     );
   });
 
-  it('returns podUrl in array', async () => {
-    const podUrls = ['testy.solidweb.org'];
-    await solidClientServiceSpy.getPodUrlAll.and.resolveTo(podUrls);
+  it('returns podUrl', async () => {
+    const podUrl = 'testy.solidweb.org';
+    solidClientServiceSpy.getPodUrlAll.and.resolveTo([podUrl]);
 
-    return expectAsync(service.getPodUrls()).toBeResolvedTo(podUrls);
+    return expectAsync(service.getPodUrl()).toBeResolvedTo(podUrl);
+  });
+
+  it('getPodUrl throws if no pods are available', async () => {
+    solidClientServiceSpy.getPodUrlAll.and.resolveTo([]);
+
+    await expectAsync(service.getPodUrl()).toBeRejected();
   });
 
   it('returns cached podurl if cached', async () => {
-    const pods = ['test'];
-    service.cachedPodUrls = pods;
+    const podUrl = 'test';
+    service.cachedPodUrl = podUrl;
 
-    return expectAsync(service.getPodUrls()).toBeResolvedTo(pods);
+    return expectAsync(service.getPodUrl()).toBeResolvedTo(podUrl);
   });
 
   it('returns cached userName if cached', async () => {

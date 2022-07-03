@@ -55,7 +55,7 @@ describe('TreeNestedExplorerComponent', () => {
     ]);
     const matDialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
     const profileServiceSpyObj = jasmine.createSpyObj('ProfileServiceSpy', [
-      'getPodUrls',
+      'getPodUrl',
     ]);
     const linkShareServiceSpy = jasmine.createSpyObj('LinkShareSpy', [
       'createReadOnlyFolderLink',

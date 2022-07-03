@@ -25,7 +25,7 @@ export class FileExplorerComponent implements OnInit {
     this.route.queryParams.subscribe(async (params) => {
       this.currentUrl = params['url'];
       if (!this.currentUrl) {
-        const baseUrl = (await this.profileService.getPodUrls())[0];
+        const baseUrl = await this.profileService.getPodUrl();
         this.currentUrl =
           this.fileEncryptionService.getDefaultCryptoDirectoryUrl(baseUrl);
       }

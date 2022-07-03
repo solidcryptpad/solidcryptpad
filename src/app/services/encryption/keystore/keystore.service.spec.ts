@@ -36,7 +36,7 @@ describe('KeystoreService', () => {
       ['createSecureStorage']
     );
     const profileServiceSpyObj = jasmine.createSpyObj('ProfileServiceSpy', [
-      'getPodUrls',
+      'getPodUrl',
     ]);
 
     const encryptionSpyObj = jasmine.createSpyObj('EncryptionService', [
@@ -132,7 +132,7 @@ describe('KeystoreService', () => {
 
     masterPasswordSpy.getMasterPassword.and.resolveTo('my master password');
     encryptionServiceSpy.encryptString.and.returnValue('a encrypted string');
-    profileServiceSpy.getPodUrls.and.resolveTo([fakePodUrl]);
+    profileServiceSpy.getPodUrl.and.resolveTo(fakePodUrl);
 
     await service.saveKeystoresMetadata();
 
@@ -152,7 +152,7 @@ describe('KeystoreService', () => {
       fakePodUrl + keystoresFolderPath + fakeNewKey + '.shared-keystore';
 
     encryptionServiceSpy.generateNewKey.and.returnValue(fakeNewKey);
-    profileServiceSpy.getPodUrls.and.resolveTo([fakePodUrl]);
+    profileServiceSpy.getPodUrl.and.resolveTo(fakePodUrl);
     keystoreStorageServiceSpy.createSecureStorage.and.returnValue(storage);
     spyOn(service, 'loadKeystores').and.resolveTo();
 
@@ -178,7 +178,7 @@ describe('KeystoreService', () => {
     const fakeSharedFilesKeystoreUrl =
       fakePodUrl + keystoresFolderPath + 'shared-files.json.enc';
 
-    profileServiceSpy.getPodUrls.and.resolveTo([fakePodUrl]);
+    profileServiceSpy.getPodUrl.and.resolveTo(fakePodUrl);
 
     fileServiceSpy.resourceExists
       .withArgs(fakeSharedFilesKeystoreUrl)

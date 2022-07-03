@@ -56,7 +56,7 @@ export class SharedByMeService {
 
   private async getRootPath() {
     return (
-      (await this.profileService.getPodUrls())[0] +
+      (await this.profileService.getPodUrl()) +
       'solidcryptpad-data/shared-by-me.json'
     );
   }
