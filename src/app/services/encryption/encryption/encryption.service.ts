@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as cryptoJS from 'crypto-js';
+import { EncryptionException } from 'src/app/exceptions/encryption-exception';
 import { InvalidContentException } from 'src/app/exceptions/invalid-content';
-import { UnknownException } from 'src/app/exceptions/unknown-exception';
 import { WrongDecriptionKeyException } from 'src/app/exceptions/wrong-decription-key-exception';
 
 @Injectable({
@@ -19,6 +19,9 @@ export class EncryptionService {
   }
 
   encryptString(data: string, key: string): string {
+    if (data == '') {
+      throw new EncryptionException('Cant encrypt empty string');
+    }
     return cryptoJS.AES.encrypt(data, key).toString();
   }
 
@@ -37,10 +40,8 @@ export class EncryptionService {
     } catch (error: any) {
       if (error.message == 'Malformed UTF-8 data') {
         throw new WrongDecriptionKeyException('Wrong Decription Key');
-      } else if (error instanceof WrongDecriptionKeyException) {
-        throw error;
       } else {
-        throw new UnknownException(error.message);
+        throw error;
       }
     }
   }
@@ -64,7 +65,7 @@ export class EncryptionService {
       if (error.message == 'Malformed UTF-8 data') {
         throw new WrongDecriptionKeyException('Wrong Decription Key');
       } else {
-        throw new UnknownException(error.message);
+        throw error;
       }
     }
   }
