@@ -47,7 +47,6 @@ export class FileUploadComponent {
       const text = await file.text();
       blob = new Blob([marked(text, { breaks: true })], { type: 'text/plain' });
     } else {
-      console.log('loading', contentType);
       blob = file.slice(0, file.size, contentType || undefined);
     }
 

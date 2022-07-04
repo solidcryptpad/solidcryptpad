@@ -135,7 +135,7 @@ describe('FilePreviewComponent', () => {
     const blob = new Blob([content], { type: 'text/plain' });
     await component.getTextFileContent(blob);
 
-    expect(component.textFileContent).toBe(content);
+    expect(component.textFileContent).toContain(content);
   });
 
   it('loadDecryptedFile loads file and set errorMsg', fakeAsync(() => {

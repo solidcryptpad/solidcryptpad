@@ -2,7 +2,6 @@ import { Component, OnInit, SecurityContext } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 import { SolidPermissionService } from '../../services/solid-permission/solid-permission.service';
-import { Editor } from 'ngx-editor';
 import { DomSanitizer } from '@angular/platform-browser';
 import { marked } from 'marked';
 
@@ -19,7 +18,6 @@ export class FilePreviewComponent implements OnInit {
   imageUrl: string | ArrayBuffer | null | undefined;
   isWriteable: boolean | undefined;
   loading = false;
-  editor!: Editor;
 
   constructor(
     private fileEncryptionService: FileEncryptionService,
@@ -61,18 +59,6 @@ export class FilePreviewComponent implements OnInit {
       (blob) => {
         this.fileType = blob.type;
         if (this.fileType.includes('text')) {
-          /*
-          this.editor = new Editor({
-            history: false,
-            plugins: [
-              keymap({
-                'Mod-z': undo,
-                'Mod-y': redo,
-                'Mod-Shift-z': redo,
-              }),
-            ],
-          });
-           */
           this.getTextFileContent(blob);
         } else if (this.fileType.includes('image')) {
           this.getImageUrlFromBlob(blob);
@@ -101,9 +87,8 @@ export class FilePreviewComponent implements OnInit {
    */
   getImageUrlFromBlob(blob: Blob): void {
     const reader = new FileReader();
-    reader.readAsDataURL(blob); //FileStream response from .NET core backend
-    // eslint-disable-next-line unused-imports/no-unused-vars
-    reader.onload = (_event) => {
+    reader.readAsDataURL(blob);
+    reader.onload = () => {
       this.imageUrl = reader.result; //url declared earlier
     };
   }
