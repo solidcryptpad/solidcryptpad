@@ -10,7 +10,10 @@
     </div>
 
     <div class="previewText" *ngIf="fileType.includes('text')">
-      <markdown [data]="textFileContent"> </markdown>
+      <markdown
+        [data]="textFileContent"
+        style="white-space: pre-wrap"
+      ></markdown>
       <!--
       <div class="editor">
         <ngx-editor

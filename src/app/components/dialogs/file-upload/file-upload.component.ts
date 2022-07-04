@@ -3,6 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { throwWithContext } from 'src/app/exceptions/error-options';
 import { FileEncryptionService } from 'src/app/services/encryption/file-encryption/file-encryption.service';
 import { SolidFileHandlerService } from 'src/app/services/file-handler/solid-file-handler.service';
+import { marked } from 'marked';
 
 interface FileUploadData {
   folder: {
@@ -41,7 +42,14 @@ export class FileUploadComponent {
   async uploadFile(file: File): Promise<void> {
     const url = this.data.folder.url + file.name;
     const contentType = this.fileService.guessContentType(file.name);
-    const blob = file.slice(0, file.size, contentType || undefined);
+    let blob;
+    if (contentType === 'text/plain') {
+      const text = await file.text();
+      blob = new Blob([marked(text, { breaks: true })], { type: 'text/plain' });
+    } else {
+      console.log('loading', contentType);
+      blob = file.slice(0, file.size, contentType || undefined);
+    }
 
     await this.fileEncryptionService
       .writeAndEncryptFile(blob, url)

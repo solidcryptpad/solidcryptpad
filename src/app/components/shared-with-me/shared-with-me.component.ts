@@ -3,6 +3,7 @@ import { KeystoreService } from '../../services/encryption/keystore/keystore.ser
 import { Router } from '@angular/router';
 import { SharedFolderKeystore } from '../../services/encryption/keystore/shared-folder-keystore.class';
 import { SharedWithMeResource } from '../../models/shared-with-me-resource';
+import { SolidPermissionService } from '../../services/solid-permission/solid-permission.service';
 
 @Component({
   selector: 'app-shared-with-me',
@@ -15,7 +16,8 @@ export class SharedWithMeComponent implements OnInit {
 
   constructor(
     private keystoreService: KeystoreService,
-    private router: Router
+    private router: Router,
+    private permissionService: SolidPermissionService
   ) {}
   displayedColumns: string[] = ['isFolder', 'fileName', 'owner'];
   loading = false;
@@ -52,23 +54,31 @@ export class SharedWithMeComponent implements OnInit {
       return;
     }
 
-    sharedFoldersKeystores.map((keystore) => {
+    sharedFoldersKeystores.map(async (keystore) => {
       const url = keystore.getFolderUrl();
-      this.foldersSharedWithMe.push({
-        ownerPod: new URL(url).host,
-        resourceName: this.getResourceName(url),
-        url: url,
-      });
+      if (
+        await this.permissionService.isNotDeactivatedLinkOrDeletedResource(url)
+      ) {
+        this.foldersSharedWithMe.push({
+          ownerPod: new URL(url).host,
+          resourceName: this.getResourceName(url),
+          url: url,
+        });
+      }
     });
   }
 
   private addFileUrls(sharedFilesUrls: string[]) {
-    sharedFilesUrls.forEach((url) => {
-      this.filesSharedWithMe.push({
-        ownerPod: new URL(url).host,
-        resourceName: this.getResourceName(url),
-        url: url,
-      });
+    sharedFilesUrls.forEach(async (url) => {
+      if (
+        await this.permissionService.isNotDeactivatedLinkOrDeletedResource(url)
+      ) {
+        this.filesSharedWithMe.push({
+          ownerPod: new URL(url).host,
+          resourceName: this.getResourceName(url),
+          url: url,
+        });
+      }
     });
   }
 

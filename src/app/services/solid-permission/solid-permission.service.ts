@@ -211,6 +211,17 @@ export class SolidPermissionService {
     return false;
   }
 
+  async isNotDeactivatedLinkOrDeletedResource(
+    resourceUrl: string
+  ): Promise<boolean> {
+    const response = await this.authService.authenticatedFetch(resourceUrl, {
+      method: 'HEAD',
+    });
+    const permissionString = response.headers.get('wac-allow');
+
+    return !!permissionString;
+  }
+
   private async saveAcl(
     resourceInfo: WithAccessibleAcl<WithServerResourceInfo>,
     acl: AclDataset
