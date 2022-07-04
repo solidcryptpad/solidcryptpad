@@ -1,6 +1,6 @@
 .container {
   width: 100%;
-  max-width: 900px;
+  max-width: 850px;
   min-width: 320px;
   margin: auto;
   display: flex;
@@ -15,15 +15,15 @@
 .previewText {
   white-space: pre;
   height: auto;
-  max-height: 80vh;
+  max-height: 75vh;
   margin: 10px auto;
   padding: 10px;
   display: flex;
   flex-direction: column;
   background-color: #eeeeee;
-  border: solid 2px #000000;
   overflow: scroll;
   text-align: justify;
+  box-shadow: 10px 5px 5px lightgray;
 }
 
 .previewImages {

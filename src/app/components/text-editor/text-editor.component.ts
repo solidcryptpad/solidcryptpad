@@ -26,6 +26,7 @@ import { NotificationService } from '../../services/notification/notification.se
 import { SolidFileHandlerService } from '../../services/file-handler/solid-file-handler.service';
 import { KeyService } from 'src/app/services/encryption/key/key.service';
 import { DirectoryStructureService } from 'src/app/services/directory-structure/directory-structure.service';
+import { marked } from 'marked';
 
 @Component({
   selector: 'app-text-editor',
@@ -167,6 +168,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
         'text/plain';
     }
     blob.text().then((text) => {
+      text = marked(text);
       this.html = this.sanitizeHtmlContent(text);
       this.readyForSave = true;
       this.fileLoaded = true;

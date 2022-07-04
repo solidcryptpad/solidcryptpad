@@ -4,6 +4,7 @@ import { FileEncryptionService } from 'src/app/services/encryption/file-encrypti
 import { SolidPermissionService } from '../../services/solid-permission/solid-permission.service';
 import { Editor } from 'ngx-editor';
 import { DomSanitizer } from '@angular/platform-browser';
+import { marked } from 'marked';
 
 @Component({
   selector: 'app-file-preview',
@@ -91,7 +92,7 @@ export class FilePreviewComponent implements OnInit {
    * @param blob
    */
   async getTextFileContent(blob: Blob): Promise<void> {
-    this.textFileContent = this.sanitizeHtmlContent(await blob.text());
+    this.textFileContent = this.sanitizeHtmlContent(marked(await blob.text()));
   }
 
   /**

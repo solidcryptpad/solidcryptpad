@@ -40,6 +40,18 @@
   }
 }
 
+::ng-deep {
+  .NgxEditor {
+    max-height: 75vh;
+    min-height: 75vh;
+    overflow-y: scroll;
+  }
+
+  .NgxEditor__Content {
+    min-height: 400px; /* make all of the editor area clickable */
+  }
+}
+
 .editor-button {
   margin-right: 7px;
   margin-left: 7px;
