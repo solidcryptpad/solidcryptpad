@@ -12,7 +12,7 @@
     "lint": "ng lint",
     "prettier": "prettier -c **.{js,ts,json,html,css,scss,md}",
     "prettier:fix": "prettier --write **.{js,ts,json,html,css,scss,md}",
-    "license-checker": "license-checker --summary --onlyAllow 'Apache-2.0;BSD-2-Clause;BSD-3-Clause;0BSD;BSD*;CC0-1.0;CC-BY-3.0;CC-BY-4.0;ISC;MIT;Unlicense'",
+    "license-checker": "license-checker --summary --onlyAllow 'Apache*;Apache-2.0;BSD-2-Clause;BSD-3-Clause;0BSD;BSD*;CC0-1.0;CC-BY-3.0;CC-BY-4.0;FreeBSD;ISC;MIT;Python-2.0;Unlicense'",
     "prepare": "husky install",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
