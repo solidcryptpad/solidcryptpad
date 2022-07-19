@@ -1,6 +1,6 @@
 # Contributing
 
-This document contains guidelines and developing tips for contributors.
+First of, if something is not clear or it is simply too much information, just ask. Any contribution is welcome :)
 
 ## Git strategy
 
