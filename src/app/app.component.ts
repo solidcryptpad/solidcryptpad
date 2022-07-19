@@ -30,7 +30,8 @@ export class AppComponent implements OnInit {
     this.matIconRegistry.addSvgIcon(
       'solid',
       this.domSanitizer.bypassSecurityTrustResourceUrl(
-        '../assets/solid-emblem.svg'
+        // TODO: figure out a path that works for the deployment and development
+        './assets/solid-emblem.svg'
       )
     );
 
