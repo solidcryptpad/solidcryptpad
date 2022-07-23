@@ -6,12 +6,14 @@ import { Session } from '@inrupt/solid-client-authn-browser';
 import { SimpleSolidAuthenticationService } from './simple-solid-authentication.service';
 import { Router } from '@angular/router';
 import { UserLocalStorage } from '../user-local-storage/user-local-storage.service';
+import { NavigationService } from '../navigation/navigation.service';
 
 describe('SimpleSolidAuthenticationService', () => {
   let service: SimpleSolidAuthenticationService;
   let authnBrowserSpy: jasmine.SpyObj<typeof authnBrowser>;
   let router: Router;
   let userLocalStorage: UserLocalStorage;
+  let navigationServiceSpy: jasmine.SpyObj<NavigationService>;
 
   const mockLoginStatus = (isLoggedIn: boolean) =>
     authnBrowserSpy.getDefaultSession.and.returnValue({
@@ -21,14 +23,26 @@ describe('SimpleSolidAuthenticationService', () => {
     } as authnBrowser.Session);
 
   beforeEach(() => {
+    const navigationSpy = jasmine.createSpyObj('NavigationService', [
+      'navigateByUrlIgnoringBaseHref',
+    ]);
+
     TestBed.configureTestingModule({
       imports: [RouterTestingModule.withRoutes([])],
+      providers: [{ provide: NavigationService, useValue: navigationSpy }],
     });
     router = TestBed.inject(Router);
     userLocalStorage = TestBed.inject(UserLocalStorage);
+    navigationServiceSpy = TestBed.inject(
+      NavigationService
+    ) as jasmine.SpyObj<NavigationService>;
     service = TestBed.inject(
       SimpleSolidAuthenticationService,
-      new SimpleSolidAuthenticationService(router, userLocalStorage)
+      new SimpleSolidAuthenticationService(
+        router,
+        navigationServiceSpy,
+        userLocalStorage
+      )
     );
     authnBrowserSpy = jasmine.createSpyObj('authnBrowserSpy', [
       'onSessionRestore',

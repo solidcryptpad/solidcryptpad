@@ -7,6 +7,7 @@ import { Observable, of } from 'rxjs';
 import { SolidAuthenticationService } from './solid-authentication.service';
 import { UnknownException } from 'src/app/exceptions/unknown-exception';
 import { UserLocalStorage } from '../user-local-storage/user-local-storage.service';
+import { NavigationService } from '../navigation/navigation.service';
 
 @Injectable()
 export class SimpleSolidAuthenticationService extends SolidAuthenticationService {
@@ -20,6 +21,7 @@ export class SimpleSolidAuthenticationService extends SolidAuthenticationService
 
   constructor(
     private router: Router,
+    private navigationService: NavigationService,
     private userLocalStorage: UserLocalStorage
   ) {
     super();
@@ -41,7 +43,9 @@ export class SimpleSolidAuthenticationService extends SolidAuthenticationService
 
   private onSessionRestore(previousUrl: string) {
     const url = new URL(previousUrl);
-    this.router.navigateByUrl(url.pathname + url.search + url.hash);
+    this.navigationService.navigateByUrlIgnoringBaseHref(
+      url.pathname + url.search + url.hash
+    );
   }
 
   override isLoggedIn(): Observable<boolean> {
