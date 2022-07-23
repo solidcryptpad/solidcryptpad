@@ -1,3 +1,9 @@
+# Overview
+
+Before the first encryption happens the user has to enter a master password. Using this password, all _file contents_ are end-to-end encrypted with individual encryption keys. Nobody, except the owner and people who received a sharing link can view the contents of any files. _Metadata_, like file names, is not encrypted or protected in any way.
+
+Every file has its own encryption key. These are stored in "Keystores" which map file urls to corresponding encryption keys. The keystores are stored on the pod and are themselve encrypted with individual encryption keys. Only with the master password (or a shared link) one is able to decrypt them.
+
 # Keystores
 
 A user can have multiple keystores stored on their pod. The purpose of a keystore is, to contain the encryption keys for the files it is responsible for (e.g. it can be a dictionary that maps urls to keys). Each keystore is encrypted with an unique key.
