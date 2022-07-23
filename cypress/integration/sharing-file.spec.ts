@@ -17,7 +17,7 @@ describe('File sharing', function () {
     cy.explorerOpenMenu(fileName);
     cy.contains('Share File').click();
     cy.contains('Create Link').click();
-    cy.contains('freshly baked');
+    cy.contains('freshly baked', { timeout: 60000 });
 
     // save link for later
     cy.getSharingLink().as('link');
@@ -44,7 +44,7 @@ describe('File sharing', function () {
     cy.contains('Share File').click();
     cy.contains('Write').click();
     cy.contains('Create Link').click();
-    cy.contains('freshly baked');
+    cy.contains('freshly baked', { timeout: 60000 });
 
     // save link for later
     cy.getSharingLink().as('link');

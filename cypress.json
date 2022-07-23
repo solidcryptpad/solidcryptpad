@@ -11,7 +11,7 @@
     "runMode": 1,
     "openMode": 0
   },
-  "defaultCommandTimeout": 10000,
+  "defaultCommandTimeout": 20000,
   "env": {
     "cssUrl": "http://localhost:3000"
   }

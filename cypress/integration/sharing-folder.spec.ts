@@ -21,7 +21,7 @@ describe('Folder sharing', function () {
     cy.explorerOpenMenu(folderName);
     cy.contains('Share Folder').click();
     cy.contains('Create Link').click();
-    cy.contains('freshly baked');
+    cy.contains('freshly baked', { timeout: 60000 });
 
     cy.getSharingLink().as('link');
 
@@ -63,7 +63,7 @@ describe('Folder sharing', function () {
     cy.explorerOpenMenu(folderName);
     cy.contains('Share Folder').click();
     cy.contains('Create Link').click();
-    cy.contains('freshly baked');
+    cy.contains('freshly baked', { timeout: 60000 });
 
     cy.getSharingLink().as('link');
 
@@ -93,7 +93,7 @@ describe('Folder sharing', function () {
     cy.contains('Write').click();
     cy.contains('Create Link').click();
     cy.wait(1000); // creating link sometimes takes longer on certain machines
-    cy.contains('freshly baked');
+    cy.contains('freshly baked', { timeout: 60000 });
 
     cy.getSharingLink().as('link');
 
