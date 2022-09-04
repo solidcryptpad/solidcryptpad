@@ -36,7 +36,7 @@ There are two different aspects for sharing a resource. On the one hand, one has
 
 ## Granting permissions to the pod or what happens when sharing a link?
 
-Let us assume there is a person called $`\textcolor{#a61e4d}{\text{owner}}`$ who would like to share their file `myCoolFile.txt`.
+Let us assume there is a person called `owner` who would like to share their file `myCoolFile.txt`.
 ![myCoolFile.txt](./images/myCoolFile.png)
 
 The mechanism is the same for all sharing types (read/write, file/folder). The idea is, to create a cryptographically random group in the form of `group-[randomKey].ttl`, which for illustrative purposes in our case will be `/groups/group-123randKeyUnguessable.ttl`.
@@ -49,26 +49,28 @@ These permissions are set in the corresponding `group-123randKeyUnguessable.ttl.
 
 ![group.ttl.acl](./images/groupAcl.png)
 
-The $`\textcolor{#a61e4d}{\text{owner}}`$ has full control over the group file while newly added $`\textcolor{#1864ab}{\text{collaborators}}`$ can only read and append. At this point, the group is still just an empty file.
+The `owner` (dark red) has full control over the group file while newly added `collaborators` (blue) can only read and append. At this point, the group is still just an empty file.
 
 Then in our file's `.acl` file we need to give this group the desired permissions, so everyone who is a member of this group has the permissions we would like to grant our collaborators. Therefore, the `myCoolFile.txt.acl` looks somewhat like this:
 
 ![file.txt.acl](./images/myCoolFileAcl.png)
 
-As expected, the $`\textcolor{#a61e4d}{\text{owner}}`$ still has all rights (given that it is their file!) whereas the members of the $`\textcolor{#1864ab}{\text{group}}`$ have been granted **read** and **write** access.
+As expected, the `owner` still has all rights (given that it is their file!) whereas the members of the `group` have been granted **read** and **write** access.
 
 Finally, we need to retrieve the encryption key from our encrypted keystore to finalize the sharing link.
 ![keystore](./images/keystoreRoot.png)
 
-Now let us say that $`\textcolor{#a61e4d}{\text{owner}}`$ shares their file `myCoolFile.txt` with their two collaborators $`\textcolor{#1864ab}{\text{otto}}`$ and $`\textcolor{#1864ab}{\text{halid}}`$. Then, upon opening the shared link which contains the secret group name, the collaborators add themselves to the group and our group file looks like this:
+Now let us say that `owner` shares their file `myCoolFile.txt` with their two collaborators `alice` and `bob`. Then, upon opening the shared link which contains the secret group name, the collaborators add themselves to the group and our group file looks like this:
 
 ![group.ttl](./images/group.png)
 
-After adding themself to the group, they have access to the resource. The final link is made up of several components depending on if it is for a **file** or a **folder**. A shared link for a fale consists of a $`\textcolor{#2b8a3e}{\text{file URL}}`$, a $`\textcolor{#862e9c}{\text{key}}`$ and the corresponding $`\textcolor{#e67700}{\text{group}}`$
+After adding themself to the group, they have access to the resource. The final link is made up of several components depending on if it is for a **file** or a **folder**. A shared link for a fale consists of a `file URL`, a `key` and the corresponding `group`
 
-> solidcryptp.ad/share?file=$`\textcolor{#2b8a3e}{\text{owner.solidweb.org/myCoolFile.txt}}`$
-> &key=$`\textcolor{#862e9c}{\text{key123}}`$
-> &group=$`\textcolor{#e67700}{\text{owner.solidweb.org/groups/group-123randKeyUnguessable.ttl}}`$
+> ```
+> [baseUrl]/share?file=owner.solidweb.org/myCoolFile.txt
+> &key=key123
+> &group=owner.solidweb.org/groups/group-123randKeyUnguessable.ttl
+> ```
 
 ## Sharing encryption keys for files
 
@@ -81,3 +83,88 @@ Here we need to share keys for all files inside this folder (even those, which w
 When creating the link, the creator fetches all keys currently used in the folder and creates a new keystore with it. The keystore is encrypted with a new random key. The url to the key and the encryption key are added to the link. Both, the owner and the link receiver, add this keystore to their list of keystores.
 
 Now, whenever a key for this folder is fetched, the keystore service will find the shared keystore and lookup the key there. When new files and keys are created, the keystore service also adds the key to the shared folder, so all users have access to the new file.
+
+## Different kinds of keystores
+
+We use different keystores for different purposes which will be explained briefly.
+
+
+
+#### Root - `root.json.enc`
+
+The root keystore stores the keys for all files in a person's own pod and is updated everytime a new file is created or uploaded.
+
+```json
+"keys": {
+  ...
+    "owner.solidweb.org/myCoolFile.txt":"key123",
+  ...
+}
+```
+
+#### Shared files - `shared-files.json.enc`
+
+Stores the keys for every file that has been shared by another person and is updated when opening shared links.
+
+```json
+"keys": {
+  ... 
+  "otherPerson.solidweb.org/theirCoolFile.txt":"key567",
+  ... 
+}
+```
+
+#### Shared folders - `<foldername>.json.enc`
+
+Stores the keys for all files inside a shared folder. It is created when creating a sharing link for the first time and update whenever new files are added inside the folder.
+
+```json
+"folderRoot" : "otherPerson.solidweb.org/theirFolder/"
+"keys": {
+  ... 
+  "otherPerson.solidweb.org/theirFolder/file1.txt":"key567",
+  "otherPerson.solidweb.org/theirFolder/file2.txt":"key345",
+  ... 
+}
+```
+
+
+
+#### Keystores - `keystores.json.enc`
+
+A keystore for all your keystores. It stores the serialized metadata for other keystores and is updated whenever you add a new one.
+
+```json
+"keystores": [
+    {
+        "type": "folder",
+        "keystoreSerialized": {
+            "url": "root.json.enc"
+        }
+    "storageSerialized": {
+            "encryptionKey": "key123"
+        }
+    },
+    {
+        "type": "sharedFile",
+        "keystoreSerialized": {
+            "url": "shared-files.json.enc"
+        },
+        "storageSerialized": {
+            "encryptionKey": "keyABC"
+        }
+    },
+    {
+        "type": "sharedFolder",
+        "keystoreSerialized": {
+            "url": "root.json.enc",
+            "root": "otherPerson.solidweb.org/theirFolder/"
+        },
+        "storageSerialized": {
+            "encryptionKey": "keyABC"
+        }
+    },
+]
+```
+
+Furthermore the keystores could be interpreted as a tree structure, with the **master key** being used to decrypt the `root.json.enc` which contains the keys to decrypt the `keystores.json.enc` which in turn contains the keys to the other keystores containing the keys to their respective files.
