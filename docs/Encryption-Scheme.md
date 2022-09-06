@@ -114,7 +114,7 @@ Stores the keys for every file that has been shared by another person and is upd
 }
 ```
 
-#### Shared folders - `<foldername>.json.enc`
+#### Shared folders - `<random-id>.shared-keystore`
 
 Stores the keys for all files inside a shared folder. It is created when creating a sharing link for the first time and update whenever new files are added inside the folder.
 
