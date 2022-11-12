@@ -29,4 +29,16 @@ export class NavigationService {
     }
     return this.router.navigateByUrl(url);
   }
+
+  /**
+   * @returns root of the solidcryptpad app
+   */
+  getAppRoot() {
+    return `${this.getOrigin()}${this.locationStrategy.getBaseHref()}`;
+  }
+
+  // wrapper to allow mocking window.location.origin in tests
+  private getOrigin() {
+    return window.location.origin;
+  }
 }

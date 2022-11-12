@@ -9,6 +9,7 @@ import { SolidPermissionService } from '../solid-permission/solid-permission.ser
 import { KeyService } from '../encryption/key/key.service';
 import { SolidGroupService } from '../solid-group/solid-group.service';
 import { SharedByMeService } from '../shared-by-me/shared-by-me.service';
+import { NavigationService } from '../navigation/navigation.service';
 
 describe('LinkShareService', () => {
   let service: LinkShareService;
@@ -19,12 +20,7 @@ describe('LinkShareService', () => {
   let keyServiceSpy: jasmine.SpyObj<KeyService>;
   let groupServiceSpy: jasmine.SpyObj<SolidGroupService>;
   let sharedByMeServiceSpy: jasmine.SpyObj<SharedByMeService>;
-
-  // copied from the class
-  const toLink = (data: Record<string, string>) => {
-    const urlParams = new URLSearchParams(data);
-    return `${window.location.origin}/share?${urlParams.toString()}`;
-  };
+  let navigationServiceSpy: jasmine.SpyObj<NavigationService>;
 
   const permissions = {
     read: true,
@@ -62,6 +58,9 @@ describe('LinkShareService', () => {
       'addLink',
       'removeLink',
     ]);
+    const navigationSpy = jasmine.createSpyObj('NavigationService', [
+      'getAppRoot',
+    ]);
 
     TestBed.configureTestingModule({
       imports: [MatDialogModule],
@@ -73,6 +72,7 @@ describe('LinkShareService', () => {
         { provide: KeyService, useValue: keySpy },
         { provide: SolidGroupService, useValue: groupSpy },
         { provide: SharedByMeService, useValue: sharedByMeSpy },
+        { provide: NavigationService, useValue: navigationSpy },
       ],
     });
 
@@ -103,6 +103,11 @@ describe('LinkShareService', () => {
     ) as jasmine.SpyObj<SharedByMeService>;
 
     keyServiceSpy = TestBed.inject(KeyService) as jasmine.SpyObj<KeyService>;
+
+    // eslint-disable-next-line unused-imports/no-unused-vars
+    navigationServiceSpy = TestBed.inject(
+      NavigationService
+    ) as jasmine.SpyObj<NavigationService>;
   });
 
   it('should be created', () => {
@@ -112,30 +117,38 @@ describe('LinkShareService', () => {
   it('createFileSharingLink creates file sharing link', async () => {
     const fileName = 'file.txt';
     const fileUrl = `example.com/${fileName}`;
+    const pseudoSharingLink = 'https://example.org/share/?foo=bar';
+
+    const toSharingLinkSpy = spyOn<any>(service, 'toSharingLink');
+    toSharingLinkSpy.and.returnValue(pseudoSharingLink);
     keyServiceSpy.getKey.and.resolveTo('the key');
     groupServiceSpy.createNewRandomGroup.and.resolveTo('the group');
     permissionServiceSpy.setPublicPermissions.and.resolveTo();
 
-    await service.createFileSharingLink(fileUrl, permissions);
+    const sharingLink = await service.createFileSharingLink(
+      fileUrl,
+      permissions
+    );
 
-    const params = {
+    expect(sharedByMeServiceSpy.addLink).toHaveBeenCalledWith(
+      'file.txt',
+      pseudoSharingLink
+    );
+    expect(toSharingLinkSpy).toHaveBeenCalledWith({
       file: fileUrl,
       key: btoa('the key'),
       group: 'the group',
-    };
-
-    const link = toLink(params);
-
-    expect(sharedByMeServiceSpy.addLink).toHaveBeenCalledWith('file.txt', link);
-    expect(await service.createFileSharingLink(fileUrl, permissions)).toEqual(
-      link
-    );
+    });
+    expect(sharingLink).toEqual(pseudoSharingLink);
   });
 
   it('createFolderSharingLink creates folder sharing link', async () => {
     const folderName = 'myFolder';
     const folderUrl = `example.com/${folderName}/`;
+    const pseudoSharingLink = 'https://example.org/share/?foo=bar';
 
+    const toSharingLinkSpy = spyOn<any>(service, 'toSharingLink');
+    toSharingLinkSpy.and.returnValue(pseudoSharingLink);
     groupServiceSpy.createNewRandomGroup.and.resolveTo('the group');
 
     keyServiceSpy.getOrCreateFolderKeystore.and.resolveTo({
@@ -143,19 +156,22 @@ describe('LinkShareService', () => {
       encryptionKey: 'key',
     });
 
-    await service.createFolderSharingLink(folderUrl, permissions);
+    const sharingLink = await service.createFolderSharingLink(
+      folderUrl,
+      permissions
+    );
 
-    const link = toLink({
+    expect(sharedByMeServiceSpy.addLink).toHaveBeenCalledWith(
+      folderName,
+      pseudoSharingLink
+    );
+    expect(toSharingLinkSpy).toHaveBeenCalledWith({
       folder: folderUrl,
       group: 'the group',
       keystore: 'keystore.url',
       keystoreEncryptionKey: 'key',
     });
-
-    expect(sharedByMeServiceSpy.addLink).toHaveBeenCalledWith(folderName, link);
-    expect(
-      await service.createFolderSharingLink(folderUrl, permissions)
-    ).toEqual(link);
+    expect(sharingLink).toBe(pseudoSharingLink);
   });
 
   it('deactivateLink deletes corresponding group file', () => {

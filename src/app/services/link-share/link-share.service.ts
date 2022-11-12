@@ -7,6 +7,7 @@ import {
 import { SolidGroupService } from '../solid-group/solid-group.service';
 import { SharedByMeService } from '../shared-by-me/shared-by-me.service';
 import { KeyService } from '../encryption/key/key.service';
+import { NavigationService } from '../navigation/navigation.service';
 
 @Injectable({
   providedIn: 'root',
@@ -17,7 +18,8 @@ export class LinkShareService {
     private fileService: SolidFileHandlerService,
     private groupService: SolidGroupService,
     private permissionService: SolidPermissionService,
-    private sharedByMeService: SharedByMeService
+    private sharedByMeService: SharedByMeService,
+    private navigationService: NavigationService
   ) {}
 
   /**
@@ -121,7 +123,7 @@ export class LinkShareService {
 
   private toSharingLink(data: Record<string, string>): string {
     const urlParams = new URLSearchParams(data);
-    return `${window.location.origin}/share?${urlParams.toString()}`;
+    return `${this.navigationService.getAppRoot()}share?${urlParams.toString()}`;
   }
 
   async deactivateLink(link: string) {

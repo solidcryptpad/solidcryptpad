@@ -51,4 +51,13 @@ describe('NavigationService', () => {
 
     expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/files#test');
   });
+
+  it('getAppRoot returns origin and base-href', () => {
+    givenBaseHref('/solidcryptpad/');
+    spyOn<any>(service, 'getOrigin').and.returnValue('https://example.org');
+
+    const appRoot = service.getAppRoot();
+
+    expect(appRoot).toBe('https://example.org/solidcryptpad/');
+  });
 });
