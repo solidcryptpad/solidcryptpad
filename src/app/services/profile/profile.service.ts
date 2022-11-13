@@ -20,6 +20,21 @@ export class ProfileService {
   ) {}
 
   /**
+   * Check if the logged in person has a username
+   */
+  async hasUserName(): Promise<boolean> {
+    try {
+      await this.getUserName();
+      return true;
+    } catch (err) {
+      if (err instanceof AttributeNotFoundException) {
+        return false;
+      }
+      throw err;
+    }
+  }
+
+  /**
    * Retrieves the name of the logged in person.
    */
   async getUserName(): Promise<string> {

@@ -112,16 +112,13 @@ export class TextEditorComponent implements OnInit, OnDestroy {
    * https://github.com/yjs/y-prosemirror#utilities
    */
   async setupEditor(): Promise<void> {
+    this.setupUsername();
     this.closeEditor();
     this.ydoc = new Y.Doc();
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     this.provider = new WebrtcProvider(this.getRoomName(), this.ydoc, {
       password: await this.getRoomPassword(),
-    });
-
-    this.profileService.getUserName().then((value) => {
-      this.setUsername(value);
     });
 
     this.xmlFragement = this.ydoc.getXmlFragment('prosemirror');
@@ -148,6 +145,14 @@ export class TextEditorComponent implements OnInit, OnDestroy {
       .subscribe(() => this.saveFile());
 
     this.loadFile();
+  }
+
+  private async setupUsername() {
+    const hasUserName = await this.profileService.hasUserName();
+    if (hasUserName) {
+      const userName = await this.profileService.getUserName();
+      this.setUsername(userName);
+    }
   }
 
   /**

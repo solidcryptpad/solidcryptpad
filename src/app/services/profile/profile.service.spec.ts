@@ -6,6 +6,7 @@ import { ProfileService } from './profile.service';
 import { FOAF } from '@inrupt/vocab-common-rdf';
 import { createThing } from '@inrupt/solid-client';
 import { SolidClientService } from '../module-wrappers/solid-client/solid-client.service';
+import { AttributeNotFoundException } from 'src/app/exceptions/attribute-not-found-exception';
 
 describe('ProfileService', () => {
   let service: ProfileService;
@@ -45,7 +46,21 @@ describe('ProfileService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('returns Testy as username and calls getStringNoLocale', async () => {
+  it('hasUserName returns true if user has a name', async () => {
+    spyOn(service, 'getUserName').and.resolveTo();
+
+    await expectAsync(service.hasUserName()).toBeResolvedTo(true);
+  });
+
+  it('hasUserName returns false if user has no name', async () => {
+    spyOn(service, 'getUserName').and.rejectWith(
+      new AttributeNotFoundException('No username')
+    );
+
+    await expectAsync(service.hasUserName()).toBeResolvedTo(false);
+  });
+
+  it('getUserName returns Testy as username and calls getStringNoLocale', async () => {
     const profile = createThing();
     const webId = 'https://example.pod/profile/card#me';
 

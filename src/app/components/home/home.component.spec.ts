@@ -16,6 +16,7 @@ describe('HomeComponent', () => {
 
   beforeEach(async () => {
     const profileSpy = jasmine.createSpyObj('ProfileServiceSpy', [
+      'hasUserName',
       'getUserName',
     ]);
     await TestBed.configureTestingModule({
@@ -34,6 +35,7 @@ describe('HomeComponent', () => {
     ) as jasmine.SpyObj<ProfileService>;
 
     profileServiceSpy.getUserName.and.resolveTo('testerson');
+    profileServiceSpy.hasUserName.and.resolveTo(true);
   });
 
   beforeEach(() => {

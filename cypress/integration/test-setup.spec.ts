@@ -11,11 +11,11 @@ describe('Test setup', function () {
     cy.visit('/'); // using a different path so we can be sure the reload finished
     cy.location('pathname').should('equals', '/');
     cy.location('pathname').should('equals', '/home');
-    cy.contains('Hello test-username');
+    cy.contains('Hello user');
   });
 
   it('can use cy.mockLogin to use logged in features', function () {
     cy.createRandomAccount().then(cy.loginMocked);
-    cy.contains('Hello test-username');
+    cy.contains('Hello user');
   });
 });

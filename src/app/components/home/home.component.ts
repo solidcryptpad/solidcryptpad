@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ProfileService } from '../../services/profile/profile.service';
-import { from, Observable } from 'rxjs';
+import { from, Observable, of, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -10,9 +10,13 @@ import { from, Observable } from 'rxjs';
 export class HomeComponent implements OnInit {
   constructor(private profileService: ProfileService) {}
 
-  name$: Observable<string> | undefined;
+  name$: Observable<string | null> | undefined;
 
   ngOnInit(): void {
-    this.name$ = from(this.profileService.getUserName());
+    this.name$ = from(this.profileService.hasUserName()).pipe(
+      switchMap((hasUserName) =>
+        hasUserName ? from(this.profileService.getUserName()) : of(null)
+      )
+    );
   }
 }

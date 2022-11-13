@@ -1,5 +1,5 @@
 <div class="box">
-  <h2 *ngIf="name$; else noUser">Hello {{ name$ | async }}</h2>
+  <h2 *ngIf="name$; else noUser">Hello {{ (name$ | async) ?? "user" }}</h2>
   <ng-template #noUser>
     <h2>Hello User!</h2>
   </ng-template>
